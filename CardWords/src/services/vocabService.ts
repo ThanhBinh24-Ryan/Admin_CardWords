@@ -1,0 +1,176 @@
+import { 
+  Vocab, 
+  VocabResponse, 
+  VocabsResponse, 
+  CreateVocabRequest, 
+  UpdateVocabRequest,
+  BulkImportRequest,
+  BulkImportResponse,
+  PaginationParams,
+  SearchParams,
+  CefrParams,
+  EmptyResponse
+} from '../types/vocab';
+
+const API_BASE_URL = 'http://localhost:8080/api/v1/admin';
+
+class VocabService {
+  private getAuthToken(): string | null {
+    return localStorage.getItem('accessToken') || null;
+  }
+
+  private async request<T>(url: string, options: RequestInit = {}): Promise<T> {
+    const token = this.getAuthToken();
+    
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const fullUrl = `${API_BASE_URL}${url}`;
+    console.log('🔍 Making request to:', fullUrl);
+
+    try {
+      const response = await fetch(fullUrl, {
+        headers,
+        ...options,
+      });
+
+      console.log('🔍 Response status:', response.status);
+
+      if (!response.ok) {
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        
+        try {
+          const responseText = await response.text();
+          console.log('🔍 Response body:', responseText);
+          
+          const errorData = JSON.parse(responseText);
+          errorMessage = errorData.message || errorData.error || errorMessage;
+        } catch {
+          // If cannot parse response, use default message
+        }
+        
+        throw new Error(errorMessage);
+      }
+
+      const data = await response.json();
+      console.log('🔍 Response data:', data);
+      return data;
+
+    } catch (error) {
+      console.error('❌ Request failed:', error);
+      throw error;
+    }
+  }
+
+  // Lấy từ vựng theo ID
+  async getVocabById(id: string): Promise<VocabResponse> {
+    return this.request<VocabResponse>(`/vocabs/${id}`);
+  }
+
+  // Lấy từ vựng theo từ
+  async getVocabByWord(word: string): Promise<VocabResponse> {
+    return this.request<VocabResponse>(`/vocabs/word/${encodeURIComponent(word)}`);
+  }
+
+  // Lấy danh sách từ vựng với phân trang
+  async getVocabs(params: PaginationParams = {}): Promise<VocabsResponse> {
+    const { page = 0, size = 20, sortBy = 'createdAt', sortDir = 'desc' } = params;
+    const queryParams = new URLSearchParams({
+      page: page.toString(),
+      size: size.toString(),
+      sortBy,
+      sortDir
+    });
+
+    return this.request<VocabsResponse>(`/vocabs?${queryParams}`);
+  }
+
+  // Tìm kiếm từ vựng
+  async searchVocabs(params: SearchParams): Promise<VocabsResponse> {
+    const { keyword, page = 0, size = 20 } = params;
+    const queryParams = new URLSearchParams({
+      keyword,
+      page: page.toString(),
+      size: size.toString()
+    });
+
+    return this.request<VocabsResponse>(`/vocabs/search?${queryParams}`);
+  }
+
+  // Lấy từ vựng theo CEFR level
+  async getVocabsByCefr(params: CefrParams): Promise<VocabsResponse> {
+    const { cefr, page = 0, size = 20 } = params;
+    const queryParams = new URLSearchParams({
+      page: page.toString(),
+      size: size.toString()
+    });
+
+    return this.request<VocabsResponse>(`/vocabs/cefr/${cefr}?${queryParams}`);
+  }
+
+  // Tạo từ vựng mới
+  async createVocab(vocabData: CreateVocabRequest): Promise<VocabResponse> {
+    return this.request<VocabResponse>('/vocabs', {
+      method: 'POST',
+      body: JSON.stringify(vocabData),
+    });
+  }
+
+  // Cập nhật từ vựng theo ID
+  async updateVocabById(id: string, vocabData: UpdateVocabRequest): Promise<VocabResponse> {
+    return this.request<VocabResponse>(`/vocabs/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(vocabData),
+    });
+  }
+
+  // Cập nhật từ vựng theo từ
+  async updateVocabByWord(word: string, vocabData: UpdateVocabRequest): Promise<VocabResponse> {
+    return this.request<VocabResponse>(`/vocabs/word/${encodeURIComponent(word)}`, {
+      method: 'PUT',
+      body: JSON.stringify(vocabData),
+    });
+  }
+
+  // Xóa từ vựng
+  async deleteVocab(id: string): Promise<EmptyResponse> {
+    return this.request<EmptyResponse>(`/vocabs/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Import nhiều từ vựng
+  async bulkImport(vocabs: CreateVocabRequest[]): Promise<BulkImportResponse> {
+    return this.request<BulkImportResponse>('/vocabs/bulk-import', {
+      method: 'POST',
+      body: JSON.stringify({ vocabs }),
+    });
+  }
+
+  // Export to Excel
+  async exportToExcel(): Promise<Blob> {
+    const token = this.getAuthToken();
+    const headers: Record<string, string> = {};
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/vocabs/export/excel`, {
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return response.blob();
+  }
+}
+
+export const vocabService = new VocabService();

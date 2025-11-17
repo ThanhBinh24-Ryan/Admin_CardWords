@@ -1,0 +1,13 @@
+// ...existing code...
+import React from 'react';
+
+export default function ProtectedRoute({ children }: React.PropsWithChildren<{}>) {
+  // ...existing code...
+  return (
+    // ...existing render logic...
+    <>
+      {children}
+    </>
+  );
+}
+// ...existing code...
