@@ -1,74 +1,3 @@
-// import React from 'react';
-// import { NavLink } from 'react-router-dom';
-// import { HiX } from 'react-icons/hi';
-// import './styles/Sidebar.css'
-// interface SidebarProps {
-//   isOpen: boolean;
-//   setIsOpen: (isOpen: boolean) => void;
-// }
-
-// const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
-//   return (
-//     <aside
-//       className={`sidebar fixed md:static top-0 left-0 h-full w-64 bg-white shadow-md transform transition-transform duration-300 z-50
-//         ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}
-//     >
-//       <div className="flex items-center justify-between p-4 border-b">
-//         <span className="image-sidebar font-bold text-indigo-600 text-lg">CARDWORDS</span>
-//         <button
-//           className="md:hidden p-2 rounded hover:bg-gray-100"
-//           onClick={() => setIsOpen(false)}
-//         >
-//           <HiX className="text-xl" />
-//         </button>
-//       </div>
-
-//       <nav className="mt-4">
-//         <ul className="flex flex-col space-y-1">
-//           {[
-//             { path: '/dashboard', label: 'Dashboard' },
-//             { path: '/users', label: 'Users' },
-//             { path: 'admin/vocabs', label: 'Vocabulary' },
-//             { path: '/notifications', label: 'Notifications' },
-//              { path: 'admin/games', label: 'Games' },
-//             //  { path: '/notifications/settings', label: 'NotificationSetting' },
-//             { path: '/logs', label: 'Logs' }
-//           ].map((item) => (
-//             <li key={item.path}>
-//               <NavLink
-//                 to={item.path}
-//                 className={({ isActive }) =>
-//                   `block px-4 py-2 hover:bg-indigo-50 ${
-//                     isActive ? 'text-indigo-600 font-semibold bg-indigo-50' : ''
-//                   }`
-//                 }
-//                 onClick={() => {
-//                   if (window.innerWidth < 768) setIsOpen(false);
-//                 }}
-//               >
-//                 {item.label}
-//               </NavLink>
-//             </li>
-//           ))}
-//         </ul>
-//       </nav>
-//     </aside>
-//   );
-// };
-
-// export default Sidebar;
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -97,7 +26,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
     { path: '/admin/vocabs', label: 'Từ vựng', icon: BookOpen, color: 'from-green-500 to-green-600' },
     { path: '/notifications', label: 'Thông báo', icon: Bell, color: 'from-yellow-500 to-orange-600' },
     { path: '/admin/games', label: 'Trò chơi', icon: Gamepad2, color: 'from-pink-500 to-rose-600' },
-    { path: '/logs', label: 'Nhật ký', icon: FileText, color: 'from-indigo-500 to-indigo-600' },
+    { path: '/action-logs', label: 'Nhật ký', icon: FileText, color: 'from-indigo-500 to-indigo-600' },
      { path: 'admin/Topics', label: 'Chủ đề', icon: FileText, color: 'from-indigo-500 to-indigo-600' },
       { path: 'admin/word-types', label: 'Loại', icon: FileText, color: 'from-indigo-500 to-indigo-600' },
   ];

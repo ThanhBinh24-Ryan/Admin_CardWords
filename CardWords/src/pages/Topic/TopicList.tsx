@@ -103,13 +103,30 @@ const TopicList: React.FC = () => {
           <h1 className="text-2xl font-bold text-gray-900">Quản lý Chủ đề</h1>
           <p className="text-gray-600">Quản lý và tổ chức các chủ đề học tập</p>
         </div>
-        <Link
-          to="/admin/topics/new"
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center"
-        >
-          <Plus className="w-5 h-5 mr-2" />
-          Thêm chủ đề
-        </Link>
+       
+<div className="flex gap-2">
+  <Link
+    to="/admin/topics/bulk-create"
+    className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center"
+  >
+    <Plus className="w-5 h-5 mr-2" />
+    Thêm nhiều
+  </Link>
+  <Link
+    to="/admin/topics/bulk-edit" 
+    className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 flex items-center"
+  >
+    <Edit className="w-5 h-5 mr-2" />
+    Sửa nhiều
+  </Link>
+  <Link
+    to="/admin/topics/new"
+    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center"
+  >
+    <Plus className="w-5 h-5 mr-2" />
+    Thêm chủ đề
+  </Link>
+</div>
       </div>
 
       {/* Error Alert */}

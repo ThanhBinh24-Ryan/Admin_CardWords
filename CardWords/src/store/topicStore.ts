@@ -5,7 +5,9 @@ import {
   TopicFilter,
   TopicPaginationInfo,
   TopicApiResponse,
-  BulkOperationResult
+  BulkOperationResult,
+  BulkTopicCreate,
+  BulkTopicUpdate
 } from '../types/topic';
 import { topicService } from '../services/topicService';
 
@@ -30,8 +32,8 @@ interface TopicState {
   createTopic: (formData: TopicFormData) => Promise<void>;
   updateTopic: (id: number, formData: Partial<TopicFormData>) => Promise<void>;
   deleteTopic: (id: number) => Promise<void>;
-  bulkCreateTopics: (topics: Array<{ name: string; description?: string; imageUrl?: string }>) => Promise<TopicApiResponse<BulkOperationResult>>;
-  bulkUpdateTopics: (topics: Array<{ id: number; name?: string; description?: string; imageUrl?: string }>) => Promise<TopicApiResponse<BulkOperationResult>>;
+  bulkCreateTopics: (topics: Array<{ name: string; description?: string; image?: File | null }>) => Promise<TopicApiResponse<BulkOperationResult>>;
+  bulkUpdateTopics: (topics: Array<{ id: number; name?: string; description?: string; image?: File | null }>) => Promise<TopicApiResponse<BulkOperationResult>>;
 }
 
 export const useTopicStore = create<TopicState>((set, get) => ({

@@ -1,6 +1,7 @@
 // pages/Profile/ChangePasswordPage.tsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useProfileStore } from '../../../store/ProfileStore';
 import { 
   Lock, 
   Eye, 
@@ -9,12 +10,21 @@ import {
   XCircle,
   ArrowLeft,
   Shield,
-  Key
+  Key,
+  Loader2,
+  AlertCircle,
+  CheckCircle2
 } from 'lucide-react';
 import './ChangePasswordPage.css';
 
 const ChangePasswordPage: React.FC = () => {
   const navigate = useNavigate();
+  const {
+    changePassword,
+    error,
+    clearError
+  } = useProfileStore();
+
   const [passwords, setPasswords] = useState({
     currentPassword: '',
     newPassword: '',
@@ -26,7 +36,7 @@ const ChangePasswordPage: React.FC = () => {
     confirm: false
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Password strength requirements
   const [passwordRequirements, setPasswordRequirements] = useState({
@@ -76,18 +86,18 @@ const ChangePasswordPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!isFormValid()) {
+      return;
+    }
+
     setIsLoading(true);
-    setMessage(null);
+    setSuccessMessage(null);
+    clearError();
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Mock success
-      setMessage({
-        type: 'success',
-        text: 'Mật khẩu đã được thay đổi thành công!'
-      });
+      await changePassword(passwords);
+      setSuccessMessage('✅ Đổi mật khẩu thành công!');
       
       // Reset form
       setPasswords({
@@ -95,11 +105,16 @@ const ChangePasswordPage: React.FC = () => {
         newPassword: '',
         confirmPassword: ''
       });
-    } catch (error) {
-      setMessage({
-        type: 'error',
-        text: 'Đã xảy ra lỗi. Vui lòng thử lại.'
+      setPasswordRequirements({
+        length: false,
+        uppercase: false,
+        lowercase: false,
+        number: false,
+        special: false
       });
+    } catch (error) {
+      // Error is handled by the store
+      console.error('Failed to change password:', error);
     } finally {
       setIsLoading(false);
     }
@@ -124,6 +139,7 @@ const ChangePasswordPage: React.FC = () => {
           <button 
             className="back-button"
             onClick={() => navigate('/profile')}
+            disabled={isLoading}
           >
             <ArrowLeft size={20} />
           </button>
@@ -142,10 +158,20 @@ const ChangePasswordPage: React.FC = () => {
           {/* Left Side - Form */}
           <div className="password-form-section">
             <form onSubmit={handleSubmit} className="password-form">
-              {message && (
-                <div className={`message ${message.type}`}>
-                  {message.type === 'success' ? <CheckCircle size={20} /> : <XCircle size={20} />}
-                  <span>{message.text}</span>
+              {error && (
+                <div className="error-message">
+                  <AlertCircle size={16} />
+                  <span>{error}</span>
+                  <button onClick={clearError} className="error-close">
+                    <XCircle size={16} />
+                  </button>
+                </div>
+              )}
+
+              {successMessage && (
+                <div className="success-message">
+                  <CheckCircle2 size={16} />
+                  <span>{successMessage}</span>
                 </div>
               )}
 
@@ -163,11 +189,13 @@ const ChangePasswordPage: React.FC = () => {
                     className="password-input"
                     placeholder="Nhập mật khẩu hiện tại"
                     required
+                    disabled={isLoading}
                   />
                   <button
                     type="button"
                     className="password-toggle"
                     onClick={() => togglePasswordVisibility('current')}
+                    disabled={isLoading}
                   >
                     {showPasswords.current ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
@@ -188,11 +216,13 @@ const ChangePasswordPage: React.FC = () => {
                     className="password-input"
                     placeholder="Tạo mật khẩu mới"
                     required
+                    disabled={isLoading}
                   />
                   <button
                     type="button"
                     className="password-toggle"
                     onClick={() => togglePasswordVisibility('new')}
+                    disabled={isLoading}
                   >
                     {showPasswords.new ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
@@ -258,11 +288,13 @@ const ChangePasswordPage: React.FC = () => {
                     className="password-input"
                     placeholder="Nhập lại mật khẩu mới"
                     required
+                    disabled={isLoading}
                   />
                   <button
                     type="button"
                     className="password-toggle"
                     onClick={() => togglePasswordVisibility('confirm')}
+                    disabled={isLoading}
                   >
                     {showPasswords.confirm ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
@@ -294,7 +326,7 @@ const ChangePasswordPage: React.FC = () => {
               >
                 {isLoading ? (
                   <div className="loading-spinner">
-                    <div className="spinner"></div>
+                    <Loader2 className="w-4 h-4 animate-spin" />
                     <span>Đang xử lý...</span>
                   </div>
                 ) : (
@@ -310,7 +342,7 @@ const ChangePasswordPage: React.FC = () => {
               <div className="security-icon">
                 <Shield size={48} />
               </div>
-              <h3>Bảo Mật Tài Khoản</h3>
+                           <h3>Bảo Mật Tài Khoản</h3>
               <p>Mật khẩu mạnh là tuyến phòng thủ đầu tiên bảo vệ tài khoản của bạn</p>
               
               <div className="security-features">
@@ -341,27 +373,27 @@ const ChangePasswordPage: React.FC = () => {
             </div>
 
             <div className="recent-activity">
-              <h4>Hoạt động gần đây</h4>
+              <h4>Lưu ý quan trọng</h4>
               <div className="activity-list">
                 <div className="activity-item">
                   <div className="activity-icon success">✓</div>
                   <div>
-                    <p>Đăng nhập thành công</p>
-                    <span>Hôm nay, 08:30 - Chrome, Windows</span>
+                    <p>Mật khẩu sẽ được thay đổi ngay lập tức</p>
+                    <span>Bạn sẽ cần đăng nhập lại</span>
                   </div>
                 </div>
                 <div className="activity-item">
-                  <div className="activity-icon info">i</div>
+                  <div className="activity-icon info">!</div>
                   <div>
-                    <p>Yêu cầu đổi mật khẩu</p>
-                    <span>2 ngày trước</span>
+                    <p>Đảm bảo mật khẩu mạnh</p>
+                    <span>Kết hợp chữ hoa, thường, số và ký tự đặc biệt</span>
                   </div>
                 </div>
                 <div className="activity-item">
-                  <div className="activity-icon success">✓</div>
+                  <div className="activity-icon warning">⚠</div>
                   <div>
-                    <p>Đăng nhập từ thiết bị mới</p>
-                    <span>1 tuần trước - Safari, macOS</span>
+                    <p>Không chia sẻ mật khẩu</p>
+                    <span>Bảo mật thông tin cá nhân của bạn</span>
                   </div>
                 </div>
               </div>

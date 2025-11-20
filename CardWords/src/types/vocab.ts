@@ -194,3 +194,18 @@ export interface VocabFilter {
   type: string;
   topic: string;
 }
+export interface BulkImportResponse {
+  status: string;
+  message: string;
+  data: {
+    totalRequested: number;
+    successCount: number;
+    failedCount: number;
+    skippedCount: number;
+    errors: Array<{
+      word: string;
+      reason: string;
+      lineNumber: number;
+    }>;
+  };
+}

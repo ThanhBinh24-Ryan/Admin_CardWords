@@ -13,20 +13,22 @@ export interface TopicFormData {
   image?: File | null;
 }
 
+// Cập nhật interface cho bulk create với file upload
 export interface BulkTopicCreate {
   topics: Array<{
     name: string;
     description?: string;
-    imageUrl?: string;
+    image?: File | null;
   }>;
 }
 
+// Cập nhật interface cho bulk update với file upload
 export interface BulkTopicUpdate {
   topics: Array<{
     id: number;
     name?: string;
     description?: string;
-    imageUrl?: string;
+    image?: File | null;
   }>;
 }
 

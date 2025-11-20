@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUserStore } from '../../store/userStore';
@@ -21,8 +22,16 @@ import {
   AlertCircle,
   CheckCircle2,
   Clock,
-  UserPlus
+  UserPlus,
+  Send,
+  AlertTriangle
 } from 'lucide-react';
+
+// Modal Components
+import ResetPasswordModal from './modals/ResetPasswordModal';
+import DeleteUserModal from './modals/DeleteUserModal';
+import BanUserModal from './modals/BanUserModal';
+import ActivateUserModal from './modals/ActivateUserModal';
 
 const UserList: React.FC = () => {
   const navigate = useNavigate();
@@ -45,6 +54,13 @@ const UserList: React.FC = () => {
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
+  
+  // Modal states
+  const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showBanModal, setShowBanModal] = useState(false);
+  const [showActivateModal, setShowActivateModal] = useState(false);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
   
   // Filter states
   const [filters, setFilters] = useState<UserFilter>({
@@ -95,25 +111,58 @@ const UserList: React.FC = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Bạn có chắc muốn xóa người dùng này? Hành động này không thể hoàn tác.')) {
-      try {
-        await deleteUser(id);
-        alert('Xóa người dùng thành công!');
-        loadUsers();
-      } catch (error: any) {
-        alert('Xóa người dùng thất bại. Vui lòng thử lại.');
-      }
+  const handleDelete = (user: User) => {
+    setSelectedUser(user);
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedUser) return;
+    
+    setActionLoading('delete');
+    try {
+      await deleteUser(selectedUser.id);
+      alert('✅ Xóa người dùng thành công!');
+      setShowDeleteModal(false);
+      loadUsers();
+    } catch (error: any) {
+      alert('❌ Xóa người dùng thất bại. Vui lòng thử lại.');
+    } finally {
+      setActionLoading(null);
     }
   };
 
-  const handleEdit = (id: string) => {
-    navigate(`/admin/users/${id}/edit`);
+
+
+  const handleResetPassword = (user: User) => {
+    setSelectedUser(user);
+    setShowResetPasswordModal(true);
   };
 
-  const handleResetPassword = (id: string) => {
-    if (window.confirm('Bạn có chắc muốn đặt lại mật khẩu cho người dùng này?')) {
-      alert('Email đặt lại mật khẩu đã được gửi!');
+  const handleConfirmResetPassword = async () => {
+    if (!selectedUser) return;
+    
+    setActionLoading('resetPassword');
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`http://localhost:8080/api/v1/admin/users/${selectedUser.id}/reset-password`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      if (response.ok) {
+        alert('✅ Email đặt lại mật khẩu đã được gửi thành công!');
+        setShowResetPasswordModal(false);
+      } else {
+        throw new Error('Failed to send reset password email');
+      }
+    } catch (error) {
+      alert('❌ Gửi email thất bại. Vui lòng thử lại.');
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -130,39 +179,58 @@ const UserList: React.FC = () => {
   const handleUpdateRoles = async () => {
     if (!selectedUser) return;
 
+    setActionLoading('updateRoles');
     try {
       await updateUserRoles(selectedUser.id, selectedRoles);
-      alert('Cập nhật quyền người dùng thành công!');
+      alert('✅ Cập nhật quyền người dùng thành công!');
       setShowRoleModal(false);
       loadUsers();
     } catch (error) {
-      alert('Cập nhật quyền thất bại. Vui lòng thử lại.');
+      alert('❌ Cập nhật quyền thất bại. Vui lòng thử lại.');
+    } finally {
+      setActionLoading(null);
     }
   };
 
-  const handleBanUser = async (id: string, banned: boolean) => {
-    const action = banned ? 'cấm' : 'bỏ cấm';
-    if (window.confirm(`Bạn có chắc muốn ${action} người dùng này?`)) {
-      try {
-        await banUser(id, banned);
-        alert(`${banned ? 'Cấm' : 'Bỏ cấm'} người dùng thành công!`);
-        loadUsers();
-      } catch (error) {
-        alert(`${action.charAt(0).toUpperCase() + action.slice(1)} người dùng thất bại. Vui lòng thử lại.`);
-      }
+  const handleBanUser = (user: User, banned: boolean) => {
+    setSelectedUser(user);
+    setShowBanModal(true);
+  };
+
+  const handleConfirmBan = async (banned: boolean) => {
+    if (!selectedUser) return;
+    
+    setActionLoading('ban');
+    try {
+      await banUser(selectedUser.id, banned);
+      alert(`✅ ${banned ? 'Cấm' : 'Bỏ cấm'} người dùng thành công!`);
+      setShowBanModal(false);
+      loadUsers();
+    } catch (error) {
+      alert(`❌ ${banned ? 'Cấm' : 'Bỏ cấm'} người dùng thất bại. Vui lòng thử lại.`);
+    } finally {
+      setActionLoading(null);
     }
   };
 
-  const handleActivateUser = async (id: string, activated: boolean) => {
-    const action = activated ? 'kích hoạt' : 'vô hiệu hóa';
-    if (window.confirm(`Bạn có chắc muốn ${action} người dùng này?`)) {
-      try {
-        await activateUser(id, activated);
-        alert(`${activated ? 'Kích hoạt' : 'Vô hiệu hóa'} người dùng thành công!`);
-        loadUsers();
-      } catch (error) {
-        alert(`${action.charAt(0).toUpperCase() + action.slice(1)} người dùng thất bại. Vui lòng thử lại.`);
-      }
+  const handleActivateUser = (user: User, activated: boolean) => {
+    setSelectedUser(user);
+    setShowActivateModal(true);
+  };
+
+  const handleConfirmActivate = async (activated: boolean) => {
+    if (!selectedUser) return;
+    
+    setActionLoading('activate');
+    try {
+      await activateUser(selectedUser.id, activated);
+      alert(`✅ ${activated ? 'Kích hoạt' : 'Vô hiệu hóa'} người dùng thành công!`);
+      setShowActivateModal(false);
+      loadUsers();
+    } catch (error) {
+      alert(`❌ ${activated ? 'Kích hoạt' : 'Vô hiệu hóa'} người dùng thất bại. Vui lòng thử lại.`);
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -198,7 +266,7 @@ const UserList: React.FC = () => {
     }
 
     const statusConfig: { [key: string]: { color: string; label: string } } = {
-      'ACTIVE': { color: 'from-green-400 to-green-500', label: 'Hoạt động' },
+      'ACTIVE': { color: 'from-green-600 to-green-600', label: 'Hoạt động' },
       'PENDING': { color: 'from-yellow-400 to-yellow-500', label: 'Chờ xử lý' },
       'SUSPENDED': { color: 'from-red-400 to-red-500', label: 'Tạm ngưng' },
       'INACTIVE': { color: 'from-gray-400 to-gray-500', label: 'Không hoạt động' },
@@ -262,19 +330,20 @@ const UserList: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <div className="container mx-auto px-4 py-8">
+        {/* Header */}
         <div className="mb-8">
-  <div className="flex flex-col items-center justify-center text-center mb-6">
-    <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-3 rounded-xl shadow-lg mb-4">
-      <Users className="w-8 h-8 text-white" />
-    </div>
-    <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-      Quản lý người dùng
-    </h1>
-    <p className="text-gray-600 mt-2">
-      Quản lý và theo dõi người dùng trong hệ thống
-    </p>
-  </div>
-</div>
+          <div className="flex flex-col items-center justify-center text-center mb-6">
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-3 rounded-xl shadow-lg mb-4">
+              <Users className="w-8 h-8 text-white" />
+            </div>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              Quản lý người dùng
+            </h1>
+            <p className="text-gray-600 mt-2">
+              Quản lý và theo dõi người dùng trong hệ thống
+            </p>
+          </div>
+        </div>
 
         {error && (
           <div className="bg-red-50 border-l-4 border-red-500 text-red-700 px-6 py-4 rounded-xl mb-6 flex items-start justify-between shadow-lg">
@@ -463,7 +532,7 @@ const UserList: React.FC = () => {
                         {user.roles?.map((role, index) => (
                           <span
                             key={index}
-                            className="px-2 py-1 rounded-lg text-xs font-bold bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-md"
+                            className="px-2 py-1 rounded-lg text-xs font-bold bg-gradient-to-r from-blue-500 to-blue-500 text-white shadow-md"
                           >
                             {role.replace('ROLE_', '')}
                           </span>
@@ -483,7 +552,7 @@ const UserList: React.FC = () => {
                           <Eye className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => handleResetPassword(user.id)}
+                          onClick={() => handleResetPassword(user)}
                           className="p-2 text-orange-600 hover:text-orange-900 rounded-lg bg-orange-50 hover:bg-orange-100 transition-all transform hover:scale-110 shadow-md"
                           title="Đặt lại mật khẩu"
                         >
@@ -496,16 +565,10 @@ const UserList: React.FC = () => {
                         >
                           <Shield className="w-4 h-4" />
                         </button>
-                        <button
-                          onClick={() => handleEdit(user.id)}
-                          className="p-2 text-green-600 hover:text-green-900 rounded-lg bg-green-50 hover:bg-green-100 transition-all transform hover:scale-110 shadow-md"
-                          title="Chỉnh sửa"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
+                       
                         {user.banned ? (
                           <button
-                            onClick={() => handleBanUser(user.id, false)}
+                            onClick={() => handleBanUser(user, false)}
                             className="p-2 text-green-600 hover:text-green-900 rounded-lg bg-green-50 hover:bg-green-100 transition-all transform hover:scale-110 shadow-md"
                             title="Bỏ cấm"
                           >
@@ -513,7 +576,7 @@ const UserList: React.FC = () => {
                           </button>
                         ) : (
                           <button
-                            onClick={() => handleBanUser(user.id, true)}
+                            onClick={() => handleBanUser(user, true)}
                             className="p-2 text-red-600 hover:text-red-900 rounded-lg bg-red-50 hover:bg-red-100 transition-all transform hover:scale-110 shadow-md"
                             title="Cấm người dùng"
                           >
@@ -522,7 +585,7 @@ const UserList: React.FC = () => {
                         )}
                         {user.activated ? (
                           <button
-                            onClick={() => handleActivateUser(user.id, false)}
+                            onClick={() => handleActivateUser(user, false)}
                             className="p-2 text-yellow-600 hover:text-yellow-900 rounded-lg bg-yellow-50 hover:bg-yellow-100 transition-all transform hover:scale-110 shadow-md"
                             title="Vô hiệu hóa"
                           >
@@ -530,7 +593,7 @@ const UserList: React.FC = () => {
                           </button>
                         ) : (
                           <button
-                            onClick={() => handleActivateUser(user.id, true)}
+                            onClick={() => handleActivateUser(user, true)}
                             className="p-2 text-green-600 hover:text-green-900 rounded-lg bg-green-50 hover:bg-green-100 transition-all transform hover:scale-110 shadow-md"
                             title="Kích hoạt"
                           >
@@ -538,7 +601,7 @@ const UserList: React.FC = () => {
                           </button>
                         )}
                         <button
-                          onClick={() => handleDelete(user.id)}
+                          onClick={() => handleDelete(user)}
                           className="p-2 text-red-600 hover:text-red-900 rounded-lg bg-red-50 hover:bg-red-100 transition-all transform hover:scale-110 shadow-md"
                           title="Xóa người dùng"
                         >
@@ -635,6 +698,53 @@ const UserList: React.FC = () => {
             onRoleToggle={handleRoleToggle}
             onUpdate={handleUpdateRoles}
             onClose={() => setShowRoleModal(false)}
+            loading={actionLoading === 'updateRoles'}
+          />
+        )}
+
+        {/* Reset Password Modal */}
+        {showResetPasswordModal && selectedUser && (
+          <ResetPasswordModal
+            isOpen={showResetPasswordModal}
+            onClose={() => setShowResetPasswordModal(false)}
+            userId={selectedUser.id}
+            userName={selectedUser.name}
+            onResetPassword={handleConfirmResetPassword}
+            loading={actionLoading === 'resetPassword'}
+          />
+        )}
+
+        {/* Delete Modal */}
+        {showDeleteModal && selectedUser && (
+          <DeleteUserModal
+            isOpen={showDeleteModal}
+            onClose={() => setShowDeleteModal(false)}
+            userId={selectedUser.id}
+            userName={selectedUser.name}
+            onDeleteUser={handleConfirmDelete}
+            loading={actionLoading === 'delete'}
+          />
+        )}
+
+        {/* Ban Modal */}
+        {showBanModal && selectedUser && (
+          <BanUserModal
+            isOpen={showBanModal}
+            onClose={() => setShowBanModal(false)}
+            user={selectedUser}
+            onBanUser={handleConfirmBan}
+            loading={actionLoading === 'ban'}
+          />
+        )}
+
+        {/* Activate Modal */}
+        {showActivateModal && selectedUser && (
+          <ActivateUserModal
+            isOpen={showActivateModal}
+            onClose={() => setShowActivateModal(false)}
+            user={selectedUser}
+            onActivateUser={handleConfirmActivate}
+            loading={actionLoading === 'activate'}
           />
         )}
       </div>
@@ -649,7 +759,8 @@ const UserRoleModal: React.FC<{
   onRoleToggle: (role: string) => void;
   onUpdate: () => void;
   onClose: () => void;
-}> = ({ user, selectedRoles, onRoleToggle, onUpdate, onClose }) => {
+  loading: boolean;
+}> = ({ user, selectedRoles, onRoleToggle, onUpdate, onClose, loading }) => {
   const availableRoles = [USER_ROLES.USER, USER_ROLES.ADMIN];
 
   return (
@@ -667,6 +778,7 @@ const UserRoleModal: React.FC<{
             <button
               onClick={onClose}
               className="text-white hover:text-gray-200 transition-colors"
+              disabled={loading}
             >
               <X className="w-6 h-6" />
             </button>
@@ -693,6 +805,7 @@ const UserRoleModal: React.FC<{
                   checked={selectedRoles.includes(role)}
                   onChange={() => onRoleToggle(role)}
                   className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 w-5 h-5"
+                  disabled={loading}
                 />
                 <div className="flex-1">
                   <span className={`text-base font-bold ${selectedRoles.includes(role) ? 'text-white' : 'text-gray-700'}`}>
@@ -710,16 +823,24 @@ const UserRoleModal: React.FC<{
           <div className="flex gap-3 pt-4 border-t-2 border-gray-200">
             <button
               onClick={onClose}
-              className="flex-1 px-6 py-3 text-base font-bold text-gray-700 border-2 border-gray-300 rounded-xl hover:bg-gray-50 transition-all transform hover:scale-105 shadow-md"
+              disabled={loading}
+              className="flex-1 px-6 py-3 text-base font-bold text-gray-700 border-2 border-gray-300 rounded-xl hover:bg-gray-50 disabled:opacity-50 transition-all transform hover:scale-105 shadow-md"
             >
               Hủy
             </button>
             <button
               onClick={onUpdate}
-              className="flex-1 px-6 py-3 text-base font-bold text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105 shadow-lg flex items-center justify-center"
+              disabled={loading}
+              className="flex-1 px-6 py-3 text-base font-bold text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 transition-all transform hover:scale-105 shadow-lg flex items-center justify-center"
             >
-              <CheckCircle2 className="w-5 h-5 mr-2" />
-              Cập nhật
+              {loading ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <>
+                  <CheckCircle2 className="w-5 h-5 mr-2" />
+                  Cập nhật
+                </>
+              )}
             </button>
           </div>
         </div>

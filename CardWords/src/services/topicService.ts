@@ -99,12 +99,10 @@ class TopicService {
       data.append('image', formData.image);
     }
 
-    // For FormData, let browser set Content-Type automatically
     return this.request<TopicApiResponse<Topic>>('/topics', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${this.getAuthToken()}`,
-        // Don't set Content-Type for FormData
       },
       body: data,
     });
@@ -145,25 +143,63 @@ class TopicService {
     });
   }
 
-  // POST - Tạo nhiều chủ đề cùng lúc
+  // POST - Tạo nhiều chủ đề cùng lúc (với file upload)
   async bulkCreateTopics(
     bulkData: BulkTopicCreate
   ): Promise<TopicApiResponse<BulkOperationResult>> {
+    const formData = new FormData();
+    
+    // Append each topic data
+    bulkData.topics.forEach((topic, index) => {
+      formData.append(`topics[${index}][name]`, topic.name);
+      
+      if (topic.description) {
+        formData.append(`topics[${index}][description]`, topic.description);
+      }
+      
+      if (topic.image) {
+        formData.append(`topics[${index}][image]`, topic.image);
+      }
+    });
+
     return this.request<TopicApiResponse<BulkOperationResult>>('/topics/bulk-create', {
       method: 'POST',
-      headers: this.getAuthHeaders('application/json'),
-      body: JSON.stringify(bulkData),
+      headers: {
+        'Authorization': `Bearer ${this.getAuthToken()}`,
+      },
+      body: formData,
     });
   }
 
-  // PUT - Cập nhật nhiều chủ đề cùng lúc
+  // PUT - Cập nhật nhiều chủ đề cùng lúc (với file upload)
   async bulkUpdateTopics(
     bulkData: BulkTopicUpdate
   ): Promise<TopicApiResponse<BulkOperationResult>> {
+    const formData = new FormData();
+    
+    // Append each topic data
+    bulkData.topics.forEach((topic, index) => {
+      formData.append(`topics[${index}][id]`, topic.id.toString());
+      
+      if (topic.name) {
+        formData.append(`topics[${index}][name]`, topic.name);
+      }
+      
+      if (topic.description) {
+        formData.append(`topics[${index}][description]`, topic.description);
+      }
+      
+      if (topic.image) {
+        formData.append(`topics[${index}][image]`, topic.image);
+      }
+    });
+
     return this.request<TopicApiResponse<BulkOperationResult>>('/topics/bulk-update', {
       method: 'PUT',
-      headers: this.getAuthHeaders('application/json'),
-      body: JSON.stringify(bulkData),
+      headers: {
+        'Authorization': `Bearer ${this.getAuthToken()}`,
+      },
+      body: formData,
     });
   }
 

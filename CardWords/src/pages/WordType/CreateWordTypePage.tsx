@@ -196,7 +196,7 @@ const CreateWordTypePage: React.FC = () => {
               </div>
 
               {/* Description Field */}
-              <div>
+              {/* <div>
                 <label className="block text-sm font-bold text-gray-700 mb-3">
                   Mô tả (tùy chọn)
                 </label>
@@ -208,7 +208,7 @@ const CreateWordTypePage: React.FC = () => {
                   className="w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all resize-none"
                   disabled={loading}
                 />
-              </div>
+              </div> */}
 
               {/* Preview */}
               {(formData.name.trim() || formData.description?.trim()) && (

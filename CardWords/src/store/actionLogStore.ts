@@ -1,0 +1,157 @@
+import { create } from 'zustand';
+import { devtools } from 'zustand/middleware';
+import { 
+  ActionLogState, 
+  ActionLog, 
+  ActionLogFilter, 
+  ActionLogStatistics,
+  ExportFilter,
+  CleanupParams,
+  DEFAULT_PAGINATION 
+} from '../types/actionLog';
+import { actionLogService } from '../services/actionLogService';
+
+interface ActionLogStore extends ActionLogState {
+  // Actions
+  fetchActionLogs: (filters?: Partial<ActionLogFilter>) => Promise<void>;
+  fetchStatistics: () => Promise<void>;
+  exportLogs: (filters: ExportFilter) => Promise<ActionLog[]>;
+  downloadExport: (filters: ExportFilter, filename?: string) => Promise<void>;
+  cleanupOldLogs: (daysToKeep?: number) => Promise<void>;
+  setFilters: (filters: Partial<ActionLogFilter>) => void;
+  resetFilters: () => void;
+  clearError: () => void;
+}
+
+const initialState: ActionLogState = {
+  logs: [],
+  statistics: null,
+  loading: false,
+  error: null,
+  filters: { ...DEFAULT_PAGINATION },
+  pagination: {
+    currentPage: 0,
+    totalPages: 0,
+    totalElements: 0,
+    pageSize: 10,
+  },
+};
+
+export const useActionLogStore = create<ActionLogStore>()(
+  devtools(
+    (set, get) => ({
+      ...initialState,
+
+      fetchActionLogs: async (filters = {}) => {
+        try {
+          set({ loading: true, error: null });
+
+          const currentFilters = get().filters;
+          const mergedFilters = { ...currentFilters, ...filters };
+          
+          const response = await actionLogService.getActionLogs(mergedFilters);
+
+          set({
+            logs: response.content,
+            loading: false,
+            filters: mergedFilters,
+            pagination: {
+              currentPage: response.number,
+              totalPages: response.totalPages,
+              totalElements: response.totalElements,
+              pageSize: response.size,
+            },
+          });
+        } catch (error) {
+          set({ 
+            loading: false, 
+            error: error instanceof Error ? error.message : 'Failed to fetch action logs' 
+          });
+        }
+      },
+
+      fetchStatistics: async () => {
+        try {
+          set({ loading: true, error: null });
+          const statistics = await actionLogService.getActionLogStatistics();
+          set({ statistics, loading: false });
+        } catch (error) {
+          set({ 
+            loading: false, 
+            error: error instanceof Error ? error.message : 'Failed to fetch statistics' 
+          });
+        }
+      },
+
+      exportLogs: async (filters: ExportFilter) => {
+        try {
+          set({ loading: true, error: null });
+          const logs = await actionLogService.exportActionLogs(filters);
+          set({ loading: false });
+          return logs;
+        } catch (error) {
+          set({ 
+            loading: false, 
+            error: error instanceof Error ? error.message : 'Failed to export logs' 
+          });
+          throw error;
+        }
+      },
+
+      downloadExport: async (filters: ExportFilter, filename?: string) => {
+        try {
+          set({ loading: true, error: null });
+          await actionLogService.downloadActionLogsExport(filters, filename);
+          set({ loading: false });
+        } catch (error) {
+          set({ 
+            loading: false, 
+            error: error instanceof Error ? error.message : 'Failed to download export' 
+          });
+          throw error;
+        }
+      },
+
+      cleanupOldLogs: async (daysToKeep: number = 90) => {
+        try {
+          set({ loading: true, error: null });
+          await actionLogService.cleanupActionLogs(daysToKeep);
+          set({ loading: false });
+          
+          // Refresh the list after cleanup
+          get().fetchActionLogs();
+        } catch (error) {
+          set({ 
+            loading: false, 
+            error: error instanceof Error ? error.message : 'Failed to cleanup logs' 
+          });
+          throw error;
+        }
+      },
+
+      setFilters: (filters: Partial<ActionLogFilter>) => {
+        const currentFilters = get().filters;
+        set({ filters: { ...currentFilters, ...filters } });
+      },
+
+      resetFilters: () => {
+        set({ filters: { ...DEFAULT_PAGINATION } });
+      },
+
+      clearError: () => {
+        set({ error: null });
+      },
+    }),
+    {
+      name: 'action-log-store',
+    }
+  )
+);
+
+// Selectors
+export const useActionLogs = () => useActionLogStore((state) => state.logs);
+export const useActionLogsLoading = () => useActionLogStore((state) => state.loading);
+export const useActionLogsError = () => useActionLogStore((state) => state.error);
+export const useActionLogsFilters = () => useActionLogStore((state) => state.filters);
+export const useActionLogsPagination = () => useActionLogStore((state) => state.pagination);
+export const useActionLogsStatistics = () => useActionLogStore((state) => state.statistics);
