@@ -41,16 +41,13 @@ export interface PageResponse<T> {
   empty: boolean;
 }
 
-// Action Log types
+// Action Log types - CHỈ GIỮ LẠI CÁC TRƯỜNG CÓ TRONG API
 export interface ActionLog {
   id: number;
   userId: string;
-  userEmail: string;
-  userName: string;
   actionType: string;
-  actionCategory: string;
+  actionCategory: string | null;
   resourceType: string;
-  resourceId: string;
   description: string;
   status: 'SUCCESS' | 'FAILED';
   ipAddress: string;

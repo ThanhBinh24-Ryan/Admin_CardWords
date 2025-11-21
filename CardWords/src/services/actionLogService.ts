@@ -67,18 +67,41 @@ class ActionLogService {
   async getActionLogs(filters: ActionLogFilter): Promise<PageResponse<ActionLog>> {
     const queryParams = new URLSearchParams();
     
+    // Chỉ gửi các parameters có giá trị
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== '') {
         queryParams.append(key, String(value));
       }
     });
 
-    return this.request<PageResponse<ActionLog>>(`/action-logs?${queryParams.toString()}`);
+    const response = await this.request<BaseResponse<PageResponse<any>>>(`/action-logs?${queryParams.toString()}`);
+    
+    // Transform API response để phù hợp với frontend interface
+    const transformedContent = response.data.content.map((log: any) => ({
+      id: log.id,
+      userId: log.userId,
+      userEmail: log.userEmail || 'Chưa có email', // Thêm giá trị mặc định
+      userName: log.userName || 'Không xác định', // Thêm giá trị mặc định
+      actionType: log.actionType,
+      actionCategory: log.actionCategory,
+      resourceType: log.resourceType,
+      resourceId: log.resourceId || 'N/A', // Thêm giá trị mặc định
+      description: log.description,
+      status: log.status,
+      ipAddress: log.ipAddress,
+      createdAt: log.createdAt
+    }));
+
+    return {
+      ...response.data,
+      content: transformedContent
+    };
   }
 
   // Lấy thống kê action logs
   async getActionLogStatistics(): Promise<ActionLogStatistics> {
-    return this.request<ActionLogStatistics>('/action-logs/statistics');
+    const response = await this.request<BaseResponse<ActionLogStatistics>>('/action-logs/statistics');
+    return response.data;
   }
 
   // Export action logs
@@ -91,7 +114,8 @@ class ActionLogService {
       }
     });
 
-    return this.request<ActionLog[]>(`/action-logs/export?${queryParams.toString()}`);
+    const response = await this.request<BaseResponse<ActionLog[]>>(`/action-logs/export?${queryParams.toString()}`);
+    return response.data;
   }
 
   // Download export as file
@@ -155,181 +179,3 @@ class ActionLogService {
 }
 
 export const actionLogService = new ActionLogService();
-
-
-
-// import {
-//   ActionLog,
-//   ActionLogFilter,
-//   ActionLogStatistics,
-//   BaseResponse,
-//   PageResponse,
-//   ExportFilter,
-//   CleanupParams
-// } from '../types/actionLog';
-
-// const API_BASE_URL = 'http://localhost:8080/api/v1/admin';
-
-// class ActionLogService {
-//   private getAuthToken(): string | null {
-//     return localStorage.getItem('accessToken') || null;
-//   }
-
-//   // Hàm xử lý parameters - FIX LỖI NULL
-//   private processFilters(filters: any): any {
-//     const processed: any = {};
-    
-//     Object.entries(filters).forEach(([key, value]) => {
-//       // Chỉ gửi parameters có giá trị, không gửi null/undefined/empty string
-//       if (value !== undefined && value !== null && value !== '') {
-//         // Xử lý riêng cho keyword - thêm % cho LIKE query
-//         if (key === 'keyword' && typeof value === 'string' && value.trim() !== '') {
-//           processed[key] = `%${value.trim()}%`;
-//         } else {
-//           processed[key] = value;
-//         }
-//       }
-//     });
-
-//     console.log('🎯 Processed Filters:', processed);
-//     return processed;
-//   }
-
-//   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-//     const token = this.getAuthToken();
-    
-//     const headers: Record<string, string> = {
-//       'Content-Type': 'application/json',
-//     };
-
-//     if (token) {
-//       headers['Authorization'] = `Bearer ${token}`;
-//     }
-
-//     const url = `${API_BASE_URL}${endpoint}`;
-    
-//     console.log('📊 ActionLog Request:', url);
-//     console.log('🔑 Token exists:', !!token);
-
-//     try {
-//       const response = await fetch(url, {
-//         headers,
-//         ...options,
-//       });
-
-//       console.log('📊 ActionLog Response status:', response.status);
-
-//       if (!response.ok) {
-//         const errorText = await response.text();
-//         console.error('❌ ActionLog Error:', errorText);
-        
-//         let errorMessage = `HTTP error! status: ${response.status}`;
-//         try {
-//           const errorData = JSON.parse(errorText);
-//           errorMessage = errorData.message || errorData.error || errorMessage;
-//         } catch {
-//           errorMessage = errorText || errorMessage;
-//         }
-        
-//         throw new Error(errorMessage);
-//       }
-
-//       const data = await response.json();
-//       console.log('✅ ActionLog Response data:', data);
-//       return data;
-//     } catch (error) {
-//       console.error('❌ ActionLog Request failed:', error);
-//       throw error;
-//     }
-//   }
-
-//   // Lấy danh sách action logs với filters và pagination - ĐÃ FIX
-//   async getActionLogs(filters: ActionLogFilter): Promise<PageResponse<ActionLog>> {
-//     // Xử lý filters trước khi gửi
-//     const processedFilters = this.processFilters(filters);
-//     const queryParams = new URLSearchParams();
-    
-//     Object.entries(processedFilters).forEach(([key, value]) => {
-//       queryParams.append(key, String(value));
-//     });
-
-//     return this.request<PageResponse<ActionLog>>(`/action-logs?${queryParams.toString()}`);
-//   }
-
-//   // Lấy thống kê action logs
-//   async getActionLogStatistics(): Promise<ActionLogStatistics> {
-//     return this.request<ActionLogStatistics>('/action-logs/statistics');
-//   }
-
-//   // Export action logs - ĐÃ FIX
-//   async exportActionLogs(filters: ExportFilter): Promise<ActionLog[]> {
-//     const processedFilters = this.processFilters(filters);
-//     const queryParams = new URLSearchParams();
-    
-//     Object.entries(processedFilters).forEach(([key, value]) => {
-//       queryParams.append(key, String(value));
-//     });
-
-//     return this.request<ActionLog[]>(`/action-logs/export?${queryParams.toString()}`);
-//   }
-
-//   // Download export as file - ĐÃ FIX
-//   async downloadActionLogsExport(filters: ExportFilter, filename: string = 'action-logs.csv'): Promise<void> {
-//     const token = this.getAuthToken();
-//     const processedFilters = this.processFilters(filters);
-//     const queryParams = new URLSearchParams();
-    
-//     Object.entries(processedFilters).forEach(([key, value]) => {
-//       queryParams.append(key, String(value));
-//     });
-
-//     const url = `${API_BASE_URL}/action-logs/export?${queryParams.toString()}`;
-    
-//     console.log('📥 Download ActionLog Export:', url);
-
-//     try {
-//       const headers: Record<string, string> = {};
-//       if (token) {
-//         headers['Authorization'] = `Bearer ${token}`;
-//       }
-
-//       const response = await fetch(url, { headers });
-
-//       console.log('📥 Download Response status:', response.status);
-
-//       if (!response.ok) {
-//         const errorText = await response.text();
-//         console.error('❌ Download Error:', errorText);
-//         throw new Error(`Download failed with status: ${response.status}`);
-//       }
-
-//       const blob = await response.blob();
-//       const downloadUrl = window.URL.createObjectURL(blob);
-//       const link = document.createElement('a');
-//       link.href = downloadUrl;
-//       link.download = filename;
-//       document.body.appendChild(link);
-//       link.click();
-//       document.body.removeChild(link);
-//       window.URL.revokeObjectURL(downloadUrl);
-
-//       console.log('✅ Download completed successfully');
-//     } catch (error) {
-//       console.error('❌ Download failed:', error);
-//       throw error;
-//     }
-//   }
-
-//   // Xóa action logs cũ
-//   async cleanupActionLogs(daysToKeep: number = 90): Promise<BaseResponse<{}>> {
-//     const queryParams = new URLSearchParams({
-//       daysToKeep: daysToKeep.toString()
-//     });
-
-//     return this.request<BaseResponse<{}>>(`/action-logs/cleanup?${queryParams.toString()}`, {
-//       method: 'DELETE',
-//     });
-//   }
-// }
-
-// export const actionLogService = new ActionLogService();

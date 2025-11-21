@@ -9,10 +9,12 @@ import {
   PaginationParams,
   SearchParams,
   CefrParams,
-  EmptyResponse
+  EmptyResponse,
+  UploadResponse
 } from '../types/vocab';
 
 const API_BASE_URL = 'http://localhost:8080/api/v1/admin';
+const STORAGE_API_URL = 'http://localhost:8080/api/v1/storage';
 
 class VocabService {
   private getAuthToken(): string | null {
@@ -67,8 +69,55 @@ class VocabService {
     }
   }
 
+  // Upload image
+  async uploadImage(file: File): Promise<UploadResponse> {
+    const token = this.getAuthToken();
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch(`${STORAGE_API_URL}/upload/image`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Upload failed: ${response.status}`);
+    }
+
+    return response.json();
+  }
+
+  // Upload audio
+  async uploadAudio(file: File): Promise<UploadResponse> {
+    const token = this.getAuthToken();
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch(`${STORAGE_API_URL}/upload/audio`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Upload failed: ${response.status}`);
+    }
+
+    return response.json();
+  }
+
   // Lấy từ vựng theo ID
   async getVocabById(id: string): Promise<VocabResponse> {
+    // Validate UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(id)) {
+      throw new Error('Tham số "id" không đúng định dạng. Yêu cầu kiểu: UUID');
+    }
     return this.request<VocabResponse>(`/vocabs/${id}`);
   }
 
@@ -123,6 +172,11 @@ class VocabService {
 
   // Cập nhật từ vựng theo ID
   async updateVocabById(id: string, vocabData: UpdateVocabRequest): Promise<VocabResponse> {
+    // Validate UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(id)) {
+      throw new Error('Tham số "id" không đúng định dạng. Yêu cầu kiểu: UUID');
+    }
     return this.request<VocabResponse>(`/vocabs/${id}`, {
       method: 'PUT',
       body: JSON.stringify(vocabData),
@@ -139,6 +193,11 @@ class VocabService {
 
   // Xóa từ vựng
   async deleteVocab(id: string): Promise<EmptyResponse> {
+    // Validate UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(id)) {
+      throw new Error('Tham số "id" không đúng định dạng. Yêu cầu kiểu: UUID');
+    }
     return this.request<EmptyResponse>(`/vocabs/${id}`, {
       method: 'DELETE',
     });

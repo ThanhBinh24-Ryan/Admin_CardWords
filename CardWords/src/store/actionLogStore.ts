@@ -5,7 +5,6 @@ import {
   ActionLog, 
   ActionLogFilter, 
   ActionLogStatistics,
-  ExportFilter,
   CleanupParams,
   DEFAULT_PAGINATION 
 } from '../types/actionLog';
@@ -15,8 +14,6 @@ interface ActionLogStore extends ActionLogState {
   // Actions
   fetchActionLogs: (filters?: Partial<ActionLogFilter>) => Promise<void>;
   fetchStatistics: () => Promise<void>;
-  exportLogs: (filters: ExportFilter) => Promise<ActionLog[]>;
-  downloadExport: (filters: ExportFilter, filename?: string) => Promise<void>;
   cleanupOldLogs: (daysToKeep?: number) => Promise<void>;
   setFilters: (filters: Partial<ActionLogFilter>) => void;
   resetFilters: () => void;
@@ -45,11 +42,15 @@ export const useActionLogStore = create<ActionLogStore>()(
       fetchActionLogs: async (filters = {}) => {
         try {
           set({ loading: true, error: null });
+          console.log('🔄 Fetching action logs with filters:', filters);
 
           const currentFilters = get().filters;
           const mergedFilters = { ...currentFilters, ...filters };
           
           const response = await actionLogService.getActionLogs(mergedFilters);
+
+          console.log('📊 Action logs response:', response);
+          console.log('📊 Action logs content:', response.content);
 
           set({
             logs: response.content,
@@ -62,7 +63,10 @@ export const useActionLogStore = create<ActionLogStore>()(
               pageSize: response.size,
             },
           });
+
+          console.log('✅ Action logs stored successfully');
         } catch (error) {
+          console.error('❌ Failed to fetch action logs:', error);
           set({ 
             loading: false, 
             error: error instanceof Error ? error.message : 'Failed to fetch action logs' 
@@ -73,42 +77,16 @@ export const useActionLogStore = create<ActionLogStore>()(
       fetchStatistics: async () => {
         try {
           set({ loading: true, error: null });
+          console.log('🔄 Fetching statistics...');
           const statistics = await actionLogService.getActionLogStatistics();
+          console.log('📈 Statistics response:', statistics);
           set({ statistics, loading: false });
         } catch (error) {
+          console.error('❌ Failed to fetch statistics:', error);
           set({ 
             loading: false, 
             error: error instanceof Error ? error.message : 'Failed to fetch statistics' 
           });
-        }
-      },
-
-      exportLogs: async (filters: ExportFilter) => {
-        try {
-          set({ loading: true, error: null });
-          const logs = await actionLogService.exportActionLogs(filters);
-          set({ loading: false });
-          return logs;
-        } catch (error) {
-          set({ 
-            loading: false, 
-            error: error instanceof Error ? error.message : 'Failed to export logs' 
-          });
-          throw error;
-        }
-      },
-
-      downloadExport: async (filters: ExportFilter, filename?: string) => {
-        try {
-          set({ loading: true, error: null });
-          await actionLogService.downloadActionLogsExport(filters, filename);
-          set({ loading: false });
-        } catch (error) {
-          set({ 
-            loading: false, 
-            error: error instanceof Error ? error.message : 'Failed to download export' 
-          });
-          throw error;
         }
       },
 
@@ -120,6 +98,7 @@ export const useActionLogStore = create<ActionLogStore>()(
           
           // Refresh the list after cleanup
           get().fetchActionLogs();
+          get().fetchStatistics();
         } catch (error) {
           set({ 
             loading: false, 

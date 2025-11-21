@@ -33,6 +33,9 @@ import BulkImportVocabs from '../pages/Vocab/BulkImportVocabs'
 import TopicBulkCreate from '../pages/Topic/TopicBulkCreate'
 import TopicBulkEdit from '../pages/Topic/TopicBulkEdit'
 import CreateVocab from '../pages/Vocab/CreateVocab'
+import VocabProgressOverview from '../pages/VocabProgress/VocabProgressOverview';
+import UserProgressDetail from '../pages/VocabProgress/UserProgressDetail';
+import VocabStatsDetail from '../pages/VocabProgress/VocabStatsDetail';
 const router = createBrowserRouter([
   {
     path: '/',
@@ -57,7 +60,7 @@ const router = createBrowserRouter([
       
       // Vocabulary routes
       { path: 'admin/vocabs', element: <VocabList /> },
-      { path: 'admin/vocab/new', element: <CreateVocab/> },
+      { path: 'admin/vocab/new', element: <VocabForm /> }, // Tạo mới
       { path: 'admin/vocabs/:id', element: <VocabDetail /> },
       { path: 'admin/vocabs/:id/edit', element: <VocabForm /> },
         { path: '/admin/vocabs/bulk-import', element: <BulkImportVocabs/> },
@@ -88,7 +91,10 @@ const router = createBrowserRouter([
       // Profile routes
       { path: 'profile', element: <ProfilePage /> },
       { path: 'profile/change-password', element: <ChangePasswordPage /> },
-      
+        // Vocab Progress routes - THÊM MỚI
+      { path: 'admin/vocab-progress', element: <VocabProgressOverview /> },
+      { path: 'admin/vocab-progress/user/:userId', element: <UserProgressDetail /> },
+      { path: 'admin/vocab-progress/vocab/:vocabId', element: <VocabStatsDetail /> },
       // Settings routes
       { path: 'settings', element: <SettingsPage /> },
     ],

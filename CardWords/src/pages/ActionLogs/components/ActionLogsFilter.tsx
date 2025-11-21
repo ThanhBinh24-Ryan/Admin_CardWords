@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ActionLogFilter } from '../../../types/actionLog';
-import { Download, Trash2, Filter, X } from 'lucide-react';
+import { Filter, X } from 'lucide-react';
 
 interface ActionLogsFilterProps {
   filters: ActionLogFilter;
@@ -28,13 +28,7 @@ const ActionLogsFilter: React.FC<ActionLogsFilterProps> = ({
   const handleApplyFilters = () => {
     onFilterChange(localFilters);
   };
-// const handleApplyFilters = () => {
-//   // Clean filters - remove empty values
-//   const cleanedFilters = Object.fromEntries(
-//     Object.entries(localFilters).filter(([_, value]) => 
-//       value !== undefined && value !== null && value !== ''
-//     )
-//   );
+
   const handleClearLocal = () => {
     setLocalFilters({});
   };
@@ -46,24 +40,8 @@ const ActionLogsFilter: React.FC<ActionLogsFilterProps> = ({
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-medium text-gray-900 flex items-center">
           <Filter className="w-5 h-5 mr-2" />
-          Bộ lọc
+          Bộ lọc & Tìm kiếm
         </h3>
-        <div className="flex space-x-3">
-          <button
-            onClick={onExport}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center"
-          >
-            <Download className="w-4 h-4 mr-2" />
-            Xuất CSV
-          </button>
-          <button
-            onClick={onCleanup}
-            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center"
-          >
-            <Trash2 className="w-4 h-4 mr-2" />
-            Dọn dẹp
-          </button>
-        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -76,8 +54,8 @@ const ActionLogsFilter: React.FC<ActionLogsFilterProps> = ({
             type="text"
             value={localFilters.keyword || ''}
             onChange={(e) => handleInputChange('keyword', e.target.value)}
-            placeholder="Tìm trong mô tả, email, tên..."
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Tìm trong mô tả..."
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
           />
         </div>
 
@@ -89,7 +67,7 @@ const ActionLogsFilter: React.FC<ActionLogsFilterProps> = ({
           <select
             value={localFilters.status || ''}
             onChange={(e) => handleInputChange('status', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
           >
             <option value="">Tất cả trạng thái</option>
             <option value="SUCCESS">Thành công</option>
@@ -107,7 +85,7 @@ const ActionLogsFilter: React.FC<ActionLogsFilterProps> = ({
             value={localFilters.actionType || ''}
             onChange={(e) => handleInputChange('actionType', e.target.value)}
             placeholder="Loại hành động..."
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
           />
         </div>
 
@@ -121,7 +99,7 @@ const ActionLogsFilter: React.FC<ActionLogsFilterProps> = ({
             value={localFilters.resourceType || ''}
             onChange={(e) => handleInputChange('resourceType', e.target.value)}
             placeholder="Loại tài nguyên..."
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
           />
         </div>
       </div>
@@ -130,7 +108,7 @@ const ActionLogsFilter: React.FC<ActionLogsFilterProps> = ({
       <div>
         <button
           onClick={() => setShowAdvanced(!showAdvanced)}
-          className="text-sm text-blue-600 hover:text-blue-800 flex items-center"
+          className="text-sm text-blue-600 hover:text-blue-800 flex items-center transition-colors"
         >
           {showAdvanced ? 'Ẩn bộ lọc nâng cao' : 'Hiện bộ lọc nâng cao'}
         </button>
@@ -146,7 +124,7 @@ const ActionLogsFilter: React.FC<ActionLogsFilterProps> = ({
                 type="datetime-local"
                 value={localFilters.startDate || ''}
                 onChange={(e) => handleInputChange('startDate', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               />
             </div>
 
@@ -159,7 +137,7 @@ const ActionLogsFilter: React.FC<ActionLogsFilterProps> = ({
                 type="datetime-local"
                 value={localFilters.endDate || ''}
                 onChange={(e) => handleInputChange('endDate', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               />
             </div>
 
@@ -173,7 +151,7 @@ const ActionLogsFilter: React.FC<ActionLogsFilterProps> = ({
                 value={localFilters.userId || ''}
                 onChange={(e) => handleInputChange('userId', e.target.value)}
                 placeholder="UUID của user..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               />
             </div>
           </div>
@@ -186,9 +164,9 @@ const ActionLogsFilter: React.FC<ActionLogsFilterProps> = ({
           <button
             onClick={handleApplyFilters}
             disabled={!hasActiveFilters}
-            className={`px-4 py-2 rounded-lg transition-colors flex items-center ${
+            className={`px-4 py-2 rounded-lg transition-all flex items-center ${
               hasActiveFilters
-                ? 'bg-blue-600 text-white hover:bg-blue-700'
+                ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm hover:shadow-md'
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'
             }`}
           >
@@ -198,10 +176,10 @@ const ActionLogsFilter: React.FC<ActionLogsFilterProps> = ({
           <button
             onClick={handleClearLocal}
             disabled={!hasActiveFilters}
-            className={`px-4 py-2 border border-gray-300 rounded-lg transition-colors flex items-center ${
+            className={`px-4 py-2 border rounded-lg transition-all flex items-center ${
               hasActiveFilters
-                ? 'text-gray-700 hover:bg-gray-50'
-                : 'text-gray-400 cursor-not-allowed'
+                ? 'text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400'
+                : 'text-gray-400 border-gray-200 cursor-not-allowed'
             }`}
           >
             <X className="w-4 h-4 mr-2" />
@@ -211,7 +189,7 @@ const ActionLogsFilter: React.FC<ActionLogsFilterProps> = ({
 
         <button
           onClick={onReset}
-          className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors flex items-center"
+          className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors flex items-center hover:bg-gray-50 rounded-lg"
         >
           Đặt lại Tất cả Bộ lọc
         </button>
