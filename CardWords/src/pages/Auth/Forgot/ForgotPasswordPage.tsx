@@ -55,21 +55,21 @@ const ForgotPassword: React.FC = () => {
   };
 
   return (
-    <div className="login-container">
+    <div className="forgot-password-container">
       {/* Background với floating elements */}
-      <div className="login-background">
-        <div className="login-floating-elements">
+      <div className="forgot-password-background">
+        <div className="forgot-password-floating-elements">
           <div className="floating-element element-1"><Mail size={32} /></div>
           <div className="floating-element element-2"><Shield size={32} /></div>
           <div className="floating-element element-3"><CheckCircle size={32} /></div>
         </div>
       </div>
 
-      <div className="login-content">
-        <div className="login-card">
+      <div className="forgot-password-content">
+        <div className="forgot-password-card">
           {/* Header */}
-          <div className="login-header">
-            <div className="login-logo">
+          <div className="forgot-password-header">
+            <div className="forgot-password-logo">
               <div className="logo-icon">
                 <Mail size={32} />
               </div>
@@ -80,13 +80,13 @@ const ForgotPassword: React.FC = () => {
             </div>
           </div>
 
-          <form className="login-form" onSubmit={handleSubmit}>
+          <form className="forgot-password-form" onSubmit={handleSubmit}>
             <div className="form-header">
               <div className="shield-icon">
                 <Shield size={48} />
               </div>
               <h2>Khôi Phục Mật Khẩu</h2>
-              <p>Chúng tôi sẽ gửi hướng dẫn khôi phục đến email của bạn</p>
+              <p>Mật khẩu của bạn sẽ được gửi về Mail</p>
             </div>
 
             {/* Error Message */}
@@ -108,9 +108,9 @@ const ForgotPassword: React.FC = () => {
             <div className="input-group">
               <label className="input-label">Email</label>
               <div className="input-wrapper">
-                <Mail size={20} className="input-icon" />
+               
                 <input
-                  className="login-input"
+                  className="forgot-password-input"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -124,7 +124,7 @@ const ForgotPassword: React.FC = () => {
             {/* Submit Button */}
             <button
               type="submit"
-              className="login-button"
+              className="forgot-password-button"
               disabled={loading || !!success}
             >
               {loading ? (
@@ -139,7 +139,7 @@ const ForgotPassword: React.FC = () => {
                 </div>
               ) : (
                 <div className="button-content">
-                  Gửi hướng dẫn khôi phục
+                  Khôi phục
                 </div>
               )}
             </button>
@@ -148,7 +148,7 @@ const ForgotPassword: React.FC = () => {
             <div style={{ textAlign: 'center', marginTop: '20px' }}>
               <button
                 type="button"
-                className="forgot-password"
+                className="back-to-login-button"
                 onClick={handleBackToLogin}
                 disabled={loading}
               >
@@ -158,14 +158,14 @@ const ForgotPassword: React.FC = () => {
             </div>
 
             {/* Demo Info (optional) */}
-            <div className="demo-credentials">
+            <div className="forgot-password-info">
               <p>Lưu ý:</p>
               <p>Kiểm tra hộp thư email và cả thư mục spam</p>
             </div>
           </form>
 
           {/* Footer */}
-          <div className="login-footer">
+          <div className="forgot-password-footer">
             <p>© 2024 Your Company. All rights reserved.</p>
           </div>
         </div>

@@ -623,7 +623,7 @@ const UserEdit: React.FC = () => {
       });
 
       if (response.ok) {
-        alert('✅ Cập nhật thông tin người dùng thành công!');
+      
         setOriginalData({ ...formData });
         setChangesMade(false);
         await loadUserData(); // Reload updated data
@@ -632,7 +632,7 @@ const UserEdit: React.FC = () => {
         throw new Error('Failed to update user');
       }
     } catch (error) {
-      alert('❌ Cập nhật thông tin thất bại. Vui lòng thử lại.');
+     
     } finally {
       setSaving(false);
     }

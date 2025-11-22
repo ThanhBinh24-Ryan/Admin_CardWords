@@ -94,13 +94,13 @@ const UserDetail: React.FC = () => {
       });
       
       if (response.ok) {
-        alert('✅ Email đặt lại mật khẩu đã được gửi thành công!');
+       
         setShowResetPasswordModal(false);
       } else {
         throw new Error('Failed to send reset password email');
       }
     } catch (error) {
-      alert('❌ Gửi email thất bại. Vui lòng thử lại.');
+     
     } finally {
       setActionLoading(null);
     }
@@ -116,10 +116,10 @@ const UserDetail: React.FC = () => {
       setActionLoading('activate');
       try {
         await activateUser(currentUser.id, !currentUser.activated);
-        alert(`✅ Tài khoản đã được ${actionText} thành công!`);
+       
         await loadUserData(); // Reload data
       } catch (error) {
-        alert(`❌ ${actionText} tài khoản thất bại. Vui lòng thử lại.`);
+      
       } finally {
         setActionLoading(null);
       }
@@ -136,10 +136,10 @@ const UserDetail: React.FC = () => {
       setActionLoading('ban');
       try {
         await banUser(currentUser.id, !currentUser.banned);
-        alert(`✅ Người dùng đã được ${actionText} thành công!`);
+       
         await loadUserData(); // Reload data
       } catch (error) {
-        alert(`❌ ${actionText} người dùng thất bại. Vui lòng thử lại.`);
+   
       } finally {
         setActionLoading(null);
       }
@@ -156,11 +156,11 @@ const UserDetail: React.FC = () => {
     setActionLoading('delete');
     try {
       await deleteUser(currentUser.id);
-      alert('✅ Tài khoản đã được xóa thành công!');
+    
       setShowDeleteModal(false);
       navigate('/users');
     } catch (error) {
-      alert('❌ Xóa tài khoản thất bại. Vui lòng thử lại.');
+     
     } finally {
       setActionLoading(null);
     }

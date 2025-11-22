@@ -1,6 +1,6 @@
 import React from 'react';
 import { ActionLog } from '../../../types/actionLog';
-import { Trash2, User, Calendar, MapPin, Shield, Activity } from 'lucide-react';
+import { User, Calendar, MapPin, Shield, Activity } from 'lucide-react';
 
 interface ActionLogsTableProps {
   logs: ActionLog[] | undefined;
@@ -12,15 +12,13 @@ interface ActionLogsTableProps {
     pageSize: number;
   };
   onPageChange: (page: number) => void;
-  onDeleteLog: (log: ActionLog) => void;
 }
 
 const ActionLogsTable: React.FC<ActionLogsTableProps> = ({
   logs,
   loading,
   pagination,
-  onPageChange,
-  onDeleteLog
+  onPageChange
 }) => {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString('vi-VN');
@@ -35,13 +33,8 @@ const ActionLogsTable: React.FC<ActionLogsTableProps> = ({
     }
   };
 
-  const getUserDisplay = (userId: string | null) => {
-    // Kiểm tra nếu userId là null hoặc undefined
-    if (!userId) {
-      return "Không xác định";
-    }
-    
-    // Hiển thị 8 ký tự đầu của userId để dễ nhận biết
+  const getUserDisplay = (userId: string) => {
+    if (!userId) return "Không xác định";
     return userId.substring(0, 8) + '...';
   };
 
@@ -54,11 +47,10 @@ const ActionLogsTable: React.FC<ActionLogsTableProps> = ({
     );
   }
 
-  // Kiểm tra logs có tồn tại và có phần tử không
   if (!logs || logs.length === 0) {
     return (
       <div className="p-16 text-center">
-        <div className="text-gray-300 text-8xl mb-6">📊</div>
+        <div className="text-gray-300 text-8xl mb-6"></div>
         <h3 className="text-xl font-semibold text-gray-900 mb-3">Không tìm thấy nhật ký hành động</h3>
         <p className="text-gray-500 max-w-md mx-auto">
           Hãy thử điều chỉnh bộ lọc hoặc thử lại sau để xem kết quả.
@@ -90,7 +82,7 @@ const ActionLogsTable: React.FC<ActionLogsTableProps> = ({
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                Thông tin
+                User ID
               </th>
               <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                 Hành động & Mô tả
@@ -103,9 +95,6 @@ const ActionLogsTable: React.FC<ActionLogsTableProps> = ({
               </th>
               <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                 Thời gian
-              </th>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                Thao tác
               </th>
             </tr>
           </thead>
@@ -163,15 +152,6 @@ const ActionLogsTable: React.FC<ActionLogsTableProps> = ({
                     {formatDate(log.createdAt)}
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <button
-                    onClick={() => onDeleteLog(log)}
-                    className="text-red-600 hover:text-red-800 hover:bg-red-50 px-3 py-2 rounded-lg transition-colors duration-150 flex items-center"
-                  >
-                    <Trash2 className="h-4 w-4 mr-1" />
-                    Xóa
-                  </button>
-                </td>
               </tr>
             ))}
           </tbody>
@@ -185,11 +165,11 @@ const ActionLogsTable: React.FC<ActionLogsTableProps> = ({
             <div className="text-sm text-gray-700">
               Hiển thị{' '}
               <span className="font-semibold">
-                {Math.max(pagination.currentPage * pagination.pageSize + 1, 1)}
+                {Math.min(pagination.currentPage * pagination.pageSize + 1, pagination.totalElements)}
               </span>{' '}
               đến{' '}
               <span className="font-semibold">
-                {Math.min(pagination.currentPage * pagination.pageSize + logs.length, pagination.totalElements)}
+                {Math.min((pagination.currentPage + 1) * pagination.pageSize, pagination.totalElements)}
               </span>{' '}
               của{' '}
               <span className="font-semibold">{pagination.totalElements}</span>{' '}
@@ -208,19 +188,33 @@ const ActionLogsTable: React.FC<ActionLogsTableProps> = ({
                 ← Trước
               </button>
               
-              {[...Array(pagination.totalPages)].map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => onPageChange(index)}
-                  className={`px-4 py-2 rounded-lg border font-medium transition-colors ${
-                    pagination.currentPage === index
-                      ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                      : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-300 hover:border-gray-400'
-                  }`}
-                >
-                  {index + 1}
-                </button>
-              ))}
+              {/* Hiển thị tối đa 5 trang */}
+              {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                let pageNum;
+                if (pagination.totalPages <= 5) {
+                  pageNum = i;
+                } else if (pagination.currentPage <= 2) {
+                  pageNum = i;
+                } else if (pagination.currentPage >= pagination.totalPages - 3) {
+                  pageNum = pagination.totalPages - 5 + i;
+                } else {
+                  pageNum = pagination.currentPage - 2 + i;
+                }
+
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => onPageChange(pageNum)}
+                    className={`px-4 py-2 rounded-lg border font-medium transition-colors ${
+                      pagination.currentPage === pageNum
+                        ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                        : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-300 hover:border-gray-400'
+                    }`}
+                  >
+                    {pageNum + 1}
+                  </button>
+                );
+              })}
               
               <button
                 onClick={() => onPageChange(pagination.currentPage + 1)}

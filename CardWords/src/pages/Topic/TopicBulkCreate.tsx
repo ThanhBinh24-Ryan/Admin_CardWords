@@ -1,57 +1,74 @@
-import React, { useState } from 'react';
+// src/pages/Topic/TopicBulkCreate.tsx
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTopicStore } from '../../store/topicStore';
 import { BulkOperationResult } from '../../types/topic';
 import { 
   validateTopicName, 
   validateTopicDescription,
-  TOPIC_VALIDATION,
-  TOPIC_ERRORS,
-  TOPIC_MESSAGES
+  validateImageFile,
+  TOPIC_ERRORS
 } from '../../constants/topic';
 import {
   ArrowLeft,
   Save,
   Plus,
   Trash2,
-  Upload,
-  Download,
   AlertCircle,
   CheckCircle2,
   XCircle,
   FileText,
-  Loader2
+  Loader2,
+  Eye,
+  Info
 } from 'lucide-react';
 
 interface TopicInput {
   name: string;
   description: string;
+  imageFile: File | null;
   imageUrl: string;
+  uploading: boolean;
+  imagePreview?: string;
 }
 
 const TopicBulkCreate: React.FC = () => {
   const navigate = useNavigate();
-  const { bulkCreateTopics, loading, error, clearError } = useTopicStore();
+  const { bulkCreateTopics, uploadImage, loading, error, clearError, topics: existingTopics, fetchTopics } = useTopicStore();
 
   const [topics, setTopics] = useState<TopicInput[]>([
-    { name: '', description: '', imageUrl: '' }
+    { name: '', description: '', imageFile: null, imageUrl: '', uploading: false }
   ]);
   const [results, setResults] = useState<BulkOperationResult | null>(null);
   const [validationErrors, setValidationErrors] = useState<{
-    [index: number]: { name?: string; description?: string; imageUrl?: string };
+    [index: number]: { name?: string; description?: string; imageFile?: string };
   }>({});
+  const [previewImage, setPreviewImage] = useState<{ url: string; name: string } | null>(null);
+  const [showDetailedResults, setShowDetailedResults] = useState(false);
+
+  // Fetch danh sách chủ đề hiện có khi component mount
+  useEffect(() => {
+    fetchTopics();
+  }, [fetchTopics]);
 
   const addTopic = () => {
-    setTopics(prev => [...prev, { name: '', description: '', imageUrl: '' }]);
+    if (topics.length >= 20) {
+      alert('Tối đa 20 chủ đề mỗi lần tạo');
+      return;
+    }
+    setTopics(prev => [...prev, { name: '', description: '', imageFile: null, imageUrl: '', uploading: false }]);
   };
 
   const removeTopic = (index: number) => {
     if (topics.length > 1) {
+      if (topics[index].imagePreview) {
+        URL.revokeObjectURL(topics[index].imagePreview!);
+      }
+      
       setTopics(prev => prev.filter((_, i) => i !== index));
       setValidationErrors(prev => {
         const newErrors = { ...prev };
         delete newErrors[index];
-        // Reindex errors
         Object.keys(newErrors).forEach(key => {
           const numKey = parseInt(key);
           if (numKey > index) {
@@ -64,13 +81,12 @@ const TopicBulkCreate: React.FC = () => {
     }
   };
 
-  const updateTopic = (index: number, field: keyof TopicInput, value: string) => {
+  const updateTopic = (index: number, field: keyof TopicInput, value: string | File | null | boolean) => {
     setTopics(prev => prev.map((topic, i) => 
       i === index ? { ...topic, [field]: value } : topic
     ));
 
-    // Clear validation error for this field
-    if (validationErrors[index]?.[field]) {
+    if (validationErrors[index]?.[field as keyof typeof validationErrors[number]]) {
       setValidationErrors(prev => ({
         ...prev,
         [index]: {
@@ -81,26 +97,115 @@ const TopicBulkCreate: React.FC = () => {
     }
   };
 
+  const handleImageUpload = async (index: number, file: File) => {
+    const validationError = validateImageFile(file);
+    if (validationError) {
+      setValidationErrors(prev => ({
+        ...prev,
+        [index]: {
+          ...prev[index],
+          imageFile: validationError
+        }
+      }));
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+    updateTopic(index, 'uploading', true);
+    updateTopic(index, 'imageFile', file);
+    updateTopic(index, 'imagePreview', previewUrl);
+
+    try {
+      const response = await uploadImage(file);
+      
+      if (response.status === 'success' || response.status === '200') {
+        const imageUrl = response.data?.url;
+        if (imageUrl && typeof imageUrl === 'string') {
+          updateTopic(index, 'imageUrl', imageUrl);
+          console.log('✅ Upload thành công:', imageUrl);
+        } else {
+          throw new Error('Không thể lấy URL ảnh từ response');
+        }
+      } else {
+        throw new Error(response.message || 'Upload thất bại');
+      }
+    } catch (error: any) {
+      console.error('Upload ảnh thất bại:', error);
+      setValidationErrors(prev => ({
+        ...prev,
+        [index]: {
+          ...prev[index],
+          imageFile: 'Upload ảnh thất bại: ' + error.message
+        }
+      }));
+      updateTopic(index, 'imageFile', null);
+      URL.revokeObjectURL(previewUrl);
+      updateTopic(index, 'imagePreview', '');
+    } finally {
+      updateTopic(index, 'uploading', false);
+    }
+  };
+
+  const showImagePreview = (url: string, filename: string) => {
+    setPreviewImage({ url, name: filename });
+  };
+
+  const closeImagePreview = () => {
+    setPreviewImage(null);
+  };
+
+  // Kiểm tra chủ đề đã tồn tại trong hệ thống
+  const checkExistingTopics = (topicNames: string[]): string[] => {
+    const existingNames = existingTopics.map(topic => topic.name.toLowerCase());
+    return topicNames.filter(name => 
+      existingNames.includes(name.toLowerCase())
+    );
+  };
+
   const validateAllTopics = (): boolean => {
     const errors: typeof validationErrors = {};
     let isValid = true;
 
     topics.forEach((topic, index) => {
-      const topicErrors: { name?: string; description?: string; imageUrl?: string } = {};
+      const topicErrors: { name?: string; description?: string; imageFile?: string } = {};
 
+      // Validate tên bắt buộc
       const nameError = validateTopicName(topic.name);
       if (nameError) {
         topicErrors.name = nameError;
         isValid = false;
       }
 
+      // Kiểm tra trùng tên trong form hiện tại
+      const isDuplicateInForm = topics.some((t, i) => 
+        i !== index && t.name.toLowerCase() === topic.name.toLowerCase()
+      );
+      if (isDuplicateInForm) {
+        topicErrors.name = 'Tên chủ đề bị trùng trong form';
+        isValid = false;
+      }
+
+      // Kiểm tra trùng tên với hệ thống
+      const existingNames = checkExistingTopics([topic.name]);
+      if (existingNames.length > 0) {
+        topicErrors.name = `Tên chủ đề "${topic.name}" đã tồn tại trong hệ thống`;
+        isValid = false;
+      }
+
+      // Validate mô tả
       const descriptionError = validateTopicDescription(topic.description);
       if (descriptionError) {
         topicErrors.description = descriptionError;
         isValid = false;
       }
 
-      if (topicErrors.name || topicErrors.description) {
+      // Validate ảnh
+      if (topic.imageFile && !topic.imageUrl) {
+        topicErrors.imageFile = 'Vui lòng chờ upload ảnh hoàn tất';
+        isValid = false;
+      }
+
+      if (Object.keys(topicErrors).length > 0) {
         errors[index] = topicErrors;
       }
     });
@@ -113,46 +218,97 @@ const TopicBulkCreate: React.FC = () => {
     e.preventDefault();
     clearError();
     setResults(null);
+    setShowDetailedResults(false);
+
+    // Refresh danh sách chủ đề hiện có trước khi validate
+    await fetchTopics();
 
     if (!validateAllTopics()) {
       return;
     }
 
     try {
-      const response = await bulkCreateTopics(topics);
+      const topicsData = {
+        topics: topics.map(topic => ({
+          name: topic.name,
+          description: topic.description || null,
+          imageUrl: topic.imageUrl || null
+        }))
+      };
+
+      console.log('📤 Gửi dữ liệu tạo topic:', topicsData);
+
+      const response = await bulkCreateTopics(topicsData);
       setResults(response.data);
-    } catch (error) {
+      
+      if (response.data.failureCount === 0) {
+        // Clean up all preview URLs
+        topics.forEach(topic => {
+          if (topic.imagePreview) {
+            URL.revokeObjectURL(topic.imagePreview);
+          }
+        });
+        setTopics([{ name: '', description: '', imageFile: null, imageUrl: '', uploading: false }]);
+        setValidationErrors({});
+        
+        setTimeout(() => {
+          alert(`🎉 Đã tạo thành công ${response.data.successCount} chủ đề!`);
+        }, 500);
+      } else {
+        // Hiển thị chi tiết lỗi nếu có thất bại
+        setShowDetailedResults(true);
+      }
+    } catch (error: any) {
       console.error('Failed to bulk create topics:', error);
+      if (error.message) {
+        alert(`Lỗi khi tạo chủ đề: ${error.message}`);
+      }
     }
   };
 
-  const downloadTemplate = () => {
-    const template = [
-      ['Tên chủ đề (bắt buộc)', 'Mô tả (tùy chọn)', 'URL hình ảnh (tùy chọn)'],
-      ['Business', 'Chủ đề kinh doanh', 'https://example.com/business.jpg'],
-      ['Technology', 'Chủ đề công nghệ', 'https://example.com/tech.jpg'],
-      ['Travel', 'Chủ đề du lịch', '']
-    ];
-
-    const csvContent = template.map(row => row.join(',')).join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'topic_bulk_template.csv';
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
   const clearForm = () => {
-    setTopics([{ name: '', description: '', imageUrl: '' }]);
+    topics.forEach(topic => {
+      if (topic.imagePreview) {
+        URL.revokeObjectURL(topic.imagePreview);
+      }
+    });
+    setTopics([{ name: '', description: '', imageFile: null, imageUrl: '', uploading: false }]);
     setValidationErrors({});
     setResults(null);
+    setShowDetailedResults(false);
     clearError();
   };
 
+  const hasUnuploadedImages = topics.some(topic => topic.imageFile && !topic.imageUrl);
+  const isUploading = topics.some(topic => topic.uploading);
+  const uploadedCount = topics.filter(topic => topic.imageUrl).length;
+
   return (
     <div className="space-y-6">
+      {/* Image Preview Modal */}
+      {previewImage && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-2xl max-h-full overflow-auto">
+            <div className="p-4 border-b border-gray-200 flex justify-between items-center">
+              <h3 className="text-lg font-semibold">{previewImage.name}</h3>
+              <button
+                onClick={closeImagePreview}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <XCircle className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="p-4">
+              <img 
+                src={previewImage.url} 
+                alt="Preview" 
+                className="max-w-full max-h-96 object-contain mx-auto"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -165,15 +321,6 @@ const TopicBulkCreate: React.FC = () => {
           </button>
           <h1 className="text-2xl font-bold text-gray-900">Tạo nhiều chủ đề</h1>
           <p className="text-gray-600">Thêm nhiều chủ đề cùng lúc</p>
-        </div>
-        <div className="flex gap-2">
-          <button
-            onClick={downloadTemplate}
-            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center"
-          >
-            <Download className="w-4 h-4 mr-2" />
-            Template CSV
-          </button>
         </div>
       </div>
 
@@ -216,7 +363,7 @@ const TopicBulkCreate: React.FC = () => {
                   : 'Tạo thành công một phần'
                 }
               </h3>
-              <div className="grid grid-cols-3 gap-4 text-sm">
+              <div className="grid grid-cols-3 gap-4 text-sm mb-4">
                 <div>
                   <span className="text-gray-600">Tổng yêu cầu:</span>
                   <span className="font-semibold ml-2">{results.totalRequested}</span>
@@ -230,10 +377,80 @@ const TopicBulkCreate: React.FC = () => {
                   <span className="font-semibold ml-2">{results.failureCount}</span>
                 </div>
               </div>
+
+              {/* Nút xem chi tiết kết quả */}
+              {results.failureCount > 0 && (
+                <div className="border-t border-gray-200 pt-4">
+                  <button
+                    onClick={() => setShowDetailedResults(!showDetailedResults)}
+                    className="flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium"
+                  >
+                    <Info className="w-4 h-4 mr-2" />
+                    {showDetailedResults ? 'Ẩn chi tiết' : 'Xem chi tiết lỗi'}
+                  </button>
+
+                  {/* Chi tiết kết quả */}
+                  {showDetailedResults && (
+                    <div className="mt-3 space-y-2">
+                      <h4 className="font-medium text-gray-900">Chi tiết kết quả:</h4>
+                      {results.results.map((result, index) => (
+                        <div
+                          key={index}
+                          className={`p-3 rounded-lg border ${
+                            result.success
+                              ? 'bg-green-50 border-green-200'
+                              : 'bg-red-50 border-red-200'
+                          }`}
+                        >
+                          <div className="flex items-start">
+                            {result.success ? (
+                              <CheckCircle2 className="w-4 h-4 text-green-600 mr-2 mt-0.5 flex-shrink-0" />
+                            ) : (
+                              <XCircle className="w-4 h-4 text-red-600 mr-2 mt-0.5 flex-shrink-0" />
+                            )}
+                            <div className="flex-1">
+                              <p className={`font-medium ${
+                                result.success ? 'text-green-800' : 'text-red-800'
+                              }`}>
+                                {result.inputName || `Chủ đề #${index + 1}`}
+                              </p>
+                              <p className={`text-sm ${
+                                result.success ? 'text-green-700' : 'text-red-700'
+                              }`}>
+                                {result.message}
+                              </p>
+                              {result.success && result.data && (
+                                <p className="text-sm text-green-600 mt-1">
+                                  ID: {result.data.id}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
       )}
+
+      {/* Warning về trùng tên */}
+      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <div className="flex items-start">
+          <AlertCircle className="w-5 h-5 text-yellow-600 mr-2 mt-0.5 flex-shrink-0" />
+          <div>
+            <p className="text-yellow-800 font-medium">Lưu ý quan trọng</p>
+            <p className="text-yellow-700 text-sm">
+              • Tên chủ đề phải là duy nhất trong hệ thống<br/>
+              • Không thể tạo chủ đề trùng tên với các chủ đề đã tồn tại<br/>
+              • Hệ thống sẽ tự động kiểm tra trùng tên trước khi tạo
+            </p>
+          </div>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Form */}
@@ -290,7 +507,7 @@ const TopicBulkCreate: React.FC = () => {
                         className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                           validationErrors[index]?.name ? 'border-red-300' : 'border-gray-300'
                         }`}
-                        placeholder="Nhập tên chủ đề..."
+                        placeholder="Nhập tên chủ đề (phải là duy nhất)..."
                       />
                       {validationErrors[index]?.name && (
                         <p className="mt-1 text-sm text-red-600 flex items-center">
@@ -325,18 +542,84 @@ const TopicBulkCreate: React.FC = () => {
                       </p>
                     </div>
 
-                    {/* Image URL */}
+                    {/* Image Upload */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        URL hình ảnh
+                        Hình ảnh
                       </label>
                       <input
-                        type="url"
-                        value={topic.imageUrl}
-                        onChange={(e) => updateTopic(index, 'imageUrl', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="https://example.com/image.jpg"
+                        type="file"
+                        accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            handleImageUpload(index, file);
+                          }
+                        }}
+                        disabled={topic.uploading}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
                       />
+                      {validationErrors[index]?.imageFile && (
+                        <p className="mt-1 text-sm text-red-600 flex items-center">
+                          <AlertCircle className="w-4 h-4 mr-1" />
+                          {validationErrors[index]?.imageFile}
+                        </p>
+                      )}
+                      
+                      {/* Upload Status & Preview */}
+                      <div className="mt-2 space-y-2">
+                        {topic.uploading && (
+                          <p className="text-sm text-blue-600 flex items-center">
+                            <Loader2 className="w-4 h-4 animate-spin mr-1" />
+                            Đang upload ảnh...
+                          </p>
+                        )}
+                        
+                        {topic.imageFile && !topic.uploading && !topic.imageUrl && (
+                          <div className="flex items-center justify-between">
+                            <p className="text-sm text-orange-600">
+                              ⚠️ Chưa upload ảnh: {topic.imageFile.name}
+                            </p>
+                          </div>
+                        )}
+                        
+                        {topic.imageUrl && (
+                          <div className="flex items-center justify-between bg-green-50 p-2 rounded border border-green-200">
+                            <div className="flex items-center">
+                              <CheckCircle2 className="w-4 h-4 text-green-600 mr-2" />
+                              <span className="text-sm text-green-700">Upload thành công</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => showImagePreview(topic.imageUrl, topic.imageFile?.name || 'Ảnh đã upload')}
+                              className="text-blue-600 hover:text-blue-800 flex items-center text-sm"
+                            >
+                              <Eye className="w-4 h-4 mr-1" />
+                              Xem ảnh
+                            </button>
+                          </div>
+                        )}
+
+                        {/* Image Preview Thumbnail */}
+                        {(topic.imagePreview || topic.imageUrl) && (
+                          <div className="mt-2">
+                            <p className="text-sm text-gray-600 mb-1">Preview:</p>
+                            <div 
+                              className="w-20 h-20 border border-gray-300 rounded-lg overflow-hidden cursor-pointer"
+                              onClick={() => showImagePreview(
+                                topic.imageUrl || topic.imagePreview || '',
+                                topic.imageFile?.name || 'Preview'
+                              )}
+                            >
+                              <img 
+                                src={topic.imageUrl || topic.imagePreview} 
+                                alt="Preview" 
+                                className="w-full h-full object-cover hover:opacity-80"
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -347,7 +630,7 @@ const TopicBulkCreate: React.FC = () => {
             <div className="mt-6 pt-6 border-t border-gray-200">
               <button
                 type="submit"
-                disabled={loading || topics.length === 0}
+                disabled={loading || topics.length === 0 || isUploading || hasUnuploadedImages}
                 className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               >
                 {loading ? (
@@ -362,6 +645,19 @@ const TopicBulkCreate: React.FC = () => {
                   </>
                 )}
               </button>
+              
+              {/* Warning Messages */}
+              {isUploading && (
+                <p className="mt-2 text-sm text-blue-600 text-center">
+                  ⏳ Đang upload ảnh, vui lòng chờ...
+                </p>
+              )}
+              
+              {hasUnuploadedImages && !isUploading && (
+                <p className="mt-2 text-sm text-red-600 text-center">
+                  ⚠️ Vui lòng upload ảnh cho tất cả chủ đề trước khi tạo
+                </p>
+              )}
             </div>
           </form>
         </div>
@@ -376,13 +672,14 @@ const TopicBulkCreate: React.FC = () => {
             </h3>
             <ul className="text-blue-800 text-sm space-y-2">
               <li>• Nhập thông tin cho từng chủ đề</li>
-              <li>• Tên chủ đề là bắt buộc</li>
+              <li>• <strong>Tên chủ đề phải là duy nhất</strong></li>
               <li>• Mô tả tối đa 500 ký tự</li>
-              <li>• URL hình ảnh phải là đường dẫn hợp lệ</li>
+              <li>• Chọn ảnh - ảnh sẽ tự động upload</li>
+              <li>• Xem preview ảnh sau khi upload</li>
+              <li>• Chờ upload hoàn tất trước khi tạo</li>
               <li>• Tối đa 20 chủ đề mỗi lần</li>
             </ul>
           </div>
-
 
           {/* Stats */}
           <div className="bg-gray-50 rounded-lg p-4">
@@ -399,9 +696,15 @@ const TopicBulkCreate: React.FC = () => {
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Có hình ảnh:</span>
+                <span className="text-blue-600">Đang upload:</span>
                 <span className="font-semibold">
-                  {topics.filter(t => t.imageUrl.trim()).length}/{topics.length}
+                  {topics.filter(t => t.uploading).length}/{topics.length}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-green-600">Upload thành công:</span>
+                <span className="font-semibold">
+                  {uploadedCount}/{topics.length}
                 </span>
               </div>
             </div>

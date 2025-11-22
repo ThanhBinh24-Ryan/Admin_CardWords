@@ -29,7 +29,8 @@ const UserProgressDetail: React.FC = () => {
     loadingUserProgress,
     error,
     fetchUserProgress,
-    deleteProgress
+    deleteProgress,
+    resetUserProgress
   } = useVocabProgressStore();
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -63,6 +64,13 @@ const UserProgressDetail: React.FC = () => {
     }
   };
 
+  const confirmReset = async () => {
+    if (userId) {
+      await resetUserProgress(userId);
+      setShowResetModal(false);
+    }
+  };
+
   const filteredProgress = userProgress.filter(progress => {
     const matchesSearch = progress.word.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          progress.meaningVi.toLowerCase().includes(searchTerm.toLowerCase());
@@ -80,7 +88,7 @@ const UserProgressDetail: React.FC = () => {
           <AlertTriangle className="h-16 w-16 text-red-500 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Không tìm thấy người dùng</h2>
           <button
-            onClick={() => navigate('/vocab-progress')}
+            onClick={() => navigate('/admin/vocab-progress')}
             className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
           >
             Quay lại
@@ -98,7 +106,7 @@ const UserProgressDetail: React.FC = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <button
-                onClick={() => navigate('/vocab-progress')}
+                onClick={() => navigate('/admin/vocab-progress')}
                 className="flex items-center text-gray-600 hover:text-gray-900 mr-4"
               >
                 <ArrowLeft className="h-5 w-5 mr-1" />
@@ -110,7 +118,7 @@ const UserProgressDetail: React.FC = () => {
                   Tiến Độ Học Tập
                 </h1>
                 <p className="text-gray-600 mt-1">
-                  User ID: {userId.substring(0, 8)}...
+                  User ID: {userId}
                 </p>
               </div>
             </div>
@@ -376,10 +384,7 @@ const UserProgressDetail: React.FC = () => {
       <ResetProgressModal
         isOpen={showResetModal}
         onClose={() => setShowResetModal(false)}
-        onConfirm={() => {
-          // Implement reset logic here
-          setShowResetModal(false);
-        }}
+        onConfirm={confirmReset}
         userId={userId}
       />
     </div>

@@ -1,20 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { 
-  useActionLogStore, 
   useActionLogs, 
   useActionLogsLoading,
   useActionLogsError,
   useActionLogsFilters,
   useActionLogsPagination,
-  useActionLogsStatistics 
+  useActionLogsStatistics,
+  useActionLogStore
 } from '../../store/actionLogStore';
 import ActionLogsTable from './components/ActionLogsTable';
 import ActionLogsFilter from './components/ActionLogsFilter';
 import ActionLogsStatistics from './components/ActionLogsStatistics';
-import DeleteConfirmModal from './modals/DeleteConfirmModal';
 import CleanupModal from './modals/CleanupModal';
-import { ActionLog } from '../../types/actionLog';
-import { Activity, BarChart3, Users, CheckCircle, XCircle } from 'lucide-react';
+import { Activity } from 'lucide-react';
+import { actionLogService } from '../../services/actionLogService';
 
 const ActionLogsPage: React.FC = () => {
   const logs = useActionLogs();
@@ -24,63 +23,45 @@ const ActionLogsPage: React.FC = () => {
   const pagination = useActionLogsPagination();
   const statistics = useActionLogsStatistics();
   
-  const {
-    fetchActionLogs,
-    fetchStatistics,
-    setFilters,
-    resetFilters,
-    clearError,
-    cleanupOldLogs
-  } = useActionLogStore();
+  // Lấy actions từ store
+  const fetchActionLogs = useActionLogStore((state) => state.fetchActionLogs);
+  const fetchStatistics = useActionLogStore((state) => state.fetchStatistics);
+  const setFilters = useActionLogStore((state) => state.setFilters);
+  const resetFilters = useActionLogStore((state) => state.resetFilters);
+  const clearError = useActionLogStore((state) => state.clearError);
+  const cleanupOldLogs = useActionLogStore((state) => state.cleanupOldLogs);
 
-  const [selectedLog, setSelectedLog] = useState<ActionLog | null>(null);
   const [showCleanupModal, setShowCleanupModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
+  // Fetch data khi component mount
   useEffect(() => {
     fetchActionLogs();
     fetchStatistics();
   }, []);
 
-  const handleFilterChange = (newFilters: any) => {
-    setFilters(newFilters);
-    fetchActionLogs(newFilters);
+  // Xử lý filter - gọi API ngay lập tức
+  const handleFilterChange = async (newFilters: any) => {
+    // Reset về trang đầu tiên khi filter
+    const filtersWithResetPage = { ...newFilters, page: 0 };
+    setFilters(filtersWithResetPage);
+    await fetchActionLogs(filtersWithResetPage);
   };
 
-  const handleResetFilters = () => {
+  // Xử lý reset filter
+  const handleResetFilters = async () => {
     resetFilters();
-    fetchActionLogs();
+    await fetchActionLogs();
   };
 
-  const handlePageChange = (page: number) => {
-    setFilters({ ...filters, page });
-    fetchActionLogs({ ...filters, page });
+  // Xử lý phân trang
+  const handlePageChange = async (page: number) => {
+    const newFilters = { ...filters, page };
+    setFilters(newFilters);
+    await fetchActionLogs(newFilters);
   };
 
   const handleCleanup = () => {
     setShowCleanupModal(true);
-  };
-
-  const handleDeleteLog = (log: ActionLog) => {
-    setSelectedLog(log);
-    setShowDeleteModal(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!selectedLog) return;
-    
-    try {
-      // Call API delete here - Note: API doesn't have delete single log endpoint
-      // This is just for demonstration
-      console.log('Deleting log:', selectedLog.id);
-      setShowDeleteModal(false);
-      setSelectedLog(null);
-      
-      // Refresh the list
-      await fetchActionLogs();
-    } catch (error) {
-      console.error('Failed to delete log:', error);
-    }
   };
 
   const handleCleanupConfirm = async (daysToKeep: number) => {
@@ -89,6 +70,16 @@ const ActionLogsPage: React.FC = () => {
       setShowCleanupModal(false);
     } catch (error) {
       console.error('Cleanup failed:', error);
+    }
+  };
+
+  const handleExport = async () => {
+    try {
+      // Export với filters hiện tại (không bao gồm pagination)
+      const { page, size, sortBy, sortDirection, ...exportFilters } = filters;
+      await actionLogService.downloadActionLogsExport(exportFilters);
+    } catch (error) {
+      console.error('Export failed:', error);
     }
   };
 
@@ -125,7 +116,7 @@ const ActionLogsPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header đẹp hơn */}
+        {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
             <div className="p-4 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-lg">
@@ -152,7 +143,7 @@ const ActionLogsPage: React.FC = () => {
             filters={filters}
             onFilterChange={handleFilterChange}
             onReset={handleResetFilters}
-            onExport={() => {}} // Bỏ export
+            onExport={handleExport}
             onCleanup={handleCleanup}
           />
         </div>
@@ -164,7 +155,6 @@ const ActionLogsPage: React.FC = () => {
             loading={loading}
             pagination={pagination}
             onPageChange={handlePageChange}
-            onDeleteLog={handleDeleteLog}
           />
         </div>
 
@@ -173,16 +163,6 @@ const ActionLogsPage: React.FC = () => {
           isOpen={showCleanupModal}
           onClose={() => setShowCleanupModal(false)}
           onConfirm={handleCleanupConfirm}
-        />
-
-        <DeleteConfirmModal
-          isOpen={showDeleteModal}
-          onClose={() => {
-            setShowDeleteModal(false);
-            setSelectedLog(null);
-          }}
-          onConfirm={handleConfirmDelete}
-          log={selectedLog}
         />
       </div>
     </div>

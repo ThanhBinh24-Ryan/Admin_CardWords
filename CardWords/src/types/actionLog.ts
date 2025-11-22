@@ -128,3 +128,23 @@ export const DEFAULT_PAGINATION = {
   sortBy: 'createdAt',
   sortDirection: 'DESC' as const,
 };
+
+// Action Types Constants
+export const ACTION_TYPES = {
+  USER_LOGIN: 'USER_LOGIN',
+  USER_LOGOUT: 'USER_LOGOUT',
+  VOCAB_CREATE: 'VOCAB_CREATE',
+  VOCAB_UPDATE: 'VOCAB_UPDATE',
+  VOCAB_DELETE: 'VOCAB_DELETE',
+  USER_REGISTER: 'USER_REGISTER',
+  PROFILE_UPDATE: 'PROFILE_UPDATE',
+  PASSWORD_CHANGE: 'PASSWORD_CHANGE',
+} as const;
+
+export const RESOURCE_TYPES = {
+  AUTHENTICATION: 'Authentication',
+  VOCABULARY: 'Vocabulary',
+  SYSTEM: 'System',
+  USER: 'User',
+  PROFILE: 'Profile',
+} as const;

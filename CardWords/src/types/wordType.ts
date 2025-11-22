@@ -31,3 +31,18 @@ export interface EmptyResponse {
   message: string;
   data: {};
 }
+
+export interface BatchUpdateWordTypeRequest {
+  id: number;
+  name: string;
+}
+
+export interface BatchUpdateRequest {
+  types: BatchUpdateWordTypeRequest[];
+}
+
+export interface BatchUpdateResponse {
+  status: string;
+  message: string;
+  data: WordType[];
+}

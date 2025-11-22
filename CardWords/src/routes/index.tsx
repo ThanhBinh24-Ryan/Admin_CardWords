@@ -13,7 +13,7 @@ import VocabForm from '../pages/Vocab/VocabForm';
 import VocabDetail from '../pages/Vocab/VocabDetail';
 import NotFoundPage from '../pages/NotFoundPage';
 import NotificationList from '../pages/Notification/NotificationList';
-import NotificationSetting from '../pages/Notification/NotificationSetting';
+// import NotificationSetting from '../pages/Notification/NotificationSetting';
 import ForgotPasswordPage from '../pages/Auth/Forgot/ForgotPasswordPage';
 import { Outlet } from 'react-router-dom';
 import ProfilePage from '../pages/Profile/Profile/ProfilePage';
@@ -36,6 +36,9 @@ import CreateVocab from '../pages/Vocab/CreateVocab'
 import VocabProgressOverview from '../pages/VocabProgress/VocabProgressOverview';
 import UserProgressDetail from '../pages/VocabProgress/UserProgressDetail';
 import VocabStatsDetail from '../pages/VocabProgress/VocabStatsDetail';
+import BatchUpdatePage from '../pages/WordType/BatchUpdatePage'
+
+
 const router = createBrowserRouter([
   {
     path: '/',
@@ -80,10 +83,11 @@ const router = createBrowserRouter([
       { path: 'admin/word-types/create', element: <CreateWordTypePage /> },
       { path: 'admin/word-types/:id', element: <WordTypeDetailPage /> },
       { path: 'admin/word-types/:id/edit', element: <EditWordTypePage /> },
+        { path: '/admin/word-types/batch-update', element: <BatchUpdatePage /> },
       
       // Notifications routes
       { path: 'notifications', element: <NotificationList /> },
-      { path: 'notifications/settings', element: <NotificationSetting /> },
+      // { path: 'notifications/settings', element: <NotificationSetting /> },
       
       // Logs routes
            { path: 'action-logs', element: <ActionLogsPage /> },
@@ -95,6 +99,8 @@ const router = createBrowserRouter([
       { path: 'admin/vocab-progress', element: <VocabProgressOverview /> },
       { path: 'admin/vocab-progress/user/:userId', element: <UserProgressDetail /> },
       { path: 'admin/vocab-progress/vocab/:vocabId', element: <VocabStatsDetail /> },
+
+
       // Settings routes
       { path: 'settings', element: <SettingsPage /> },
     ],

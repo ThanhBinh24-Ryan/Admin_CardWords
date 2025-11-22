@@ -122,11 +122,11 @@ const UserList: React.FC = () => {
     setActionLoading('delete');
     try {
       await deleteUser(selectedUser.id);
-      alert('✅ Xóa người dùng thành công!');
+     
       setShowDeleteModal(false);
       loadUsers();
     } catch (error: any) {
-      alert('❌ Xóa người dùng thất bại. Vui lòng thử lại.');
+     
     } finally {
       setActionLoading(null);
     }
@@ -154,13 +154,13 @@ const UserList: React.FC = () => {
       });
       
       if (response.ok) {
-        alert('✅ Email đặt lại mật khẩu đã được gửi thành công!');
+     
         setShowResetPasswordModal(false);
       } else {
         throw new Error('Failed to send reset password email');
       }
     } catch (error) {
-      alert('❌ Gửi email thất bại. Vui lòng thử lại.');
+     
     } finally {
       setActionLoading(null);
     }
@@ -182,11 +182,11 @@ const UserList: React.FC = () => {
     setActionLoading('updateRoles');
     try {
       await updateUserRoles(selectedUser.id, selectedRoles);
-      alert('✅ Cập nhật quyền người dùng thành công!');
+     
       setShowRoleModal(false);
       loadUsers();
     } catch (error) {
-      alert('❌ Cập nhật quyền thất bại. Vui lòng thử lại.');
+   
     } finally {
       setActionLoading(null);
     }
@@ -203,11 +203,11 @@ const UserList: React.FC = () => {
     setActionLoading('ban');
     try {
       await banUser(selectedUser.id, banned);
-      alert(`✅ ${banned ? 'Cấm' : 'Bỏ cấm'} người dùng thành công!`);
+    
       setShowBanModal(false);
       loadUsers();
     } catch (error) {
-      alert(`❌ ${banned ? 'Cấm' : 'Bỏ cấm'} người dùng thất bại. Vui lòng thử lại.`);
+   
     } finally {
       setActionLoading(null);
     }
@@ -224,11 +224,11 @@ const UserList: React.FC = () => {
     setActionLoading('activate');
     try {
       await activateUser(selectedUser.id, activated);
-      alert(`✅ ${activated ? 'Kích hoạt' : 'Vô hiệu hóa'} người dùng thành công!`);
+   
       setShowActivateModal(false);
       loadUsers();
     } catch (error) {
-      alert(`❌ ${activated ? 'Kích hoạt' : 'Vô hiệu hóa'} người dùng thất bại. Vui lòng thử lại.`);
+   
     } finally {
       setActionLoading(null);
     }

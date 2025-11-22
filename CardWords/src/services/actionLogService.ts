@@ -74,28 +74,8 @@ class ActionLogService {
       }
     });
 
-    const response = await this.request<BaseResponse<PageResponse<any>>>(`/action-logs?${queryParams.toString()}`);
-    
-    // Transform API response để phù hợp với frontend interface
-    const transformedContent = response.data.content.map((log: any) => ({
-      id: log.id,
-      userId: log.userId,
-      userEmail: log.userEmail || 'Chưa có email', // Thêm giá trị mặc định
-      userName: log.userName || 'Không xác định', // Thêm giá trị mặc định
-      actionType: log.actionType,
-      actionCategory: log.actionCategory,
-      resourceType: log.resourceType,
-      resourceId: log.resourceId || 'N/A', // Thêm giá trị mặc định
-      description: log.description,
-      status: log.status,
-      ipAddress: log.ipAddress,
-      createdAt: log.createdAt
-    }));
-
-    return {
-      ...response.data,
-      content: transformedContent
-    };
+    const response = await this.request<BaseResponse<PageResponse<ActionLog>>>(`/action-logs?${queryParams.toString()}`);
+    return response.data;
   }
 
   // Lấy thống kê action logs

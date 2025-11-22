@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, User, Send } from 'lucide-react';
-import { useNotificationStore } from '../.././../store/notificationStore';
+import { useNotificationStore } from '../../../store/notificationStore';
 import { NotificationType } from '../../../types/notification';
 
 interface CreateNotificationModalProps {
@@ -20,14 +20,19 @@ const CreateNotificationModal: React.FC<CreateNotificationModalProps> = ({
   });
   const [creating, setCreating] = useState(false);
   
-  const { createNotification } = useNotificationStore();
+  const { createNotification, fetchUsers, users } = useNotificationStore();
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchUsers();
+    }
+  }, [isOpen, fetchUsers]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreating(true);
 
     try {
-      // Chuẩn bị data để gửi, loại bỏ userId nếu empty
       const requestData = {
         title: formData.title,
         content: formData.content,
@@ -49,12 +54,24 @@ const CreateNotificationModal: React.FC<CreateNotificationModalProps> = ({
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  // Các loại thông báo
+  const notificationTypes = [
+    { value: 'study_progress', label: 'Tiến độ Học tập' },
+    { value: 'vocab_reminder', label: 'Nhắc nhở Từ vựng' },
+    { value: 'streak_reminder', label: 'Nhắc nhở Streak' },
+    { value: 'streak_milestone', label: 'Mốc Streak' },
+    { value: 'game_achievement', label: 'Thành tích Game' },
+    { value: 'achievement', label: 'Thành tích' },
+    { value: 'new_feature', label: 'Tính năng Mới' },
+    { value: 'system_alert', label: 'Cảnh báo Hệ thống' }
+  ];
+
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-md w-full">
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+      <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 sticky top-0 bg-white">
           <div className="flex items-center">
             <Send className="h-6 w-6 text-blue-600 mr-2" />
             <h3 className="text-lg font-medium text-gray-900">Tạo Thông báo</h3>
@@ -68,17 +85,22 @@ const CreateNotificationModal: React.FC<CreateNotificationModalProps> = ({
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               <User className="w-4 h-4 inline mr-1" />
-              User ID (Tùy chọn)
+              Chọn User (Tùy chọn)
             </label>
-            <input
-              type="text"
+            <select
               value={formData.userId}
               onChange={(e) => handleChange('userId', e.target.value)}
-              placeholder="Để trống để gửi đến tất cả users"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
+            >
+              <option value="">Gửi đến tất cả users</option>
+              {Array.isArray(users) && users.map(user => (
+                <option key={user.id} value={user.id}>
+                  {user.name} ({user.email}) - {user.currentLevel}
+                </option>
+              ))}
+            </select>
             <p className="text-xs text-gray-500 mt-1">
-              Định dạng UUID: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+              Để trống để gửi đến tất cả users trong hệ thống
             </p>
           </div>
 
@@ -105,11 +127,11 @@ const CreateNotificationModal: React.FC<CreateNotificationModalProps> = ({
               onChange={(e) => handleChange('type', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="system_alert">🔔 Cảnh báo Hệ thống</option>
-              <option value="vocab_reminder">📚 Nhắc nhở Từ vựng</option>
-              <option value="study_progress">📊 Tiến độ Học tập</option>
-              <option value="achievement">🏆 Thành tích</option>
-              <option value="new_feature">🆕 Tính năng Mới</option>
+              {notificationTypes.map(type => (
+                <option key={type.value} value={type.value}>
+                  {type.label}
+                </option>
+              ))}
             </select>
           </div>
 

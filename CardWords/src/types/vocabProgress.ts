@@ -78,6 +78,61 @@ export interface DifficultWord {
   errorRate: number;
 }
 
+// Types cho User
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  avatar: string;
+  gender: string;
+  dateOfBirth: string;
+  currentLevel: string;
+  activated: boolean;
+  banned: boolean;
+  status: string;
+  roles: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UserResponse {
+  totalElements: number;
+  totalPages: number;
+  content: User[];
+  number: number;
+  size: number;
+  first: boolean;
+  last: boolean;
+}
+
+// Types cho Vocab
+export interface Vocab {
+  id: string;
+  word: string;
+  transcription: string;
+  meaningVi: string;
+  interpret: string;
+  exampleSentence: string;
+  cefr: string;
+  img: string;
+  audio: string;
+  credit: string;
+  createdAt: string;
+  updatedAt: string;
+  types: Array<{ id: number; name: string }>;
+  topic: { id: number; name: string };
+}
+
+export interface VocabResponse {
+  totalElements: number;
+  totalPages: number;
+  content: Vocab[];
+  number: number;
+  size: number;
+  first: boolean;
+  last: boolean;
+}
+
 // Request types
 export interface PaginationParams {
   page?: number;
@@ -86,6 +141,13 @@ export interface PaginationParams {
 
 export interface DifficultWordsParams {
   limit?: number;
+}
+
+export interface ListParams {
+  page?: number;
+  size?: number;
+  sortBy?: string;
+  sortDir?: string;
 }
 
 // Empty response for delete operations

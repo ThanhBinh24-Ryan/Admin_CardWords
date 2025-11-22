@@ -5,7 +5,10 @@ import {
   SystemStatistics, 
   DifficultWord,
   PaginationParams,
-  DifficultWordsParams
+  DifficultWordsParams,
+  User,
+  Vocab,
+  ListParams
 } from '../types/vocabProgress';
 import { vocabProgressService } from '../services/vocabProgressService';
 
@@ -15,6 +18,14 @@ interface VocabProgressState {
   userProgress: UserVocabProgress[];
   systemStats: SystemStatistics | null;
   difficultWords: DifficultWord[];
+  
+  // New states for users and vocabs
+  users: User[];
+  vocabs: Vocab[];
+  usersTotalElements: number;
+  usersTotalPages: number;
+  vocabsTotalElements: number;
+  vocabsTotalPages: number;
   
   // Pagination
   currentPage: number;
@@ -28,6 +39,10 @@ interface VocabProgressState {
   loadingSystemStats: boolean;
   loadingDifficultWords: boolean;
   
+  // New loading states
+  loadingUsers: boolean;
+  loadingVocabs: boolean;
+  
   // Error states
   error: string | null;
   
@@ -38,6 +53,11 @@ interface VocabProgressState {
   fetchDifficultWords: (params?: DifficultWordsParams) => Promise<void>;
   deleteProgress: (id: string) => Promise<void>;
   resetUserProgress: (userId: string) => Promise<void>;
+  
+  // New actions
+  fetchUsers: (params?: ListParams) => Promise<void>;
+  fetchVocabs: (params?: ListParams) => Promise<void>;
+  
   reset: () => void;
   clearError: () => void;
 }
@@ -48,14 +68,29 @@ export const useVocabProgressStore = create<VocabProgressState>((set, get) => ({
   userProgress: [],
   systemStats: null,
   difficultWords: [],
+  
+  // New initial states
+  users: [],
+  vocabs: [],
+  usersTotalElements: 0,
+  usersTotalPages: 0,
+  vocabsTotalElements: 0,
+  vocabsTotalPages: 0,
+  
   currentPage: 0,
   totalPages: 0,
   totalElements: 0,
   pageSize: 20,
+  
   loading: false,
   loadingUserProgress: false,
   loadingSystemStats: false,
   loadingDifficultWords: false,
+  
+  // New loading states
+  loadingUsers: false,
+  loadingVocabs: false,
+  
   error: null,
 
   // Actions
@@ -140,28 +175,63 @@ export const useVocabProgressStore = create<VocabProgressState>((set, get) => ({
     }
   },
 
+  resetUserProgress: async (userId: string) => {
+    set({ loading: true, error: null });
+    try {
+      await vocabProgressService.resetUserProgress(userId);
+      
+      // Clear user progress from state
+      set({ 
+        userProgress: [],
+        currentPage: 0,
+        totalPages: 0,
+        totalElements: 0,
+        loading: false 
+      });
+    } catch (error) {
+      set({ 
+        error: error instanceof Error ? error.message : 'Lỗi không xác định', 
+        loading: false 
+      });
+    }
+  },
 
+  // New actions
+  fetchUsers: async (params: ListParams = {}) => {
+    set({ loadingUsers: true, error: null });
+    try {
+      const response = await vocabProgressService.getUsers(params);
+      set({
+        users: response.content,
+        usersTotalElements: response.totalElements,
+        usersTotalPages: response.totalPages,
+        loadingUsers: false,
+      });
+    } catch (error) {
+      set({ 
+        error: error instanceof Error ? error.message : 'Lỗi không xác định', 
+        loadingUsers: false 
+      });
+    }
+  },
 
-resetUserProgress: async (userId: string) => {
-  set({ loading: true, error: null });
-  try {
-    await vocabProgressService.resetUserProgress(userId);
-    
-    // Clear user progress from state
-    set({ 
-      userProgress: [],
-      currentPage: 0,
-      totalPages: 0,
-      totalElements: 0,
-      loading: false 
-    });
-  } catch (error) {
-    set({ 
-      error: error instanceof Error ? error.message : 'Lỗi không xác định', 
-      loading: false 
-    });
-  }
-},
+  fetchVocabs: async (params: ListParams = {}) => {
+    set({ loadingVocabs: true, error: null });
+    try {
+      const response = await vocabProgressService.getVocabs(params);
+      set({
+        vocabs: response.content,
+        vocabsTotalElements: response.totalElements,
+        vocabsTotalPages: response.totalPages,
+        loadingVocabs: false,
+      });
+    } catch (error) {
+      set({ 
+        error: error instanceof Error ? error.message : 'Lỗi không xác định', 
+        loadingVocabs: false 
+      });
+    }
+  },
 
   reset: () => {
     set({
@@ -169,6 +239,12 @@ resetUserProgress: async (userId: string) => {
       userProgress: [],
       systemStats: null,
       difficultWords: [],
+      users: [],
+      vocabs: [],
+      usersTotalElements: 0,
+      usersTotalPages: 0,
+      vocabsTotalElements: 0,
+      vocabsTotalPages: 0,
       currentPage: 0,
       totalPages: 0,
       totalElements: 0,

@@ -40,6 +40,18 @@ const BroadcastNotificationModal: React.FC<BroadcastNotificationModalProps> = ({
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  // Các loại thông báo
+  const notificationTypes = [
+    { value: 'study_progress', label: 'Tiến độ Học tập' },
+    { value: 'vocab_reminder', label: 'Nhắc nhở Từ vựng' },
+    { value: 'streak_reminder', label: 'Nhắc nhở Streak' },
+    { value: 'streak_milestone', label: 'Mốc Streak' },
+    { value: 'game_achievement', label: 'Thành tích Game' },
+    { value: 'achievement', label: 'Thành tích' },
+    { value: 'new_feature', label: 'Tính năng Mới' },
+    { value: 'system_alert', label: 'Cảnh báo Hệ thống' }
+  ];
+
   if (!isOpen) return null;
 
   return (
@@ -94,11 +106,11 @@ const BroadcastNotificationModal: React.FC<BroadcastNotificationModalProps> = ({
               onChange={(e) => handleChange('type', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
             >
-              <option value="system_alert">🔔 Cảnh báo Hệ thống</option>
-              <option value="vocab_reminder">📚 Nhắc nhở Từ vựng</option>
-              <option value="study_progress">📊 Tiến độ Học tập</option>
-              <option value="achievement">🏆 Thành tích</option>
-              <option value="new_feature">🆕 Tính năng Mới</option>
+              {notificationTypes.map(type => (
+                <option key={type.value} value={type.value}>
+                  {type.label}
+                </option>
+              ))}
             </select>
           </div>
 

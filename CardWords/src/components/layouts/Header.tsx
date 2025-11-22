@@ -1,10 +1,11 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Menu, Bell, Search, User, Settings, LogOut, ChevronDown, 
-  Key, ClipboardList, X
+  Key, ClipboardList, X,
+  Loader2
 } from 'lucide-react';
+import { useProfileStore } from '../../store/ProfileStore'; // Điều chỉnh đường dẫn theo project của bạn
 
 interface HeaderProps {
   setIsSidebarOpen: (isOpen: boolean) => void;
@@ -12,31 +13,18 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ setIsSidebarOpen }) => {
   const navigate = useNavigate();
-  const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const notificationRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
+
+  // Sử dụng store profile
+  const {
+    profile,
+    loading,
+    fetchProfile
+  } = useProfileStore();
 
   const navigation = {
     toDashboard: () => navigate('/dashboard'),
-    toUserManagement: () => navigate('/users'),
-    toWordManagement: () => navigate('/words'),
-    searchUsers: (query: string) => navigate(`/users?search=${encodeURIComponent(query)}`),
-    searchWords: (query: string) => navigate(`/words?search=${encodeURIComponent(query)}`),
-    globalSearch: (query: string) => navigate(`/search?q=${encodeURIComponent(query)}`),
-    toNotifications: () => navigate('/notifications'),
-    viewNotification: (notificationId: string) => navigate(`/notifications/${notificationId}`),
-    navigateFromNotification: (type: string, targetId: string) => {
-      const routes: { [key: string]: string } = {
-        'user_registered': `/users/${targetId}`,
-        'password_reset': `/users/${targetId}/security`,
-        'system_update': '/system/updates',
-        'new_word': `/words/${targetId}`,
-        'user_report': `/reports/users/${targetId}`
-      };
-      if (routes[type]) navigate(routes[type]);
-    },
     toProfile: () => navigate('/profile'),
     toSettings: () => navigate('/settings'),
     toChangePassword: () => navigate('/profile/change-password'),
@@ -50,40 +38,13 @@ const Header: React.FC<HeaderProps> = ({ setIsSidebarOpen }) => {
     }
   };
 
-  const [notifications] = useState([
-    { 
-      id: 1, 
-      title: 'Người dùng mới đăng ký', 
-      time: '5 phút trước', 
-      unread: true,
-      type: 'user_registered',
-      targetId: 'user123'
-    },
-    { 
-      id: 2, 
-      title: 'Yêu cầu đặt lại mật khẩu', 
-      time: '1 giờ trước', 
-      unread: true,
-      type: 'password_reset',
-      targetId: 'user456'
-    },
-    { 
-      id: 3, 
-      title: 'Cập nhật hệ thống', 
-      time: '2 giờ trước', 
-      unread: false,
-      type: 'system_update',
-      targetId: 'update001'
-    },
-  ]);
-
-  const unreadCount = notifications.filter(n => n.unread).length;
+  useEffect(() => {
+    // Load profile khi component mount
+    loadProfile();
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
-        setShowNotifications(false);
-      }
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
         setShowUserMenu(false);
       }
@@ -92,33 +53,12 @@ const Header: React.FC<HeaderProps> = ({ setIsSidebarOpen }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigation.globalSearch(searchQuery);
-      setSearchQuery('');
+  const loadProfile = async () => {
+    try {
+      await fetchProfile();
+    } catch (error) {
+      console.error('Failed to load profile:', error);
     }
-  };
-
-  const handleQuickSearch = (type: 'users' | 'words') => {
-    if (searchQuery.trim()) {
-      if (type === 'users') {
-        navigation.searchUsers(searchQuery);
-      } else {
-        navigation.searchWords(searchQuery);
-      }
-      setSearchQuery('');
-    }
-  };
-
-  const handleNotificationClick = (notification: any) => {
-    navigation.navigateFromNotification(notification.type, notification.targetId);
-    setShowNotifications(false);
-  };
-
-  const handleMarkAllAsRead = () => {
-    console.log('Mark all notifications as read');
-    setShowNotifications(false);
   };
 
   const handleUserMenuAction = (action: string) => {
@@ -140,6 +80,22 @@ const Header: React.FC<HeaderProps> = ({ setIsSidebarOpen }) => {
         break;
     }
     setShowUserMenu(false);
+  };
+
+  // Lấy avatar URL hoặc fallback
+  const getAvatarUrl = () => {
+    if (profile?.avatar) {
+      return profile.avatar;
+    }
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.name || 'User')}&background=6366f1&color=fff`;
+  };
+
+  // Lời chào theo thời gian trong ngày
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Chào buổi sáng';
+    if (hour < 18) return 'Chào buổi chiều';
+    return 'Chào buổi tối';
   };
 
   return (
@@ -167,74 +123,20 @@ const Header: React.FC<HeaderProps> = ({ setIsSidebarOpen }) => {
           </button>
         </div>
 
-       
-
         {/* Right Section */}
         <div className="flex items-center space-x-3">
-          {/* Notifications */}
-          <div ref={notificationRef} className="relative">
-            <button
-              onClick={() => setShowNotifications(!showNotifications)}
-              className="relative p-2.5 rounded-xl hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 transition-all duration-200 group"
-            >
-              <Bell className="w-6 h-6 text-gray-700 group-hover:text-indigo-600 transition-colors" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full font-bold shadow-lg animate-pulse">
-                  {unreadCount}
-                </span>
+          {/* Lời chào và tên người dùng */}
+          <div className="hidden md:flex flex-col items-end mr-2">
+            <span className="text-sm text-gray-600 font-medium">
+              {getGreeting()}
+            </span>
+            <span className="text-base font-semibold text-gray-800">
+              {loading ? (
+                <Loader2 className="w-4 h-4 animate-spin inline" />
+              ) : (
+                profile?.name || 'Người dùng'
               )}
-            </button>
-            
-            {showNotifications && (
-              <div className="absolute right-0 mt-3 w-96 bg-white shadow-2xl rounded-2xl border border-gray-100 overflow-hidden animate-fade-in">
-                <div className="p-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <h3 className="font-bold text-lg">Thông báo</h3>
-                      <p className="text-xs text-indigo-100">{unreadCount} thông báo mới</p>
-                    </div>
-                    <button 
-                      onClick={handleMarkAllAsRead}
-                      className="text-xs bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition-all duration-200 backdrop-blur-sm"
-                    >
-                      Đánh dấu đã đọc
-                    </button>
-                  </div>
-                </div>
-                
-                <div className="max-h-96 overflow-y-auto">
-                  {notifications.map((notification) => (
-                    <div 
-                      key={notification.id} 
-                      className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 transition-all duration-200 ${
-                        notification.unread ? 'bg-blue-50 border-l-4 border-l-indigo-500' : ''
-                      }`}
-                      onClick={() => handleNotificationClick(notification)}
-                    >
-                      <div className="flex items-start space-x-3">
-                        <div className={`w-2 h-2 rounded-full mt-2 ${notification.unread ? 'bg-indigo-500 animate-pulse' : 'bg-gray-300'}`}></div>
-                        <div className="flex-1">
-                          <p className="font-semibold text-sm text-gray-900">{notification.title}</p>
-                          <p className="text-xs text-gray-500 mt-1">{notification.time}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                
-                <div className="p-3 text-center border-t bg-gray-50">
-                  <button 
-                    onClick={() => {
-                      navigation.toNotifications();
-                      setShowNotifications(false);
-                    }}
-                    className="text-indigo-600 text-sm hover:text-indigo-800 font-semibold transition-colors"
-                  >
-                    Xem tất cả thông báo →
-                  </button>
-                </div>
-              </div>
-            )}
+            </span>
           </div>
 
           {/* User Menu */}
@@ -243,20 +145,39 @@ const Header: React.FC<HeaderProps> = ({ setIsSidebarOpen }) => {
               onClick={() => setShowUserMenu(!showUserMenu)}
               className="flex items-center space-x-3 p-2 pl-3 rounded-xl hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 transition-all duration-200 group"
             >
-              <img
-                src="https://ui-avatars.com/api/?name=Admin+User&background=6366f1&color=fff"
-                alt="Avatar"
-                className="w-9 h-9 rounded-full ring-2 ring-white group-hover:ring-indigo-200 transition-all duration-200"
-              />
-              <span className="hidden lg:block font-semibold text-gray-700 group-hover:text-indigo-600 transition-colors">Admin</span>
+              {loading ? (
+                <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center">
+                  <Loader2 className="w-5 h-5 text-gray-500 animate-spin" />
+                </div>
+              ) : (
+                <img
+                  src={getAvatarUrl()}
+                  alt="Avatar"
+                  className="w-9 h-9 rounded-full ring-2 ring-white group-hover:ring-indigo-200 transition-all duration-200 object-cover"
+                />
+              )}
+              <span className="hidden lg:block font-semibold text-gray-700 group-hover:text-indigo-600 transition-colors">
+                {loading ? 'Loading...' : profile?.name || 'User'}
+              </span>
               <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${showUserMenu ? 'rotate-180' : ''}`} />
             </button>
             
             {showUserMenu && (
               <div className="absolute right-0 mt-3 w-64 bg-white shadow-2xl rounded-2xl border border-gray-100 overflow-hidden animate-fade-in">
                 <div className="p-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
-                  <p className="font-bold text-lg">Admin User</p>
-                  <p className="text-sm text-indigo-100 mt-0.5">admin@cardwords.com</p>
+                  <p className="font-bold text-lg truncate">
+                    {profile?.name || 'Người dùng'}
+                  </p>
+                  <p className="text-sm text-indigo-100 mt-0.5 truncate">
+                    {profile?.email || 'Chưa có email'}
+                  </p>
+                  {profile?.currentLevel && (
+                    <div className="mt-2">
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm">
+                        {profile.currentLevel}
+                      </span>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="py-2">

@@ -23,6 +23,12 @@ export const VOCAB_PROGRESS_CONSTANTS = {
     
     // Reset tiến độ của user
     RESET_USER_PROGRESS: (userId: string) => `/api/v1/admin/vocab-progress/user/${userId}/reset`,
+    
+    // Lấy danh sách người dùng
+    USERS: '/api/v1/admin/users',
+    
+    // Lấy danh sách từ vựng
+    VOCABS: '/api/v1/admin/vocabs',
   },
 
   // Error messages
@@ -33,6 +39,8 @@ export const VOCAB_PROGRESS_CONSTANTS = {
     FETCH_DIFFICULT_WORDS_FAILED: 'Không thể tải danh sách từ khó',
     DELETE_PROGRESS_FAILED: 'Không thể xóa bản ghi tiến độ',
     RESET_PROGRESS_FAILED: 'Không thể reset tiến độ người dùng',
+    FETCH_USERS_FAILED: 'Không thể tải danh sách người dùng',
+    FETCH_VOCABS_FAILED: 'Không thể tải danh sách từ vựng',
   },
 
   // Success messages

@@ -1,33 +1,32 @@
+
 import { 
   Topic, 
   TopicFormData, 
   BulkTopicCreate, 
   BulkTopicUpdate, 
   BulkOperationResult,
-  TopicApiResponse
+  TopicApiResponse,
+  StorageApiResponse
 } from '../types/topic';
 
 const API_BASE_URL = 'http://localhost:8080/api/v1/admin';
+const STORAGE_API_URL = 'http://localhost:8080/api/v1';
 
 class TopicService {
-  // Hàm lấy token từ localStorage
   private getAuthToken(): string | null {
     return localStorage.getItem('accessToken');
   }
 
-  // Hàm tạo headers với authentication
   private getAuthHeaders(contentType: string = 'application/json'): HeadersInit {
     const token = this.getAuthToken();
     const headers: HeadersInit = {
       'Accept': 'application/json',
     };
 
-    // Chỉ thêm Content-Type nếu không phải FormData
     if (contentType && contentType !== 'multipart/form-data') {
       headers['Content-Type'] = contentType;
     }
 
-    // Thêm token nếu có
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
@@ -36,18 +35,18 @@ class TopicService {
   }
 
   private async request<T>(
-    endpoint: string,
+    url: string,
     options: RequestInit = {}
   ): Promise<T> {
-    const url = `${API_BASE_URL}${endpoint}`;
-    
     const config: RequestInit = {
       headers: this.getAuthHeaders(),
       ...options,
     };
 
-    console.log('🔐 Token được sử dụng:', this.getAuthToken());
-    console.log('🌐 Making request to:', url);
+    console.log('🔍 Making request to:', url, {
+      method: config.method,
+      headers: config.headers
+    });
 
     const response = await fetch(url, config);
 
@@ -65,28 +64,28 @@ class TopicService {
       } else if (response.status === 401) {
         throw new Error('Token không hợp lệ hoặc đã hết hạn. Vui lòng đăng nhập lại.');
       } else {
-        throw new Error(`Lỗi HTTP! status: ${response.status} - ${response.statusText}`);
+        throw new Error(`Lỗi HTTP! status: ${response.status} - ${response.statusText}. Chi tiết: ${errorText}`);
       }
     }
 
-    return response.json();
+    const responseData = await response.json();
+    console.log('✅ API Success:', responseData);
+    return responseData;
   }
 
-  // GET - Lấy danh sách tất cả chủ đề
+  // ========== TOPIC APIs ==========
   async getAllTopics(): Promise<TopicApiResponse<Topic[]>> {
-    return this.request<TopicApiResponse<Topic[]>>('/topics', {
+    return this.request<TopicApiResponse<Topic[]>>(`${API_BASE_URL}/topics`, {
       method: 'GET',
     });
   }
 
-  // GET - Lấy thông tin chi tiết chủ đề theo ID
   async getTopicById(id: number): Promise<TopicApiResponse<Topic>> {
-    return this.request<TopicApiResponse<Topic>>(`/topics/${id}`, {
+    return this.request<TopicApiResponse<Topic>>(`${API_BASE_URL}/topics/${id}`, {
       method: 'GET',
     });
   }
 
-  // POST - Tạo chủ đề mới
   async createTopic(formData: TopicFormData): Promise<TopicApiResponse<Topic>> {
     const data = new FormData();
     data.append('name', formData.name);
@@ -97,9 +96,11 @@ class TopicService {
     
     if (formData.image) {
       data.append('image', formData.image);
+    } else if (formData.imageUrl) {
+      data.append('imageUrl', formData.imageUrl);
     }
 
-    return this.request<TopicApiResponse<Topic>>('/topics', {
+    return this.request<TopicApiResponse<Topic>>(`${API_BASE_URL}/topics`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${this.getAuthToken()}`,
@@ -108,7 +109,6 @@ class TopicService {
     });
   }
 
-  // PUT - Cập nhật chủ đề
   async updateTopic(
     id: number, 
     formData: Partial<TopicFormData>
@@ -125,9 +125,11 @@ class TopicService {
     
     if (formData.image) {
       data.append('image', formData.image);
+    } else if (formData.imageUrl) {
+      data.append('imageUrl', formData.imageUrl);
     }
 
-    return this.request<TopicApiResponse<Topic>>(`/topics/${id}`, {
+    return this.request<TopicApiResponse<Topic>>(`${API_BASE_URL}/topics/${id}`, {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${this.getAuthToken()}`,
@@ -136,83 +138,92 @@ class TopicService {
     });
   }
 
-  // DELETE - Xóa chủ đề
   async deleteTopic(id: number): Promise<TopicApiResponse<{}>> {
-    return this.request<TopicApiResponse<{}>>(`/topics/${id}`, {
+    return this.request<TopicApiResponse<{}>>(`${API_BASE_URL}/topics/${id}`, {
       method: 'DELETE',
     });
   }
 
-  // POST - Tạo nhiều chủ đề cùng lúc (với file upload)
   async bulkCreateTopics(
     bulkData: BulkTopicCreate
   ): Promise<TopicApiResponse<BulkOperationResult>> {
+    // Sử dụng JSON payload
+    const payload = {
+      topics: bulkData.topics.map(topic => ({
+        name: topic.name,
+        description: topic.description || null,
+        imageUrl: topic.imageUrl || null
+      }))
+    };
+
+    console.log('📤 Sending bulk create request with JSON:', payload);
+
+    return this.request<TopicApiResponse<BulkOperationResult>>(`${API_BASE_URL}/topics/bulk-create`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.getAuthToken()}`,
+      },
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async bulkUpdateTopics(
+    bulkData: BulkTopicUpdate
+  ): Promise<TopicApiResponse<BulkOperationResult>> {
+    // Sử dụng JSON payload
+    const payload = {
+      topics: bulkData.topics.map(topic => ({
+        id: topic.id,
+        name: topic.name || null,
+        description: topic.description || null,
+        imageUrl: topic.imageUrl || null
+      }))
+    };
+
+    console.log('📤 Sending bulk update request with JSON:', payload);
+
+    return this.request<TopicApiResponse<BulkOperationResult>>(`${API_BASE_URL}/topics/bulk-update`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.getAuthToken()}`,
+      },
+      body: JSON.stringify(payload),
+    });
+  }
+
+  // ========== UPLOAD APIs ==========
+  async uploadImage(file: File): Promise<StorageApiResponse<any>> {
     const formData = new FormData();
-    
-    // Append each topic data
-    bulkData.topics.forEach((topic, index) => {
-      formData.append(`topics[${index}][name]`, topic.name);
-      
-      if (topic.description) {
-        formData.append(`topics[${index}][description]`, topic.description);
-      }
-      
-      if (topic.image) {
-        formData.append(`topics[${index}][image]`, topic.image);
-      }
+    formData.append('file', file);
+
+    console.log('📤 Uploading image:', {
+      name: file.name,
+      size: file.size,
+      type: file.type
     });
 
-    return this.request<TopicApiResponse<BulkOperationResult>>('/topics/bulk-create', {
+    const response = await this.request<StorageApiResponse<any>>(`${STORAGE_API_URL}/storage/upload/image`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${this.getAuthToken()}`,
       },
       body: formData,
     });
+
+    console.log('✅ Upload response:', response);
+    return response;
   }
 
-  // PUT - Cập nhật nhiều chủ đề cùng lúc (với file upload)
-  async bulkUpdateTopics(
-    bulkData: BulkTopicUpdate
-  ): Promise<TopicApiResponse<BulkOperationResult>> {
-    const formData = new FormData();
-    
-    // Append each topic data
-    bulkData.topics.forEach((topic, index) => {
-      formData.append(`topics[${index}][id]`, topic.id.toString());
-      
-      if (topic.name) {
-        formData.append(`topics[${index}][name]`, topic.name);
-      }
-      
-      if (topic.description) {
-        formData.append(`topics[${index}][description]`, topic.description);
-      }
-      
-      if (topic.image) {
-        formData.append(`topics[${index}][image]`, topic.image);
-      }
-    });
-
-    return this.request<TopicApiResponse<BulkOperationResult>>('/topics/bulk-update', {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${this.getAuthToken()}`,
-      },
-      body: formData,
-    });
-  }
-
-  // Kiểm tra token có hợp lệ không
+  // Token utilities
   checkTokenValidity(): boolean {
     const token = this.getAuthToken();
     if (!token) return false;
 
     try {
-      // Giải mã token để kiểm tra expiry (JWT token)
       const payload = JSON.parse(atob(token.split('.')[1]));
       const currentTime = Date.now() / 1000;
-      
       return payload.exp > currentTime;
     } catch (error) {
       console.error('Lỗi kiểm tra token:', error);
@@ -220,7 +231,6 @@ class TopicService {
     }
   }
 
-  // Lấy thông tin user từ token
   getCurrentUser() {
     const token = this.getAuthToken();
     if (!token) return null;

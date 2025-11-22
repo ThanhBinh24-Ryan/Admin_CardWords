@@ -139,7 +139,7 @@ const LoginForm: React.FC = () => {
             <div className="input-group">
               <label className="input-label">Email</label>
               <div className="input-wrapper">
-                <Mail size={20} className="input-icon" />
+              
                 <input
                   className="login-input"
                   type="email"
@@ -157,7 +157,7 @@ const LoginForm: React.FC = () => {
             <div className="input-group">
               <label className="input-label">Mật khẩu</label>
               <div className="input-wrapper">
-                <Lock size={20} className="input-icon" />
+            
                 <input
                   className="login-input"
                   type={showPassword ? "text" : "password"}

@@ -5,7 +5,6 @@ import {
   ActionLog, 
   ActionLogFilter, 
   ActionLogStatistics,
-  CleanupParams,
   DEFAULT_PAGINATION 
 } from '../types/actionLog';
 import { actionLogService } from '../services/actionLogService';
@@ -42,15 +41,11 @@ export const useActionLogStore = create<ActionLogStore>()(
       fetchActionLogs: async (filters = {}) => {
         try {
           set({ loading: true, error: null });
-          console.log('🔄 Fetching action logs with filters:', filters);
 
           const currentFilters = get().filters;
           const mergedFilters = { ...currentFilters, ...filters };
           
           const response = await actionLogService.getActionLogs(mergedFilters);
-
-          console.log('📊 Action logs response:', response);
-          console.log('📊 Action logs content:', response.content);
 
           set({
             logs: response.content,
@@ -63,8 +58,6 @@ export const useActionLogStore = create<ActionLogStore>()(
               pageSize: response.size,
             },
           });
-
-          console.log('✅ Action logs stored successfully');
         } catch (error) {
           console.error('❌ Failed to fetch action logs:', error);
           set({ 
@@ -77,9 +70,7 @@ export const useActionLogStore = create<ActionLogStore>()(
       fetchStatistics: async () => {
         try {
           set({ loading: true, error: null });
-          console.log('🔄 Fetching statistics...');
           const statistics = await actionLogService.getActionLogStatistics();
-          console.log('📈 Statistics response:', statistics);
           set({ statistics, loading: false });
         } catch (error) {
           console.error('❌ Failed to fetch statistics:', error);
@@ -110,11 +101,13 @@ export const useActionLogStore = create<ActionLogStore>()(
 
       setFilters: (filters: Partial<ActionLogFilter>) => {
         const currentFilters = get().filters;
-        set({ filters: { ...currentFilters, ...filters } });
+        const newFilters = { ...currentFilters, ...filters };
+        set({ filters: newFilters });
       },
 
       resetFilters: () => {
-        set({ filters: { ...DEFAULT_PAGINATION } });
+        const defaultFilters = { ...DEFAULT_PAGINATION };
+        set({ filters: defaultFilters });
       },
 
       clearError: () => {

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWordTypeStore } from '../../store/wordTypeStore';
@@ -11,7 +12,8 @@ import {
   X,
   Loader2,
   AlertCircle,
-  Eye
+  Eye,
+  RefreshCw  // MỚI THÊM
 } from 'lucide-react';
 
 const WordTypesPage: React.FC = () => {
@@ -55,6 +57,11 @@ const WordTypesPage: React.FC = () => {
 
   const handleCreateNew = () => {
     navigate('/admin/word-types/create');
+  };
+
+  // MỚI THÊM: Điều hướng đến trang batch update
+  const handleBatchUpdate = () => {
+    navigate('/admin/word-types/batch-update');
   };
 
   const handleDeleteType = async (id: number, name: string) => {
@@ -142,13 +149,24 @@ const WordTypesPage: React.FC = () => {
               </div>
             </div>
             
-            <button
-              onClick={handleCreateNew}
-              className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all transform hover:scale-105 shadow-md flex items-center"
-            >
-              <Plus className="w-5 h-5 mr-2" />
-              Thêm Loại từ
-            </button>
+            <div className="flex gap-3">
+              {/* MỚI THÊM: Nút Batch Update */}
+              <button
+                onClick={handleBatchUpdate}
+                className="px-6 py-3 bg-gradient-to-r from-green-600 to-teal-600 text-white font-bold rounded-xl hover:from-green-700 hover:to-teal-700 transition-all transform hover:scale-105 shadow-md flex items-center"
+              >
+                <RefreshCw className="w-5 h-5 mr-2" />
+                Cập nhật Hàng loạt
+              </button>
+              
+              <button
+                onClick={handleCreateNew}
+                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all transform hover:scale-105 shadow-md flex items-center"
+              >
+                <Plus className="w-5 h-5 mr-2" />
+                Thêm Loại từ
+              </button>
+            </div>
           </div>
         </div>
 
@@ -188,8 +206,6 @@ const WordTypesPage: React.FC = () => {
                     </button>
                   </div>
                 </div>
-                
-            
                 
                 <div className="text-xs text-gray-500 font-medium">
                   ID: {type.id}

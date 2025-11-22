@@ -3,7 +3,10 @@ import {
   CreateNotificationRequest, 
   BroadcastNotificationRequest,
   BaseResponse,
-  PageResponse 
+  User,
+  UsersPageResponse,
+  NotificationSummary,
+  NotificationCategory
 } from '../types/notification';
 
 const API_BASE_URL = 'http://localhost:8080/api/v1/admin';
@@ -26,7 +29,7 @@ class NotificationService {
 
     const url = `${API_BASE_URL}${endpoint}`;
     
-    console.log('🔔 Notification Request:', url);
+    console.log('🔔 API Request:', url, options);
 
     try {
       const response = await fetch(url, {
@@ -34,125 +37,162 @@ class NotificationService {
         ...options,
       });
 
-      console.log('🔔 Notification Response status:', response.status);
+      console.log('🔔 API Response status:', response.status);
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      // Xử lý response empty
+      const contentLength = response.headers.get('content-length');
+      if (contentLength === '0') {
+        return {} as T;
       }
 
       const data = await response.json();
-      console.log('✅ Notification Response data:', data);
+      console.log('✅ API Response data:', data);
       return data;
     } catch (error) {
-      console.log('📝 Fallback to mock data for:', endpoint);
-      return this.getMockData<T>(endpoint, options);
+      console.error('❌ API Error:', error);
+      throw error;
     }
   }
 
-  private getMockData<T>(endpoint: string, options: RequestInit): T {
-    if (endpoint.includes('/notifications?') && options.method === undefined) {
-      return this.getMockNotifications() as T;
-    }
-    throw new Error(`Mock data not available for: ${endpoint}`);
-  }
-
-  private getMockNotifications(): PageResponse<Notification> {
-    console.log('🎯 Using mock data for notifications');
-    
-    const mockNotifications: Notification[] = [
-      {
-        id: 1,
-        title: 'Chào mừng đến với hệ thống!',
-        content: 'Cảm ơn bạn đã tham gia hệ thống học từ vựng của chúng tôi. Hãy khám phá các tính năng mới.',
-        type: 'system_alert',
-        isRead: true,
-        createdAt: '2024-01-20T10:00:00Z',
-        userId: '3fa85f64-5717-4562-b3fc-2c963f66afa6'
-      },
-      {
-        id: 2,
-        title: 'Nhắc nhở ôn tập từ vựng',
-        content: 'Bạn có 15 từ vựng cần ôn tập hôm nay. Đừng quên học để duy trì streak nhé!',
-        type: 'vocab_reminder',
-        isRead: false,
-        createdAt: '2024-01-20T09:30:00Z',
-        userId: '3fa85f64-5717-4562-b3fc-2c963f66afa6'
-      },
-      {
-        id: 3,
-        title: 'Tính năng mới: Học qua video',
-        content: 'Chúng tôi vừa ra mắt tính năng học từ vựng qua video. Hãy thử ngay để cải thiện kỹ năng nghe!',
-        type: 'new_feature',
-        isRead: false,
-        createdAt: '2024-01-19T15:20:00Z',
-        userId: '3fa85f64-5717-4562-b3fc-2c963f66afa6'
-      },
-      {
-        id: 4,
-        title: 'Chúc mừng bạn đã đạt 7 ngày học liên tiếp! 🎉',
-        content: 'Thật tuyệt vời! Bạn đã duy trì việc học được 7 ngày liên tiếp. Hãy tiếp tục phát huy nhé!',
-        type: 'achievement',
-        isRead: true,
-        createdAt: '2024-01-18T08:15:00Z',
-        userId: '3fa85f64-5717-4562-b3fc-2c963f66afa6'
-      },
-      {
-        id: 5,
-        title: 'Báo cáo tuần của bạn',
-        content: 'Tuần này bạn đã học được 45 từ mới với độ chính xác 92%. Tiếp tục phát huy nhé!',
-        type: 'study_progress',
-        isRead: true,
-        createdAt: '2024-01-17T14:30:00Z',
-        userId: '3fa85f64-5717-4562-b3fc-2c963f66afa6'
-      }
-    ];
-
-    return {
-      content: mockNotifications,
-      totalPages: 1,
-      totalElements: mockNotifications.length,
-      number: 0,
-      size: 20,
-      first: true,
-      last: true
-    };
-  }
-
-  async getNotifications(page: number = 0, size: number = 20): Promise<PageResponse<Notification>> {
+  async getUsers(page: number = 0, size: number = 100): Promise<UsersPageResponse> {
     const queryParams = new URLSearchParams({
       page: page.toString(),
-      size: size.toString()
+      size: size.toString(),
+      sortBy: 'createdAt',
+      sortDir: 'desc'
     });
-    return this.request<PageResponse<Notification>>(`/notifications?${queryParams.toString()}`);
+    
+    const response = await this.request<any>(`/users?${queryParams.toString()}`);
+    console.log('👥 Users API response:', response);
+    
+    // Chuẩn hóa response về dạng UsersPageResponse
+    if (response && response.data) {
+      return response.data as UsersPageResponse;
+    }
+    return response as UsersPageResponse;
+  }
+
+  async getNotificationSummary(): Promise<BaseResponse<NotificationSummary[]>> {
+    const response = await this.request<any>('/notifications/summary');
+    console.log('📈 Summary API response:', response);
+    
+    // Chuẩn hóa response về dạng BaseResponse
+    if (Array.isArray(response)) {
+      return {
+        status: 'success',
+        message: 'Success',
+        data: response
+      };
+    }
+    return response as BaseResponse<NotificationSummary[]>;
+  }
+
+  async getNotificationCategories(): Promise<BaseResponse<NotificationCategory[]>> {
+    const response = await this.request<any>('/notifications/categories');
+    console.log('📋 Categories API response:', response);
+    
+    // Chuẩn hóa response về dạng BaseResponse
+    if (Array.isArray(response)) {
+      return {
+        status: 'success',
+        message: 'Success',
+        data: response
+      };
+    }
+    return response as BaseResponse<NotificationCategory[]>;
   }
 
   async createNotification(request: CreateNotificationRequest): Promise<BaseResponse<Notification>> {
-    return this.request<BaseResponse<Notification>>('/notifications', {
+    const response = await this.request<any>('/notifications', {
       method: 'POST',
       body: JSON.stringify(request)
     });
+    console.log('📝 Create notification response:', response);
+    
+    // Chuẩn hóa response
+    if (response && !response.data) {
+      return {
+        status: 'success',
+        message: 'Notification created successfully',
+        data: response as Notification
+      };
+    }
+    return response as BaseResponse<Notification>;
   }
 
   async broadcastNotification(request: BroadcastNotificationRequest): Promise<BaseResponse<{}>> {
-    return this.request<BaseResponse<{}>>('/notifications/broadcast', {
+    const response = await this.request<any>('/notifications/broadcast', {
       method: 'POST',
       body: JSON.stringify(request)
     });
+    console.log('📢 Broadcast notification response:', response);
+    
+    // Chuẩn hóa response
+    if (response && !response.status) {
+      return {
+        status: 'success',
+        message: 'Notification broadcast successfully',
+        data: {}
+      };
+    }
+    return response as BaseResponse<{}>;
   }
 
-  async deleteNotification(userId: string, notificationId: number): Promise<BaseResponse<{}>> {
-    return this.request<BaseResponse<{}>>(`/notifications/${userId}/${notificationId}`, {
+  async deleteUserNotification(userId: string, notificationId: number): Promise<BaseResponse<{}>> {
+    const response = await this.request<any>(`/notifications/users/${userId}/${notificationId}`, {
       method: 'DELETE'
     });
+    console.log('🗑️ Delete user notification response:', response);
+    
+    // Chuẩn hóa response
+    if (response && !response.status) {
+      return {
+        status: 'success',
+        message: 'Notification deleted successfully',
+        data: {}
+      };
+    }
+    return response as BaseResponse<{}>;
   }
 
-  async deleteMultipleNotifications(userId: string, notificationIds: number[]): Promise<BaseResponse<{}>> {
-    const queryParams = new URLSearchParams({
-      ids: notificationIds.join(',')
+  async deleteMultipleUserNotifications(userId: string, notificationIds: number[]): Promise<BaseResponse<{}>> {
+    const response = await this.request<any>(`/notifications/users/${userId}/batch`, {
+      method: 'DELETE',
+      body: JSON.stringify({ notificationIds })
     });
-    return this.request<BaseResponse<{}>>(`/notifications/${userId}/batch?${queryParams.toString()}`, {
+    console.log('🗑️ Delete multiple notifications response:', response);
+    
+    // Chuẩn hóa response
+    if (response && !response.status) {
+      return {
+        status: 'success',
+        message: 'Notifications deleted successfully',
+        data: {}
+      };
+    }
+    return response as BaseResponse<{}>;
+  }
+
+  async deleteBroadcastNotification(notificationId: number): Promise<BaseResponse<{}>> {
+    const response = await this.request<any>(`/notifications/broadcast/${notificationId}`, {
       method: 'DELETE'
     });
+    console.log('🗑️ Delete broadcast notification response:', response);
+    
+    // Chuẩn hóa response
+    if (response && !response.status) {
+      return {
+        status: 'success',
+        message: 'Broadcast notification deleted successfully',
+        data: {}
+      };
+    }
+    return response as BaseResponse<{}>;
   }
 }
 

@@ -6,7 +6,12 @@ import {
   ApiResponse,
   PaginationParams,
   DifficultWordsParams,
-  UserProgressResponse
+  UserProgressResponse,
+  User,
+  UserResponse,
+  Vocab,
+  VocabResponse,
+  ListParams
 } from '../types/vocabProgress';
 
 const API_BASE_URL = 'http://localhost:8080/api/v1/admin';
@@ -133,6 +138,38 @@ class VocabProgressService {
     await this.request<ApiResponse<{}>>(`/vocab-progress/user/${userId}/reset`, {
       method: 'DELETE',
     });
+  }
+
+  // [Admin] Lấy danh sách người dùng
+  async getUsers(params: ListParams = {}): Promise<UserResponse> {
+    const { page = 0, size = 20, sortBy = 'createdAt', sortDir = 'desc' } = params;
+    const queryParams = new URLSearchParams({
+      page: page.toString(),
+      size: size.toString(),
+      sortBy,
+      sortDir
+    });
+
+    const response = await this.request<ApiResponse<UserResponse>>(
+      `/users?${queryParams}`
+    );
+    return response.data;
+  }
+
+  // [Admin] Lấy danh sách từ vựng
+  async getVocabs(params: ListParams = {}): Promise<VocabResponse> {
+    const { page = 0, size = 20, sortBy = 'createdAt', sortDir = 'desc' } = params;
+    const queryParams = new URLSearchParams({
+      page: page.toString(),
+      size: size.toString(),
+      sortBy,
+      sortDir
+    });
+
+    const response = await this.request<ApiResponse<VocabResponse>>(
+      `/vocabs?${queryParams}`
+    );
+    return response.data;
   }
 }
 

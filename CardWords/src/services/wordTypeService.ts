@@ -1,3 +1,4 @@
+// wordTypeService.ts
 import { 
   WordType, 
   WordTypeResponse, 
@@ -18,7 +19,6 @@ class WordTypeService {
     
     const headers: Record<string, string> = {};
 
-    // KHÔNG set Content-Type cho FormData, browser sẽ tự set với boundary
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
@@ -71,21 +71,17 @@ class WordTypeService {
     }
   }
 
-  // Lấy danh sách tất cả loại từ
   async getAllTypes(): Promise<WordTypesResponse> {
     return this.request<WordTypesResponse>('/types');
   }
 
-  // Lấy thông tin loại từ theo ID
   async getTypeById(id: number): Promise<WordTypeResponse> {
     return this.request<WordTypeResponse>(`/types/${id}`);
   }
 
-  // Tạo loại từ mới - SỬ DỤNG FORMDATA
   async createType(request: CreateWordTypeRequest): Promise<WordTypeResponse> {
     console.log('🔍 Original request data:', request);
     
-    // Tạo FormData object
     const formData = new FormData();
     formData.append('name', request.name.trim());
     
@@ -100,11 +96,43 @@ class WordTypeService {
     
     return this.request<WordTypeResponse>('/types', {
       method: 'POST',
-      body: formData, // Gửi FormData thay vì JSON
+      body: formData,
     });
   }
 
-  // Xóa loại từ
+  async updateType(id: number, request: { name: string }): Promise<WordTypeResponse> {
+    console.log('🔍 Update type request:', { id, request });
+    
+    const formData = new FormData();
+    formData.append('name', request.name.trim());
+    
+    return this.request<WordTypeResponse>(`/types/${id}`, {
+      method: 'PUT',
+      body: formData,
+    });
+  }
+
+  async updateTypesBatch(requests: Array<{ id: number; name: string }>): Promise<WordTypesResponse> {
+    console.log('🔍 Batch update request:', requests);
+    
+    const formData = new FormData();
+    
+    requests.forEach((request, index) => {
+      formData.append(`types[${index}].id`, request.id.toString());
+      formData.append(`types[${index}].name`, request.name.trim());
+    });
+    
+    console.log('🔍 FormData entries for batch:');
+    for (let [key, value] of formData.entries()) {
+      console.log(`  ${key}:`, value);
+    }
+    
+    return this.request<WordTypesResponse>('/types/batch', {
+      method: 'PUT',
+      body: formData,
+    });
+  }
+
   async deleteType(id: number): Promise<EmptyResponse> {
     return this.request<EmptyResponse>(`/types/${id}`, {
       method: 'DELETE',
