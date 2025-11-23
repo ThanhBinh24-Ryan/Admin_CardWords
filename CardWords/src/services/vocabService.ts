@@ -69,11 +69,13 @@ class VocabService {
     }
   }
 
-  // Upload image
-  async uploadImage(file: File): Promise<UploadResponse> {
+  // Upload image to Firebase Storage - ĐÃ SỬA THEO RESPONSE THỰC TẾ
+  async uploadImage(file: File): Promise<string> {
     const token = this.getAuthToken();
     const formData = new FormData();
     formData.append('file', file);
+
+    console.log('🖼️ Uploading image:', file.name, file.type, file.size);
 
     const response = await fetch(`${STORAGE_API_URL}/upload/image`, {
       method: 'POST',
@@ -84,17 +86,29 @@ class VocabService {
     });
 
     if (!response.ok) {
-      throw new Error(`Upload failed: ${response.status}`);
+      const errorText = await response.text();
+      console.error('❌ Image upload failed:', errorText);
+      throw new Error(`Upload failed: ${response.status} - ${errorText}`);
     }
 
-    return response.json();
+    const result: UploadResponse = await response.json();
+    console.log('✅ Image upload success:', result);
+    
+    // Extract URL từ response - FIXED THEO RESPONSE THỰC TẾ
+    if (!result.data || !result.data.url) {
+      throw new Error('Không thể lấy URL ảnh từ response');
+    }
+    
+    return result.data.url;
   }
 
-  // Upload audio
-  async uploadAudio(file: File): Promise<UploadResponse> {
+  // Upload audio to Firebase Storage - ĐÃ SỬA THEO RESPONSE THỰC TẾ
+  async uploadAudio(file: File): Promise<string> {
     const token = this.getAuthToken();
     const formData = new FormData();
     formData.append('file', file);
+
+    console.log('🔊 Uploading audio:', file.name, file.type, file.size);
 
     const response = await fetch(`${STORAGE_API_URL}/upload/audio`, {
       method: 'POST',
@@ -105,10 +119,43 @@ class VocabService {
     });
 
     if (!response.ok) {
-      throw new Error(`Upload failed: ${response.status}`);
+      const errorText = await response.text();
+      console.error('❌ Audio upload failed:', errorText);
+      throw new Error(`Upload failed: ${response.status} - ${errorText}`);
     }
 
-    return response.json();
+    const result: UploadResponse = await response.json();
+    console.log('✅ Audio upload success:', result);
+    
+    // Extract URL từ response - FIXED THEO RESPONSE THỰC TẾ
+    if (!result.data || !result.data.url) {
+      throw new Error('Không thể lấy URL audio từ response');
+    }
+    
+    return result.data.url;
+  }
+
+  // Export to Excel
+  async exportToExcel(): Promise<Blob> {
+    const token = this.getAuthToken();
+    const headers: Record<string, string> = {};
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    console.log('📊 Exporting to Excel...');
+
+    const response = await fetch(`${API_BASE_URL}/vocabs/export/excel`, {
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    console.log('✅ Excel export success');
+    return response.blob();
   }
 
   // Lấy từ vựng theo ID
@@ -209,26 +256,6 @@ class VocabService {
       method: 'POST',
       body: JSON.stringify({ vocabs }),
     });
-  }
-
-  // Export to Excel
-  async exportToExcel(): Promise<Blob> {
-    const token = this.getAuthToken();
-    const headers: Record<string, string> = {};
-
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    const response = await fetch(`${API_BASE_URL}/vocabs/export/excel`, {
-      headers,
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return response.blob();
   }
 }
 

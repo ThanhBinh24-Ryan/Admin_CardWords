@@ -1,6 +1,3 @@
-
-
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { vocabService } from '../../services/vocabService';
@@ -18,7 +15,11 @@ import {
   CheckCircle2, 
   Clock,
   AlertCircle,
-  Loader2
+  Loader2,
+  Award,
+  Type,
+  FileText,
+  Languages
 } from 'lucide-react';
 
 interface Vocab {
@@ -118,7 +119,8 @@ const VocabDetail: React.FC = () => {
     };
     
     return (
-      <span className={`px-4 py-2 rounded-full text-sm font-bold ${cefrColors[cefr] || 'bg-gray-100 text-gray-800'} transform transition-all hover:scale-105`}>
+      <span className={`px-4 py-2 rounded-full text-sm font-bold ${cefrColors[cefr] || 'bg-gray-100 text-gray-800'} transform transition-all hover:scale-105 flex items-center`}>
+        <Award className="w-4 h-4 mr-1" />
         CEFR {cefr}
       </span>
     );
@@ -138,7 +140,8 @@ const VocabDetail: React.FC = () => {
     
     const mainType = types[0].name.toLowerCase();
     return (
-      <span className={`px-4 py-2 rounded-full text-sm font-bold bg-gradient-to-r ${typeColors[mainType] || 'from-gray-400 to-gray-500'} text-white shadow-lg transform transition-all hover:scale-105`}>
+      <span className={`px-4 py-2 rounded-full text-sm font-bold bg-gradient-to-r ${typeColors[mainType] || 'from-gray-400 to-gray-500'} text-white shadow-lg transform transition-all hover:scale-105 flex items-center`}>
+        <Type className="w-4 h-4 mr-1" />
         {types[0].name}
       </span>
     );
@@ -151,7 +154,10 @@ const VocabDetail: React.FC = () => {
           <Loader2 className="w-16 h-16 text-blue-600 animate-spin" />
           <div className="absolute inset-0 w-16 h-16 border-4 border-blue-200 rounded-full animate-pulse"></div>
         </div>
-        <p className="text-gray-600 font-medium animate-pulse">Đang tải thông tin từ vựng...</p>
+        <p className="text-gray-600 font-medium animate-pulse flex items-center">
+          <BookOpen className="w-5 h-5 mr-2" />
+          Đang tải thông tin từ vựng...
+        </p>
       </div>
     );
   }
@@ -163,12 +169,16 @@ const VocabDetail: React.FC = () => {
           <div className="bg-red-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
             <AlertCircle className="w-10 h-10 text-red-600" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Lỗi khi tải dữ liệu</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center justify-center">
+            <AlertCircle className="w-6 h-6 mr-2" />
+            Lỗi khi tải dữ liệu
+          </h2>
           <p className="text-gray-600 mb-6">{error}</p>
           <button
             onClick={handleBack}
-            className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transform transition-all hover:scale-105 shadow-lg font-medium"
+            className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transform transition-all hover:scale-105 shadow-lg font-medium flex items-center mx-auto"
           >
+            <ArrowLeft className="w-4 h-4 mr-2" />
             Quay lại danh sách
           </button>
         </div>
@@ -181,12 +191,16 @@ const VocabDetail: React.FC = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-md mx-auto text-center bg-white rounded-2xl shadow-xl p-8">
           <div className="text-gray-300 text-6xl mb-4">🔍</div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Không tìm thấy từ vựng</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center justify-center">
+            <AlertCircle className="w-6 h-6 mr-2" />
+            Không tìm thấy từ vựng
+          </h2>
           <p className="text-gray-600 mb-6">Từ vựng bạn đang tìm kiếm không tồn tại.</p>
           <button
             onClick={handleBack}
-            className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transform transition-all hover:scale-105 shadow-lg font-medium"
+            className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transform transition-all hover:scale-105 shadow-lg font-medium flex items-center mx-auto"
           >
+            <ArrowLeft className="w-4 h-4 mr-2" />
             Quay lại danh sách
           </button>
         </div>
@@ -207,10 +221,14 @@ const VocabDetail: React.FC = () => {
               <ArrowLeft className="w-5 h-5 mr-2 group-hover:animate-pulse" />
               <span className="font-medium">Quay lại danh sách</span>
             </button>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2 flex items-center">
+              <BookOpen className="w-8 h-8 mr-3" />
               Chi tiết từ vựng
             </h1>
-            <p className="text-gray-600">Thông tin đầy đủ về từ "<span className="font-semibold text-gray-800">{vocab.word}</span>"</p>
+            <p className="text-gray-600 flex items-center">
+              <FileText className="w-4 h-4 mr-2" />
+              Thông tin đầy đủ về từ "<span className="font-semibold text-gray-800">{vocab.word}</span>"
+            </p>
           </div>
           <button
             onClick={handleEdit}
@@ -247,7 +265,8 @@ const VocabDetail: React.FC = () => {
                     />
                   </>
                 ) : (
-                  <div className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  <div className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent flex items-center">
+                    <Type className="w-12 h-12 mr-3" />
                     {vocab.word}
                   </div>
                 )}
@@ -256,7 +275,10 @@ const VocabDetail: React.FC = () => {
               {/* Basic Info */}
               <div className="p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-3xl font-bold text-gray-900">{vocab.word}</h2>
+                  <h2 className="text-3xl font-bold text-gray-900 flex items-center">
+                    <Languages className="w-6 h-6 mr-2" />
+                    {vocab.word}
+                  </h2>
                   {vocab.audio && (
                     <button
                       onClick={playAudio}
@@ -279,12 +301,20 @@ const VocabDetail: React.FC = () => {
 
                 <div className="space-y-4">
                   <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                    <span className="text-xs text-gray-500 font-semibold uppercase tracking-wide">Phiên âm</span>
-                    <p className="text-xl text-gray-800 font-mono mt-1">{vocab.transcription || 'Chưa có phiên âm'}</p>
+                    <span className="text-xs text-gray-500 font-semibold uppercase tracking-wide flex items-center">
+                      <MessageSquare className="w-4 h-4 mr-1" />
+                      Phiên âm
+                    </span>
+                    <p className="text-xl text-gray-800 font-mono mt-1 flex items-center">
+                      {vocab.transcription || 'Chưa có phiên âm'}
+                    </p>
                   </div>
 
                   <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4 border border-blue-100">
-                    <span className="text-xs text-gray-600 font-semibold uppercase tracking-wide">Nghĩa tiếng Việt</span>
+                    <span className="text-xs text-gray-600 font-semibold uppercase tracking-wide flex items-center">
+                      <BookOpen className="w-4 h-4 mr-1" />
+                      Nghĩa tiếng Việt
+                    </span>
                     <p className="text-2xl text-gray-900 font-bold mt-1">{vocab.meaningVi}</p>
                   </div>
 
@@ -366,7 +396,8 @@ const VocabDetail: React.FC = () => {
               </h3>
               <div className="bg-gradient-to-r from-green-50 via-blue-50 to-purple-50 border-2 border-green-200 rounded-2xl p-6 relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-green-400 to-blue-400"></div>
-                <p className="text-gray-800 italic text-xl leading-relaxed pl-4">
+                <p className="text-gray-800 italic text-xl leading-relaxed pl-4 flex items-start">
+                  <FileText className="w-5 h-5 mr-2 mt-1 flex-shrink-0" />
                   "{vocab.exampleSentence}"
                 </p>
               </div>
@@ -380,7 +411,8 @@ const VocabDetail: React.FC = () => {
                   Chủ đề
                 </h3>
                 <div className="flex flex-wrap gap-3">
-                  <span className="px-5 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-bold hover:from-purple-600 hover:to-pink-600 transition-all cursor-pointer shadow-lg transform hover:scale-105">
+                  <span className="px-5 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-bold hover:from-purple-600 hover:to-pink-600 transition-all cursor-pointer shadow-lg transform hover:scale-105 flex items-center">
+                    <Tag className="w-4 h-4 mr-2" />
                     {vocab.topic.name}
                   </span>
                 </div>
@@ -398,8 +430,9 @@ const VocabDetail: React.FC = () => {
                   {vocab.types.map(type => (
                     <span
                       key={type.id}
-                      className="px-5 py-3 bg-gradient-to-r from-orange-400 to-amber-400 text-white rounded-xl font-bold shadow-lg transform transition-all hover:scale-105"
+                      className="px-5 py-3 bg-gradient-to-r from-orange-400 to-amber-400 text-white rounded-xl font-bold shadow-lg transform transition-all hover:scale-105 flex items-center"
                     >
+                      <Type className="w-4 h-4 mr-2" />
                       {type.name}
                     </span>
                   ))}
@@ -416,15 +449,24 @@ const VocabDetail: React.FC = () => {
               <div className="space-y-4 text-gray-700">
                 <div className="flex items-start p-4 bg-gradient-to-r from-teal-50 to-transparent rounded-xl border-l-4 border-teal-400">
                   <div className="w-2 h-2 bg-teal-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                  <p className="leading-relaxed">Từ vựng cấp độ <span className="font-bold text-teal-600">{vocab.cefr}</span> - phù hợp cho người học tiếng Anh</p>
+                  <p className="leading-relaxed flex items-center">
+                    <Award className="w-4 h-4 mr-2" />
+                    Từ vựng cấp độ <span className="font-bold text-teal-600 mx-1">{vocab.cefr}</span> - phù hợp cho người học tiếng Anh
+                  </p>
                 </div>
                 <div className="flex items-start p-4 bg-gradient-to-r from-blue-50 to-transparent rounded-xl border-l-4 border-blue-400">
                   <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                  <p className="leading-relaxed">Có thể sử dụng trong cả ngữ cảnh trang trọng và thân mật</p>
+                  <p className="leading-relaxed flex items-center">
+                    <MessageSquare className="w-4 h-4 mr-2" />
+                    Có thể sử dụng trong cả ngữ cảnh trang trọng và thân mật
+                  </p>
                 </div>
                 <div className="flex items-start p-4 bg-gradient-to-r from-purple-50 to-transparent rounded-xl border-l-4 border-purple-400">
                   <div className="w-2 h-2 bg-purple-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                  <p className="leading-relaxed">Thường xuyên xuất hiện trong giao tiếp hàng ngày</p>
+                  <p className="leading-relaxed flex items-center">
+                    <BookOpen className="w-4 h-4 mr-2" />
+                    Thường xuyên xuất hiện trong giao tiếp hàng ngày
+                  </p>
                 </div>
               </div>
             </div>
@@ -435,8 +477,9 @@ const VocabDetail: React.FC = () => {
         <div className="flex justify-end space-x-4 mt-8 pt-6 border-t border-gray-200">
           <button
             onClick={handleBack}
-            className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all transform hover:scale-105 font-medium shadow-md"
+            className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all transform hover:scale-105 font-medium shadow-md flex items-center"
           >
+            <ArrowLeft className="w-4 h-4 mr-2" />
             Quay lại danh sách
           </button>
           <button

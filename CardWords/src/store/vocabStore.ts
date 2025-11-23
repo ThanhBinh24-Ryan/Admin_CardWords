@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { vocabService } from '../services/vocabService';
-import { storageService } from '../services/storageService';
 import { 
   Vocab, 
   CreateVocabRequest, 
@@ -8,9 +7,7 @@ import {
   PaginationParams,
   SearchParams,
   CefrParams,
-  BulkImportResponse,
-  MediaUploadResponse,
-  CleanupResponse
+  BulkImportResponse
 } from '../types/vocab';
 
 interface VocabState {
@@ -25,8 +22,6 @@ interface VocabState {
     pageSize: number;
   };
   bulkImportResult: BulkImportResponse | null;
-  mediaUploadResult: MediaUploadResponse | null;
-  cleanupResult: CleanupResponse | null;
 }
 
 interface VocabActions {
@@ -48,14 +43,8 @@ interface VocabActions {
   exportToExcel: () => Promise<void>;
   
   // Storage operations
-  uploadImage: (file: File) => Promise<void>;
-  uploadImages: (files: File[]) => Promise<void>;
-  uploadAudio: (file: File) => Promise<void>;
-  uploadAudios: (files: File[]) => Promise<void>;
-  uploadMediaAndUpdateVocab: (files: File[]) => Promise<void>;
-  cleanupImages: (dryRun?: boolean) => Promise<void>;
-  cleanupAudios: (dryRun?: boolean) => Promise<void>;
-  deleteFile: (url: string) => Promise<void>;
+  uploadImage: (file: File) => Promise<string>;
+  uploadAudio: (file: File) => Promise<string>;
   
   // State management
   setLoading: (loading: boolean) => void;
@@ -64,8 +53,6 @@ interface VocabActions {
   clearCurrentVocab: () => void;
   clearVocabs: () => void;
   clearBulkImportResult: () => void;
-  clearMediaUploadResult: () => void;
-  clearCleanupResult: () => void;
 }
 
 const initialState: VocabState = {
@@ -80,8 +67,6 @@ const initialState: VocabState = {
     pageSize: 20,
   },
   bulkImportResult: null,
-  mediaUploadResult: null,
-  cleanupResult: null,
 };
 
 export const useVocabStore = create<VocabState & VocabActions>((set, get) => ({
@@ -330,12 +315,13 @@ export const useVocabStore = create<VocabState & VocabActions>((set, get) => ({
     }
   },
 
-  // Storage methods
-  uploadImage: async (file: File) => {
+  // Storage methods - ĐÃ SỬA: Trả về string URL
+  uploadImage: async (file: File): Promise<string> => {
     set({ loading: true, error: null });
     try {
-      await storageService.uploadImage(file);
+      const imageUrl = await vocabService.uploadImage(file);
       set({ loading: false });
+      return imageUrl;
     } catch (error: any) {
       set({ 
         error: error.message || 'Failed to upload image',
@@ -345,107 +331,15 @@ export const useVocabStore = create<VocabState & VocabActions>((set, get) => ({
     }
   },
 
-  uploadImages: async (files: File[]) => {
+  uploadAudio: async (file: File): Promise<string> => {
     set({ loading: true, error: null });
     try {
-      await storageService.uploadImages(files);
+      const audioUrl = await vocabService.uploadAudio(file);
       set({ loading: false });
-    } catch (error: any) {
-      set({ 
-        error: error.message || 'Failed to upload images',
-        loading: false 
-      });
-      throw error;
-    }
-  },
-
-  uploadAudio: async (file: File) => {
-    set({ loading: true, error: null });
-    try {
-      await storageService.uploadAudio(file);
-      set({ loading: false });
+      return audioUrl;
     } catch (error: any) {
       set({ 
         error: error.message || 'Failed to upload audio',
-        loading: false 
-      });
-      throw error;
-    }
-  },
-
-  uploadAudios: async (files: File[]) => {
-    set({ loading: true, error: null });
-    try {
-      await storageService.uploadAudios(files);
-      set({ loading: false });
-    } catch (error: any) {
-      set({ 
-        error: error.message || 'Failed to upload audios',
-        loading: false 
-      });
-      throw error;
-    }
-  },
-
-  uploadMediaAndUpdateVocab: async (files: File[]) => {
-    set({ loading: true, error: null });
-    try {
-      const response = await storageService.uploadMediaAndUpdateVocab(files);
-      set({ 
-        mediaUploadResult: response,
-        loading: false 
-      });
-    } catch (error: any) {
-      set({ 
-        error: error.message || 'Failed to upload media',
-        loading: false 
-      });
-      throw error;
-    }
-  },
-
-  cleanupImages: async (dryRun: boolean = true) => {
-    set({ loading: true, error: null });
-    try {
-      const response = await storageService.cleanupImages(dryRun);
-      set({ 
-        cleanupResult: response,
-        loading: false 
-      });
-    } catch (error: any) {
-      set({ 
-        error: error.message || 'Failed to cleanup images',
-        loading: false 
-      });
-      throw error;
-    }
-  },
-
-  cleanupAudios: async (dryRun: boolean = true) => {
-    set({ loading: true, error: null });
-    try {
-      const response = await storageService.cleanupAudios(dryRun);
-      set({ 
-        cleanupResult: response,
-        loading: false 
-      });
-    } catch (error: any) {
-      set({ 
-        error: error.message || 'Failed to cleanup audios',
-        loading: false 
-      });
-      throw error;
-    }
-  },
-
-  deleteFile: async (url: string) => {
-    set({ loading: true, error: null });
-    try {
-      await storageService.deleteFile(url);
-      set({ loading: false });
-    } catch (error: any) {
-      set({ 
-        error: error.message || 'Failed to delete file',
         loading: false 
       });
       throw error;
@@ -458,6 +352,4 @@ export const useVocabStore = create<VocabState & VocabActions>((set, get) => ({
   clearCurrentVocab: () => set({ currentVocab: null }),
   clearVocabs: () => set({ vocabs: [] }),
   clearBulkImportResult: () => set({ bulkImportResult: null }),
-  clearMediaUploadResult: () => set({ mediaUploadResult: null }),
-  clearCleanupResult: () => set({ cleanupResult: null }),
 }));

@@ -1,6 +1,4 @@
-
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUserStore } from '../../store/userStore';
 import { User, UserFilter } from '../../types/user';
@@ -36,7 +34,7 @@ import ActivateUserModal from './modals/ActivateUserModal';
 const UserList: React.FC = () => {
   const navigate = useNavigate();
   const {
-    users,
+    users, // users từ store
     loading,
     error,
     pagination,
@@ -71,21 +69,31 @@ const UserList: React.FC = () => {
     current_level: ''
   });
 
+  const [isSearching, setIsSearching] = useState(false);
+
+  // Debounce search
+  const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
+
+  // Load users khi component mount
   useEffect(() => {
-    loadUsers();
-  }, [currentPage, itemsPerPage]);
+    loadInitialUsers();
+  }, []);
 
   useEffect(() => {
     return () => {
       clearError();
+      if (searchTimeout) {
+        clearTimeout(searchTimeout);
+      }
     };
   }, []);
 
-  const loadUsers = async () => {
+  // Load users ban đầu
+  const loadInitialUsers = async () => {
     try {
       await fetchUsers({
-        page: currentPage,
-        size: itemsPerPage,
+        page: 0,
+        size: 100, // Load đủ để hiển thị
         sortBy: 'createdAt',
         sortDir: 'desc'
       });
@@ -94,21 +102,98 @@ const UserList: React.FC = () => {
     }
   };
 
+  // Filter users locally based on filters
+  const filteredUsers = useMemo(() => {
+    if (isSearching) {
+      return users; // Use search results directly
+    }
+
+    let result = [...users];
+
+    // Filter by search
+    if (filters.search) {
+      const searchLower = filters.search.toLowerCase();
+      result = result.filter(user => 
+        user.name.toLowerCase().includes(searchLower) ||
+        user.email.toLowerCase().includes(searchLower)
+      );
+    }
+
+    // Filter by activation status
+    if (filters.activated !== null) {
+      result = result.filter(user => user.activated === filters.activated);
+    }
+
+    // Filter by ban status
+    if (filters.banned !== null) {
+      result = result.filter(user => user.banned === filters.banned);
+    }
+
+    // Filter by level
+    if (filters.current_level) {
+      result = result.filter(user => user.currentLevel === filters.current_level);
+    }
+
+    // Filter by status
+    if (filters.status) {
+      result = result.filter(user => user.status === filters.status);
+    }
+
+    return result;
+  }, [users, filters, isSearching]);
+
+  // Paginate filtered users
+  const paginatedUsers = useMemo(() => {
+    const startIndex = currentPage * itemsPerPage;
+    return filteredUsers.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredUsers, currentPage, itemsPerPage]);
+
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+
   const handleSearch = async () => {
     if (!filters.search.trim()) {
-      loadUsers();
+      // If search is empty, switch back to local filtering
+      setIsSearching(false);
+      setCurrentPage(0);
+      await loadInitialUsers(); // Reload original data
       return;
     }
 
+    setIsSearching(true);
+    setCurrentPage(0);
     try {
       await searchUsers({
         keyword: filters.search,
-        page: currentPage,
+        page: 0, // Always start from page 0 when searching
         size: itemsPerPage
       });
     } catch (error) {
       console.error('Failed to search users:', error);
     }
+  };
+
+  // Debounced search handler
+  const handleSearchChange = (value: string) => {
+    setFilters(prev => ({ ...prev, search: value }));
+    
+    // Clear existing timeout
+    if (searchTimeout) {
+      clearTimeout(searchTimeout);
+    }
+    
+    // Set new timeout for debounced search
+    const newTimeout = setTimeout(() => {
+      if (value.trim()) {
+        handleSearch();
+      } else {
+        // If search is cleared, switch back to local data
+        setIsSearching(false);
+        setCurrentPage(0);
+        loadInitialUsers();
+      }
+    }, 500);
+    
+    setSearchTimeout(newTimeout);
   };
 
   const handleDelete = (user: User) => {
@@ -122,17 +207,15 @@ const UserList: React.FC = () => {
     setActionLoading('delete');
     try {
       await deleteUser(selectedUser.id);
-     
       setShowDeleteModal(false);
-      loadUsers();
+      // Reload data after delete
+      await loadInitialUsers();
     } catch (error: any) {
-     
+      console.error('Delete failed:', error);
     } finally {
       setActionLoading(null);
     }
   };
-
-
 
   const handleResetPassword = (user: User) => {
     setSelectedUser(user);
@@ -154,13 +237,12 @@ const UserList: React.FC = () => {
       });
       
       if (response.ok) {
-     
         setShowResetPasswordModal(false);
       } else {
         throw new Error('Failed to send reset password email');
       }
     } catch (error) {
-     
+      console.error('Reset password failed:', error);
     } finally {
       setActionLoading(null);
     }
@@ -182,11 +264,11 @@ const UserList: React.FC = () => {
     setActionLoading('updateRoles');
     try {
       await updateUserRoles(selectedUser.id, selectedRoles);
-     
       setShowRoleModal(false);
-      loadUsers();
+      // Reload data after update
+      await loadInitialUsers();
     } catch (error) {
-   
+      console.error('Update roles failed:', error);
     } finally {
       setActionLoading(null);
     }
@@ -203,11 +285,11 @@ const UserList: React.FC = () => {
     setActionLoading('ban');
     try {
       await banUser(selectedUser.id, banned);
-    
       setShowBanModal(false);
-      loadUsers();
+      // Reload data after ban
+      await loadInitialUsers();
     } catch (error) {
-   
+      console.error('Ban user failed:', error);
     } finally {
       setActionLoading(null);
     }
@@ -224,22 +306,26 @@ const UserList: React.FC = () => {
     setActionLoading('activate');
     try {
       await activateUser(selectedUser.id, activated);
-   
       setShowActivateModal(false);
-      loadUsers();
+      // Reload data after activation
+      await loadInitialUsers();
     } catch (error) {
-   
+      console.error('Activate user failed:', error);
     } finally {
       setActionLoading(null);
     }
   };
 
   const handleFilterChange = (key: keyof UserFilter, value: any) => {
-    setFilters((prev: UserFilter) => ({
+    setFilters(prev => ({
       ...prev,
       [key]: value
     }));
     setCurrentPage(0);
+    // When using other filters, switch back to local data
+    if (key !== 'search') {
+      setIsSearching(false);
+    }
   };
 
   const clearFilters = () => {
@@ -251,7 +337,8 @@ const UserList: React.FC = () => {
       current_level: ''
     });
     setCurrentPage(0);
-    loadUsers();
+    setIsSearching(false);
+    loadInitialUsers();
   };
 
   const getStatusBadge = (user: User) => {
@@ -315,6 +402,17 @@ const UserList: React.FC = () => {
     );
   };
 
+  // Get active filter count for badge
+  const getActiveFilterCount = () => {
+    let count = 0;
+    if (filters.search) count++;
+    if (filters.status) count++;
+    if (filters.banned !== null) count++;
+    if (filters.activated !== null) count++;
+    if (filters.current_level) count++;
+    return count;
+  };
+
   if (loading && users.length === 0) {
     return (
       <div className="flex flex-col justify-center items-center min-h-[70vh] space-y-4">
@@ -365,9 +463,25 @@ const UserList: React.FC = () => {
 
         {/* Filters */}
         <div className="bg-white rounded-2xl shadow-xl p-6 mb-6 border border-gray-100">
-          <div className="flex items-center mb-6">
-            <Filter className="w-5 h-5 text-blue-600 mr-2" />
-            <h3 className="text-lg font-bold text-gray-900">Bộ lọc tìm kiếm</h3>
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center">
+              <Filter className="w-5 h-5 text-blue-600 mr-2" />
+              <h3 className="text-lg font-bold text-gray-900">Bộ lọc tìm kiếm</h3>
+              {getActiveFilterCount() > 0 && (
+                <span className="ml-2 bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full">
+                  {getActiveFilterCount()} bộ lọc đang hoạt động
+                </span>
+              )}
+            </div>
+            {getActiveFilterCount() > 0 && (
+              <button
+                onClick={clearFilters}
+                className="text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center"
+              >
+                {/* <X className="w-4 h-4 mr-1" />
+                Xóa tất cả */}
+              </button>
+            )}
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
@@ -381,11 +495,18 @@ const UserList: React.FC = () => {
                   type="text"
                   placeholder="Tìm theo tên hoặc email..."
                   value={filters.search}
-                  onChange={(e) => handleFilterChange('search', e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                  onChange={(e) => handleSearchChange(e.target.value)}
                   className="w-full px-4 py-3 pl-10 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                 />
                 <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                {filters.search && (
+                  <button
+                    onClick={() => handleSearchChange('')}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
               </div>
             </div>
             
@@ -444,17 +565,15 @@ const UserList: React.FC = () => {
           
           <div className="flex justify-between items-center pt-4 border-t border-gray-200">
             <div className="text-sm font-semibold text-gray-700">
-              Tổng số: <span className="text-blue-600">{pagination.totalElements}</span> người dùng
+              Hiển thị: <span className="text-blue-600">{filteredUsers.length}</span> người dùng
+              {isSearching && (
+                <span className="ml-2 bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full">
+                  Đang tìm kiếm
+                </span>
+              )}
             </div>
             
             <div className="flex gap-3">
-              <button
-                onClick={handleSearch}
-                className="px-6 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all transform hover:scale-105 shadow-md flex items-center"
-              >
-                <Search className="w-4 h-4 mr-2" />
-                Tìm kiếm
-              </button>
               <button
                 onClick={clearFilters}
                 className="px-6 py-2 text-gray-700 border-2 border-gray-300 font-bold rounded-xl hover:bg-gray-50 transition-all transform hover:scale-105 shadow-md flex items-center"
@@ -496,7 +615,7 @@ const UserList: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {users.map((user) => (
+                {paginatedUsers.map((user) => (
                   <tr key={user.id} className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
@@ -615,7 +734,7 @@ const UserList: React.FC = () => {
             </table>
           </div>
 
-          {users.length === 0 && !loading && (
+          {paginatedUsers.length === 0 && !loading && (
             <div className="text-center py-16">
               <div className="bg-gray-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Users className="w-12 h-12 text-gray-400" />
@@ -632,15 +751,15 @@ const UserList: React.FC = () => {
           )}
 
           {/* Pagination */}
-          {pagination.totalPages > 1 && (
+          {totalPages > 1 && (
             <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 flex items-center justify-between border-t-2 border-gray-200">
               <div>
                 <p className="text-sm font-medium text-gray-700">
                   Hiển thị <span className="font-bold text-blue-600">{currentPage * itemsPerPage + 1}</span> đến{' '}
                   <span className="font-bold text-blue-600">
-                    {Math.min((currentPage + 1) * itemsPerPage, pagination.totalElements)}
+                    {Math.min((currentPage + 1) * itemsPerPage, filteredUsers.length)}
                   </span>{' '}
-                  trong tổng số <span className="font-bold text-blue-600">{pagination.totalElements}</span> kết quả
+                  trong tổng số <span className="font-bold text-blue-600">{filteredUsers.length}</span> kết quả
                 </p>
               </div>
               <div className="flex gap-2">
@@ -652,13 +771,13 @@ const UserList: React.FC = () => {
                   Trước
                 </button>
                 <div className="flex gap-1">
-                  {Array.from({ length: Math.min(pagination.totalPages, 5) }, (_, i) => {
+                  {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
                     let page = i;
-                    if (pagination.totalPages > 5) {
+                    if (totalPages > 5) {
                       if (currentPage < 3) {
                         page = i;
-                      } else if (currentPage > pagination.totalPages - 3) {
-                        page = pagination.totalPages - 5 + i;
+                      } else if (currentPage > totalPages - 3) {
+                        page = totalPages - 5 + i;
                       } else {
                         page = currentPage - 2 + i;
                       }
@@ -679,8 +798,8 @@ const UserList: React.FC = () => {
                   })}
                 </div>
                 <button
-                  onClick={() => setCurrentPage((prev: number) => Math.min(prev + 1, pagination.totalPages - 1))}
-                  disabled={currentPage === pagination.totalPages - 1}
+                  onClick={() => setCurrentPage((prev: number) => Math.min(prev + 1, totalPages - 1))}
+                  disabled={currentPage === totalPages - 1}
                   className="px-4 py-2 border-2 border-gray-300 text-sm font-bold rounded-xl text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-105 shadow-md"
                 >
                   Sau
@@ -690,6 +809,7 @@ const UserList: React.FC = () => {
           )}
         </div>
 
+        {/* Các modal components giữ nguyên */}
         {/* Role Modal */}
         {showRoleModal && selectedUser && (
           <UserRoleModal
@@ -752,7 +872,7 @@ const UserList: React.FC = () => {
   );
 };
 
-// Role Modal Component
+// Role Modal Component (giữ nguyên)
 const UserRoleModal: React.FC<{
   user: User;
   selectedRoles: string[];

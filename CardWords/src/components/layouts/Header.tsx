@@ -190,14 +190,6 @@ const Header: React.FC<HeaderProps> = ({ setIsSidebarOpen }) => {
                   </button>
                   
                   <button 
-                    onClick={() => handleUserMenuAction('settings')}
-                    className="w-full text-left px-4 py-3 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 flex items-center space-x-3 transition-all duration-200 group"
-                  >
-                    <Settings className="w-5 h-5 text-gray-500 group-hover:text-indigo-600 transition-colors" />
-                    <span className="font-medium text-gray-700 group-hover:text-indigo-600 transition-colors">Cài đặt hệ thống</span>
-                  </button>
-                  
-                  <button 
                     onClick={() => handleUserMenuAction('change-password')}
                     className="w-full text-left px-4 py-3 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 flex items-center space-x-3 transition-all duration-200 group"
                   >
@@ -205,13 +197,6 @@ const Header: React.FC<HeaderProps> = ({ setIsSidebarOpen }) => {
                     <span className="font-medium text-gray-700 group-hover:text-indigo-600 transition-colors">Đổi mật khẩu</span>
                   </button>
                   
-                  <button 
-                    onClick={() => handleUserMenuAction('activity-logs')}
-                    className="w-full text-left px-4 py-3 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 flex items-center space-x-3 transition-all duration-200 group"
-                  >
-                    <ClipboardList className="w-5 h-5 text-gray-500 group-hover:text-indigo-600 transition-colors" />
-                    <span className="font-medium text-gray-700 group-hover:text-indigo-600 transition-colors">Nhật ký hoạt động</span>
-                  </button>
                 </div>
                 
                 <div className="border-t border-gray-200 p-2">

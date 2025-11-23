@@ -121,12 +121,14 @@ export interface EmptyResponse {
   data: {};
 }
 
-// Storage types
+// Storage types - CẬP NHẬT THEO RESPONSE THỰC TẾ
 export interface UploadResponse {
   status: string;
   message: string;
   data: {
-    [key: string]: string;
+    filename: string;
+    size: string;
+    url: string;
   };
 }
 
@@ -188,24 +190,10 @@ export interface CleanupResponse {
     errorFilesList: string[];
   };
 }
+
 export interface VocabFilter {
   search: string;
   cefr: string;
   type: string;
   topic: string;
-}
-export interface BulkImportResponse {
-  status: string;
-  message: string;
-  data: {
-    totalRequested: number;
-    successCount: number;
-    failedCount: number;
-    skippedCount: number;
-    errors: Array<{
-      word: string;
-      reason: string;
-      lineNumber: number;
-    }>;
-  };
 }

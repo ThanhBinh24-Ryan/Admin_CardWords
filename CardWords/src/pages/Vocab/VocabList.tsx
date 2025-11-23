@@ -1,5 +1,4 @@
-
-// import React, { useState, useEffect, useMemo } from 'react';
+// import React, { useState, useEffect, useMemo, useCallback } from 'react';
 // import { useNavigate, useSearchParams } from 'react-router-dom';
 // import { useVocabStore } from '../../store/vocabStore';
 // import { useTopicStore } from '../../store/topicStore';
@@ -9,24 +8,47 @@
 // import { 
 //   Search, Plus, X, Eye, Edit, Trash2, Volume2, BookOpen,
 //   Filter, Loader2, ChevronLeft, ChevronRight, Sparkles, Tag, Languages,
-//   FileUp
+//   FileUp, Download
 // } from 'lucide-react';
+
+// // Custom debounce hook
+// const useDebounce = (value: string, delay: number) => {
+//   const [debouncedValue, setDebouncedValue] = useState(value);
+
+//   useEffect(() => {
+//     const handler = setTimeout(() => {
+//       setDebouncedValue(value);
+//     }, delay);
+
+//     return () => {
+//       clearTimeout(handler);
+//     };
+//   }, [value, delay]);
+
+//   return debouncedValue;
+// };
 
 // const VocabList: React.FC = () => {
 //   const navigate = useNavigate();
 //   const [searchParams, setSearchParams] = useSearchParams();
   
 //   // Stores
-//   const { vocabs, loading, error, pagination, fetchVocabs, deleteVocab, clearError } = useVocabStore();
+//   const { vocabs, loading, error, pagination, fetchVocabs, deleteVocab, clearError, exportToExcel } = useVocabStore();
 //   const { topics, fetchTopics } = useTopicStore();
 //   const { wordTypes, fetchAllTypes } = useWordTypeStore();
   
 //   const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
+//   const [exportLoading, setExportLoading] = useState(false);
 //   const [currentPage, setCurrentPage] = useState(0);
 //   const [pageLoaded, setPageLoaded] = useState(false);
 //   const [dataLoading, setDataLoading] = useState(true);
+//   const [searchInput, setSearchInput] = useState(searchParams.get('search') || '');
+  
 //   const itemsPerPage = 8;
   
+//   // Debounce search input
+//   const debouncedSearch = useDebounce(searchInput, 500);
+
 //   const getFiltersFromURL = (): VocabFilter => {
 //     return {
 //       search: searchParams.get('search') || '',
@@ -38,18 +60,26 @@
 
 //   const filters = getFiltersFromURL();
 
-//   // Fetch all data khi component mount
+//   // Fetch all data khi component mount - CHỈ GỌI 1 LẦN
 //   useEffect(() => {
 //     const fetchAllData = async () => {
 //       try {
 //         setDataLoading(true);
         
-//         // Fetch all data concurrently
-//         await Promise.all([
-//           fetchVocabs({ page: 0, size: 1000 }),
-//           fetchTopics(),
-//           fetchAllTypes()
-//         ]);
+//         // Fetch all data concurrently - CHỈ GỌI KHI CHƯA CÓ DATA
+//         if (vocabs.length === 0) {
+//           await Promise.all([
+//             fetchVocabs({ page: 0, size: 1000 }),
+//             fetchTopics(),
+//             fetchAllTypes()
+//           ]);
+//         } else {
+//           // Nếu đã có data, chỉ fetch topics và word types nếu cần
+//           await Promise.all([
+//             topics.length === 0 ? fetchTopics() : Promise.resolve(),
+//             wordTypes.length === 0 ? fetchAllTypes() : Promise.resolve()
+//           ]);
+//         }
         
 //       } catch (err) {
 //         console.error('Error fetching data:', err);
@@ -60,8 +90,29 @@
 //     };
 
 //     fetchAllData();
-//   }, [fetchVocabs, fetchTopics, fetchAllTypes]);
+//   }, []); // Empty dependency - chỉ chạy 1 lần
 
+//   // Cập nhật URL params khi filters thay đổi - KHÔNG GỌI API
+//   useEffect(() => {
+//     const params = new URLSearchParams();
+    
+//     if (filters.search) params.set('search', filters.search);
+//     if (filters.cefr) params.set('cefr', filters.cefr);
+//     if (filters.type) params.set('type', filters.type);
+//     if (filters.topic) params.set('topic', filters.topic);
+    
+//     // Chỉ cập nhật URL nếu có thay đổi
+//     if (params.toString() !== searchParams.toString()) {
+//       setSearchParams(params);
+//     }
+//   }, [filters, setSearchParams, searchParams]);
+
+//   // Đồng bộ search input với URL
+//   useEffect(() => {
+//     setSearchInput(filters.search);
+//   }, [filters.search]);
+
+//   // Filter vocabs locally - KHÔNG GỌI API
 //   const filteredVocabs = useMemo(() => {
 //     let filtered = [...vocabs];
     
@@ -98,38 +149,63 @@
 //     return filtered;
 //   }, [vocabs, filters]);
 
+//   // Cập nhật URL khi debounced search thay đổi
+//   useEffect(() => {
+//     if (debouncedSearch !== filters.search) {
+//       const newFilters = { ...filters, search: debouncedSearch };
+//       const params = new URLSearchParams();
+      
+//       if (newFilters.search) params.set('search', newFilters.search);
+//       if (newFilters.cefr) params.set('cefr', newFilters.cefr);
+//       if (newFilters.type) params.set('type', newFilters.type);
+//       if (newFilters.topic) params.set('topic', newFilters.topic);
+      
+//       setSearchParams(params);
+//       setCurrentPage(0); // Reset về trang 1 khi search
+//     }
+//   }, [debouncedSearch, filters, setSearchParams]);
+
+//   // Handle Export to Excel
+//   const handleExportExcel = async () => {
+//     try {
+//       setExportLoading(true);
+//       await exportToExcel();
+//     } catch (err: any) {
+//       console.error('Export failed:', err);
+//       alert(`Lỗi khi export: ${err.message}`);
+//     } finally {
+//       setExportLoading(false);
+//     }
+//   };
+
 //   const totalElements = filteredVocabs.length;
 //   const totalPages = Math.ceil(totalElements / itemsPerPage);
 //   const startIndex = currentPage * itemsPerPage;
 //   const endIndex = startIndex + itemsPerPage;
 //   const currentVocabs = filteredVocabs.slice(startIndex, endIndex);
 
-//   useEffect(() => {
-//     const timeoutId = setTimeout(() => {
-//       const params = new URLSearchParams();
-//       if (filters.search) params.set('search', filters.search);
-//       if (filters.cefr) params.set('cefr', filters.cefr);
-//       if (filters.type) params.set('type', filters.type);
-//       if (filters.topic) params.set('topic', filters.topic);
-//       setSearchParams(params);
-//       setCurrentPage(0);
-//     }, 300);
-//     return () => clearTimeout(timeoutId);
-//   }, [filters, setSearchParams]);
-
-//   const handleFilterChange = (key: keyof VocabFilter, value: string) => {
+//   const handleFilterChange = useCallback((key: keyof VocabFilter, value: string) => {
 //     const newFilters = { ...filters, [key]: value };
 //     const params = new URLSearchParams();
+    
 //     if (newFilters.search) params.set('search', newFilters.search);
 //     if (newFilters.cefr) params.set('cefr', newFilters.cefr);
 //     if (newFilters.type) params.set('type', newFilters.type);
 //     if (newFilters.topic) params.set('topic', newFilters.topic);
+    
 //     setSearchParams(params);
+//     setCurrentPage(0); // Reset về trang 1 khi filter thay đổi
+//   }, [filters, setSearchParams]);
+
+//   const handleSearchInputChange = (value: string) => {
+//     setSearchInput(value);
+//     // KHÔNG reset page ngay lập tức, đợi debounce
 //   };
 
 //   const clearFilters = () => { 
 //     setSearchParams({}); 
-//     setCurrentPage(0); 
+//     setCurrentPage(0);
+//     setSearchInput('');
 //   };
 
 //   const handleViewDetails = (id: string) => { 
@@ -141,7 +217,7 @@
 //   };
 
 //   const handleAddNew = () => { 
-//     navigate('/admin/vocabs/new'); 
+//     navigate('/admin/vocab/new'); 
 //   };
 
 //   const handleBulkImport = () => {
@@ -211,7 +287,7 @@
 //     return () => { clearError(); }; 
 //   }, [clearError]);
 
-//   // Hiển thị loading khi đang fetch data
+//   // Hiển thị loading khi đang fetch data lần đầu
 //   if ((loading && vocabs.length === 0) || dataLoading) {
 //     return (
 //       <div className="flex justify-center items-center h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
@@ -261,7 +337,7 @@
 
 //           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
 //             <div className="lg:col-span-2">
-//               <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+//               <label className=" text-sm font-medium text-gray-700 mb-2 flex items-center">
 //                 <Search className="w-4 h-4 mr-1.5 text-gray-500" />
 //                 Tìm kiếm
 //               </label>
@@ -270,15 +346,15 @@
 //                 <input
 //                   type="text"
 //                   placeholder="Tìm theo từ, nghĩa, hoặc định nghĩa..."
-//                   value={filters.search}
-//                   onChange={(e) => handleFilterChange('search', e.target.value)}
+//                   value={searchInput}
+//                   onChange={(e) => handleSearchInputChange(e.target.value)}
 //                   className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
 //                 />
 //               </div>
 //             </div>
             
 //             <div>
-//               <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+//               <label className=" text-sm font-medium text-gray-700 mb-2 flex items-center">
 //                 <Sparkles className="w-4 h-4 mr-1.5 text-gray-500" />
 //                 Cấp độ CEFR
 //               </label>
@@ -295,7 +371,7 @@
 //             </div>
 
 //             <div>
-//               <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+//               <label className=" text-sm font-medium text-gray-700 mb-2 flex items-center">
 //                 <Languages className="w-4 h-4 mr-1.5 text-gray-500" />
 //                 Loại từ
 //               </label>
@@ -314,7 +390,7 @@
 //             </div>
 
 //             <div>
-//               <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+//               <label className="text-sm font-medium text-gray-700 mb-2 flex items-center">
 //                 <Tag className="w-4 h-4 mr-1.5 text-gray-500" />
 //                 Chủ đề
 //               </label>
@@ -367,33 +443,26 @@
             
 //             <div className="flex space-x-3">
 //               {(filters.search || filters.cefr || filters.type || filters.topic) && (
-           
-// <div className="flex space-x-3">
-//   {(filters.search || filters.cefr || filters.type || filters.topic) && (
-//     <button
-//       onClick={clearFilters}
-//       className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center transition-all shadow-sm hover:shadow-md"
-//     >
-//       <X className="w-4 h-4 mr-1.5" />
-//       Xóa bộ lọc
-//     </button>
-//   )}
-//   <button
-//     onClick={handleBulkImport}
-//     className="px-5 py-2 text-sm text-white bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg hover:from-purple-700 hover:to-pink-700 flex items-center transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
-//   >
-//     <FileUp className="w-4 h-4 mr-1.5" />
-//     Import Hàng Loạt
-//   </button>
-//   <button
-//     onClick={handleAddNew}
-//     className="px-5 py-2 text-sm text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg hover:from-indigo-700 hover:to-purple-700 flex items-center transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
-//   >
-//     <Plus className="w-4 h-4 mr-1.5" />
-//     Thêm từ mới
-//   </button>
-// </div>
+//                 <button
+//                   onClick={clearFilters}
+//                   className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center transition-all shadow-sm hover:shadow-md"
+//                 >
+//                   <X className="w-4 h-4 mr-1.5" />
+//                   Xóa bộ lọc
+//                 </button>
 //               )}
+//               <button
+//                 onClick={handleExportExcel}
+//                 disabled={exportLoading || vocabs.length === 0}
+//                 className="px-5 py-2 text-sm text-white bg-gradient-to-r from-green-600 to-emerald-600 rounded-lg hover:from-green-700 hover:to-emerald-700 disabled:opacity-50 flex items-center transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+//               >
+//                 {exportLoading ? (
+//                   <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+//                 ) : (
+//                   <Download className="w-4 h-4 mr-1.5" />
+//                 )}
+//                 Export Excel
+//               </button>
 //               <button
 //                 onClick={handleBulkImport}
 //                 className="px-5 py-2 text-sm text-white bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg hover:from-purple-700 hover:to-pink-700 flex items-center transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
@@ -648,6 +717,13 @@
 // export default VocabList;
 
 
+
+
+
+
+
+
+
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useVocabStore } from '../../store/vocabStore';
@@ -658,7 +734,7 @@ import { CEFR_LEVELS } from '../../constants/vocabConstants';
 import { 
   Search, Plus, X, Eye, Edit, Trash2, Volume2, BookOpen,
   Filter, Loader2, ChevronLeft, ChevronRight, Sparkles, Tag, Languages,
-  FileUp
+  FileUp, Download, FileText, RefreshCw
 } from 'lucide-react';
 
 // Custom debounce hook
@@ -683,11 +759,12 @@ const VocabList: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   
   // Stores
-  const { vocabs, loading, error, pagination, fetchVocabs, deleteVocab, clearError } = useVocabStore();
+  const { vocabs, loading, error, fetchVocabs, deleteVocab, clearError, exportToExcel } = useVocabStore();
   const { topics, fetchTopics } = useTopicStore();
   const { wordTypes, fetchAllTypes } = useWordTypeStore();
   
   const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
+  const [exportLoading, setExportLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const [pageLoaded, setPageLoaded] = useState(false);
   const [dataLoading, setDataLoading] = useState(true);
@@ -709,26 +786,18 @@ const VocabList: React.FC = () => {
 
   const filters = getFiltersFromURL();
 
-  // Fetch all data khi component mount - CHỈ GỌI 1 LẦN
+  // Fetch all data khi component mount
   useEffect(() => {
     const fetchAllData = async () => {
       try {
         setDataLoading(true);
         
-        // Fetch all data concurrently - CHỈ GỌI KHI CHƯA CÓ DATA
-        if (vocabs.length === 0) {
-          await Promise.all([
-            fetchVocabs({ page: 0, size: 1000 }),
-            fetchTopics(),
-            fetchAllTypes()
-          ]);
-        } else {
-          // Nếu đã có data, chỉ fetch topics và word types nếu cần
-          await Promise.all([
-            topics.length === 0 ? fetchTopics() : Promise.resolve(),
-            wordTypes.length === 0 ? fetchAllTypes() : Promise.resolve()
-          ]);
-        }
+        // Luôn fetch vocabs mới nhất khi vào trang
+        await Promise.all([
+          fetchVocabs({ page: 0, size: 1000 }),
+          topics.length === 0 ? fetchTopics() : Promise.resolve(),
+          wordTypes.length === 0 ? fetchAllTypes() : Promise.resolve()
+        ]);
         
       } catch (err) {
         console.error('Error fetching data:', err);
@@ -739,9 +808,9 @@ const VocabList: React.FC = () => {
     };
 
     fetchAllData();
-  }, []); // Empty dependency - chỉ chạy 1 lần
+  }, [fetchVocabs]);
 
-  // Cập nhật URL params khi filters thay đổi - KHÔNG GỌI API
+  // Cập nhật URL params khi filters thay đổi
   useEffect(() => {
     const params = new URLSearchParams();
     
@@ -750,7 +819,6 @@ const VocabList: React.FC = () => {
     if (filters.type) params.set('type', filters.type);
     if (filters.topic) params.set('topic', filters.topic);
     
-    // Chỉ cập nhật URL nếu có thay đổi
     if (params.toString() !== searchParams.toString()) {
       setSearchParams(params);
     }
@@ -761,7 +829,7 @@ const VocabList: React.FC = () => {
     setSearchInput(filters.search);
   }, [filters.search]);
 
-  // Filter vocabs locally - KHÔNG GỌI API
+  // Filter vocabs locally
   const filteredVocabs = useMemo(() => {
     let filtered = [...vocabs];
     
@@ -810,9 +878,50 @@ const VocabList: React.FC = () => {
       if (newFilters.topic) params.set('topic', newFilters.topic);
       
       setSearchParams(params);
-      setCurrentPage(0); // Reset về trang 1 khi search
+      setCurrentPage(0);
     }
   }, [debouncedSearch, filters, setSearchParams]);
+
+  // Refresh data khi quay lại từ các trang khác
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // Refresh data khi trang trở lại visible (quay lại từ import)
+        fetchVocabs({ page: 0, size: 1000 });
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [fetchVocabs]);
+
+  // Handle Export to Excel
+  const handleExportExcel = async () => {
+    try {
+      setExportLoading(true);
+      await exportToExcel();
+    } catch (err: any) {
+      console.error('Export failed:', err);
+      alert(`Lỗi khi export: ${err.message}`);
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
+  // Manual refresh function
+  const handleRefresh = async () => {
+    try {
+      setDataLoading(true);
+      await fetchVocabs({ page: 0, size: 1000 });
+    } catch (err) {
+      console.error('Refresh failed:', err);
+    } finally {
+      setDataLoading(false);
+    }
+  };
 
   const totalElements = filteredVocabs.length;
   const totalPages = Math.ceil(totalElements / itemsPerPage);
@@ -830,12 +939,11 @@ const VocabList: React.FC = () => {
     if (newFilters.topic) params.set('topic', newFilters.topic);
     
     setSearchParams(params);
-    setCurrentPage(0); // Reset về trang 1 khi filter thay đổi
+    setCurrentPage(0);
   }, [filters, setSearchParams]);
 
   const handleSearchInputChange = (value: string) => {
     setSearchInput(value);
-    // KHÔNG reset page ngay lập tức, đợi debounce
   };
 
   const clearFilters = () => { 
@@ -865,6 +973,8 @@ const VocabList: React.FC = () => {
     try {
       setDeleteLoading(id);
       await deleteVocab(id);
+      // Refresh data sau khi xóa
+      await fetchVocabs({ page: 0, size: 1000 });
       alert(`Đã xóa từ "${word}" thành công!`);
     } catch (err: any) {
       console.error('Error deleting vocab:', err);
@@ -923,7 +1033,7 @@ const VocabList: React.FC = () => {
     return () => { clearError(); }; 
   }, [clearError]);
 
-  // Hiển thị loading khi đang fetch data lần đầu
+  // Hiển thị loading khi đang fetch data
   if ((loading && vocabs.length === 0) || dataLoading) {
     return (
       <div className="flex justify-center items-center h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
@@ -949,6 +1059,18 @@ const VocabList: React.FC = () => {
             </div>
             <p className="text-gray-600 text-lg">Quản lý cơ sở dữ liệu từ vựng một cách hiệu quả</p>
           </div>
+
+          {/* Refresh button */}
+          <div className="flex justify-center mb-4">
+            <button
+              onClick={handleRefresh}
+              disabled={dataLoading}
+              className="px-4 py-2 text-sm text-indigo-600 border border-indigo-300 rounded-lg hover:bg-indigo-50 flex items-center transition-all shadow-sm hover:shadow-md"
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${dataLoading ? 'animate-spin' : ''}`} />
+              Làm mới dữ liệu
+            </button>
+          </div>
         </div>
 
         {/* Error Message */}
@@ -973,7 +1095,7 @@ const VocabList: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
             <div className="lg:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+              <label className="text-sm font-medium text-gray-700 mb-2 flex items-center">
                 <Search className="w-4 h-4 mr-1.5 text-gray-500" />
                 Tìm kiếm
               </label>
@@ -990,7 +1112,7 @@ const VocabList: React.FC = () => {
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+              <label className="text-sm font-medium text-gray-700 mb-2 flex items-center">
                 <Sparkles className="w-4 h-4 mr-1.5 text-gray-500" />
                 Cấp độ CEFR
               </label>
@@ -1007,7 +1129,7 @@ const VocabList: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+              <label className="text-sm font-medium text-gray-700 mb-2 flex items-center">
                 <Languages className="w-4 h-4 mr-1.5 text-gray-500" />
                 Loại từ
               </label>
@@ -1026,7 +1148,7 @@ const VocabList: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+              <label className="text-sm font-medium text-gray-700 mb-2 flex items-center">
                 <Tag className="w-4 h-4 mr-1.5 text-gray-500" />
                 Chủ đề
               </label>
@@ -1087,6 +1209,18 @@ const VocabList: React.FC = () => {
                   Xóa bộ lọc
                 </button>
               )}
+              <button
+                onClick={handleExportExcel}
+                disabled={exportLoading || vocabs.length === 0}
+                className="px-5 py-2 text-sm text-white bg-gradient-to-r from-green-600 to-emerald-600 rounded-lg hover:from-green-700 hover:to-emerald-700 disabled:opacity-50 flex items-center transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+              >
+                {exportLoading ? (
+                  <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+                ) : (
+                  <Download className="w-4 h-4 mr-1.5" />
+                )}
+                Export Excel
+              </button>
               <button
                 onClick={handleBulkImport}
                 className="px-5 py-2 text-sm text-white bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg hover:from-purple-700 hover:to-pink-700 flex items-center transition-all shadow-lg hover:shadow-xl transform hover:scale-105"

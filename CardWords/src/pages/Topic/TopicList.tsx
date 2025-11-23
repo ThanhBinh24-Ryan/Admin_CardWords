@@ -41,7 +41,7 @@ const TopicList: React.FC = () => {
   const [itemsPerPage] = useState(9);
   
   // Filter state
-  const [sortBy, setSortBy] = useState<'name' | 'createdAt' | 'id'>('id');
+  const [sortBy, setSortBy] = useState<'name' | 'id'>('id');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
@@ -75,10 +75,6 @@ const TopicList: React.FC = () => {
         case 'name':
           aValue = a.name.toLowerCase();
           bValue = b.name.toLowerCase();
-          break;
-        case 'createdAt':
-          aValue = new Date(a.createdAt || '');
-          bValue = new Date(b.createdAt || '');
           break;
         case 'id':
         default:
@@ -120,7 +116,7 @@ const TopicList: React.FC = () => {
     }
   };
 
-  const handleSort = (field: 'name' | 'createdAt' | 'id') => {
+  const handleSort = (field: 'name' | 'id') => {
     if (sortBy === field) {
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
     } else {
@@ -228,18 +224,6 @@ const TopicList: React.FC = () => {
                 )}
               </button>
               <button
-                onClick={() => handleSort('createdAt')}
-                className={`px-3 py-2 rounded-md flex items-center text-sm font-medium transition-colors ${
-                  sortBy === 'createdAt' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                <Calendar className="w-4 h-4 mr-1" />
-                Ngày tạo
-                {sortBy === 'createdAt' && (
-                  sortOrder === 'asc' ? <SortAsc className="w-4 h-4 ml-1" /> : <SortDesc className="w-4 h-4 ml-1" />
-                )}
-              </button>
-              <button
                 onClick={() => handleSort('id')}
                 className={`px-3 py-2 rounded-md flex items-center text-sm font-medium transition-colors ${
                   sortBy === 'id' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'
@@ -314,9 +298,9 @@ const TopicList: React.FC = () => {
                 </p>
                 
                 <div className="flex justify-between items-center pt-3 border-t border-gray-100">
-                  <span className="text-xs text-gray-500">
-                    {topic.createdAt && new Date(topic.createdAt).toLocaleDateString('vi-VN')}
-                  </span>
+                  <div className="text-xs text-gray-500">
+                    {/* Đã bỏ ngày tạo */}
+                  </div>
                   <div className="flex gap-1">
                     <Link
                       to={`/admin/topics/${topic.id}`}
@@ -358,9 +342,6 @@ const TopicList: React.FC = () => {
                   Mô tả
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Ngày tạo
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Hành động
                 </th>
               </tr>
@@ -385,9 +366,6 @@ const TopicList: React.FC = () => {
                     <div className="text-sm text-gray-900 max-w-xs truncate">
                       {topic.description || 'Không có mô tả'}
                     </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {topic.createdAt && new Date(topic.createdAt).toLocaleDateString('vi-VN')}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex gap-2">
