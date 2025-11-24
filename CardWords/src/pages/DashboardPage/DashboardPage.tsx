@@ -116,7 +116,7 @@ const DashboardPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-100 p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header - CHÍNH GIỮA */}
+        {/* Header*/}
         <div className="mb-8 text-center">
           <div className="flex flex-col items-center justify-center mb-6">
             <div className="w-16 h-16 bg-gradient-to-r from-blue-700 to-purple-700 rounded-2xl flex items-center justify-center mb-4 shadow-2xl">
@@ -131,8 +131,8 @@ const DashboardPage: React.FC = () => {
             </p>
           </div>
           
-          {/* Refresh Button - vẫn ở bên phải nhưng căn giữa container */}
-          <div className="flex justify-center">
+         
+          {/* <div className="flex justify-center">
             <button
               onClick={handleRefresh}
               disabled={refreshing}
@@ -141,7 +141,7 @@ const DashboardPage: React.FC = () => {
               <RefreshCw className={`w-5 h-5 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
               {refreshing ? 'Đang tải dữ liệu...' : 'Làm mới dữ liệu'}
             </button>
-          </div>
+          </div> */}
         </div>
 
         {/* Loading State */}

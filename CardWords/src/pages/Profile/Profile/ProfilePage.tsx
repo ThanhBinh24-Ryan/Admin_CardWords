@@ -286,13 +286,6 @@ const ProfilePage: React.FC = () => {
                 <Shield size={16} />
                 Đổi mật khẩu
               </button>
-              <button 
-                className="action-btn secondary"
-                onClick={() => navigate('/profile/activity')}
-              >
-                <Activity size={16} />
-                Nhật ký hoạt động
-              </button>
             </div>
 
             {/* Stats */}
