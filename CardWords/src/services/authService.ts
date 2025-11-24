@@ -8,7 +8,7 @@ import {
 } from '../types/auth';
 
 const API = axios.create({
-  baseURL: 'http://localhost:8080', // THAY BẰNG URL BACKEND CỦA BẠN
+  baseURL: 'http://localhost:8080', 
   headers: {
     'Content-Type': 'application/json',
   },

@@ -17,7 +17,7 @@ import NotificationList from '../pages/Notification/NotificationList';
 import ForgotPasswordPage from '../pages/Auth/Forgot/ForgotPasswordPage';
 import { Outlet } from 'react-router-dom';
 import ProfilePage from '../pages/Profile/Profile/ProfilePage';
-import SettingsPage from '../pages/Settings/SettingsPage';
+
 import ChangePasswordPage from '../pages/Profile/ChangePasswordPage/ChangePasswordPage';
 import Gamelist from "../pages/Games/GamesList"
 import TopicList from "../pages/Topic/TopicList"
@@ -101,8 +101,7 @@ const router = createBrowserRouter([
       { path: 'admin/vocab-progress/vocab/:vocabId', element: <VocabStatsDetail /> },
 
 
-      // Settings routes
-      { path: 'settings', element: <SettingsPage /> },
+   
     ],
   },
   { path: '*', element: <NotFoundPage /> },
