@@ -181,7 +181,7 @@ const LoginForm: React.FC = () => {
 
             {/* Form Options */}
             <div className="form-options">
-              <label className="remember-me">
+              {/* <label className="remember-me">
                 <input
                   type="checkbox"
                   checked={rememberMe}
@@ -189,7 +189,7 @@ const LoginForm: React.FC = () => {
                   disabled={loading}
                 />
                 Ghi nhớ đăng nhập
-              </label>
+              </label> */}
               <button
                 type="button"
                 className="forgot-password"
