@@ -8,7 +8,7 @@ interface DeleteConfirmModalProps {
   onConfirm: () => void;
   count: number;
   notification?: Notification | null;
-  isLoading?: boolean; // Thêm prop isLoading
+  isLoading?: boolean; 
 }
 
 const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
@@ -17,7 +17,7 @@ const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
   onConfirm,
   count,
   notification,
-  isLoading = false // Giá trị mặc định
+  isLoading = false 
 }) => {
   if (!isOpen) return null;
 
@@ -54,7 +54,7 @@ const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
           <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded">
             <p className="text-red-700 text-sm flex items-center">
               <AlertTriangle className="w-4 h-4 mr-2" />
-              ⚠️ Hành động này không thể hoàn tác.
+               Hành động này không thể hoàn tác.
             </p>
             {count > 1 && (
               <p className="text-red-600 text-xs mt-2">

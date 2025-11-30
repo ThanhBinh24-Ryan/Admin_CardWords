@@ -1,4 +1,3 @@
-// services/profileService.ts
 import { 
   ProfileResponse, 
   UpdateProfileRequest, 
@@ -6,9 +5,9 @@ import {
   ChangePasswordResponse 
 } from '../types/profile';
 
-// const API_BASE_URL = 'http://localhost:8080/api/v1';
+const API_BASE_URL = 'http://localhost:8080/api/v1';
 // const API_BASE_URL = 'https://card-words-services-production.up.railway.app/api/v1';
-const API_BASE_URL = 'http://103.9.77.220:8080/api/v1';
+// const API_BASE_URL = 'http://103.9.77.220:8080/api/v1';
 class ProfileService {
   private getAuthToken(): string | null {
     return localStorage.getItem('accessToken') || null;
@@ -53,12 +52,10 @@ class ProfileService {
     }
   }
 
-  // Lấy thông tin profile
   async getProfile(): Promise<ProfileResponse> {
     return this.request<ProfileResponse>('/users');
   }
 
-  // Cập nhật thông tin profile
   async updateProfile(profileData: UpdateProfileRequest): Promise<ProfileResponse> {
     return this.request<ProfileResponse>('/users', {
       method: 'PUT',
@@ -66,7 +63,6 @@ class ProfileService {
     });
   }
 
-  // Cập nhật avatar
   async updateAvatar(avatarFile: File): Promise<ProfileResponse> {
     const token = this.getAuthToken();
     const formData = new FormData();
@@ -88,7 +84,6 @@ class ProfileService {
     return response.json();
   }
 
-  // Đổi mật khẩu
   async changePassword(passwordData: ChangePasswordRequest): Promise<ChangePasswordResponse> {
     return this.request<ChangePasswordResponse>('/users/change-password', {
       method: 'POST',

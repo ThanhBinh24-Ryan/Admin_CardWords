@@ -49,10 +49,9 @@ const VocabProgressOverview: React.FC = () => {
     fetchVocabs({ page: 0, size: 10 });
   }, [limit]);
 
-  // Fetch all vocabs for search (không phân trang)
   useEffect(() => {
     if (vocabSearch) {
-      fetchVocabs({ page: 0, size: 1000 }); // Lấy tất cả từ vựng để tìm kiếm
+      fetchVocabs({ page: 0, size: 1000 }); 
     }
   }, [vocabSearch]);
 
@@ -74,13 +73,11 @@ const VocabProgressOverview: React.FC = () => {
     fetchVocabs({ page, size: 10 });
   };
 
-  // Tìm kiếm trên toàn bộ danh sách users (chỉ phân trang khi hiển thị)
   const filteredUsers = users.filter(user =>
     user.name.toLowerCase().includes(userSearch.toLowerCase()) ||
     user.email.toLowerCase().includes(userSearch.toLowerCase())
   );
 
-  // Tìm kiếm trên toàn bộ danh sách vocabs (không bị giới hạn bởi phân trang)
   const filteredVocabs = vocabs.filter(vocab =>
     vocab.word.toLowerCase().includes(vocabSearch.toLowerCase()) ||
     vocab.meaningVi.toLowerCase().includes(vocabSearch.toLowerCase())
@@ -115,7 +112,6 @@ const VocabProgressOverview: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header - Đã điều chỉnh */}
         <div className="mb-8 text-center">
           <div className="flex justify-center mb-4">
             <BarChart3 className="h-12 w-12 text-blue-600" />
@@ -128,7 +124,6 @@ const VocabProgressOverview: React.FC = () => {
           </p>
         </div>
 
-        {/* Statistics Cards */}
         {systemStats && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -181,9 +176,7 @@ const VocabProgressOverview: React.FC = () => {
           </div>
         )}
 
-        {/* Users and Vocabs Selection */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          {/* Users Section */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200">
             <div className="px-6 py-4 border-b border-gray-200">
               <div className="flex items-center justify-between">
@@ -264,7 +257,6 @@ const VocabProgressOverview: React.FC = () => {
                 </div>
               )}
 
-              {/* Users Pagination - Chỉ hiển thị khi không có search */}
               {!userSearch && usersTotalElements > 10 && (
                 <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-200">
                   <span className="text-sm text-gray-600">
@@ -292,7 +284,6 @@ const VocabProgressOverview: React.FC = () => {
             </div>
           </div>
 
-          {/* Vocabs Section */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200">
             <div className="px-6 py-4 border-b border-gray-200">
               <div className="flex items-center justify-between">
@@ -367,7 +358,6 @@ const VocabProgressOverview: React.FC = () => {
                 </div>
               )}
 
-              {/* Vocabs Pagination - Chỉ hiển thị khi không có search */}
               {!vocabSearch && vocabsTotalElements > 10 && (
                 <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-200">
                   <span className="text-sm text-gray-600">
@@ -396,7 +386,6 @@ const VocabProgressOverview: React.FC = () => {
           </div>
         </div>
 
-        {/* Difficult Words Section */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200">
           <div className="px-6 py-4 border-b border-gray-200">
             <div className="flex items-center justify-between">

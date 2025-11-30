@@ -11,7 +11,6 @@ import {
   FileUp, Download, FileText, RefreshCw
 } from 'lucide-react';
 
-// Custom debounce hook
 const useDebounce = (value: string, delay: number) => {
   const [debouncedValue, setDebouncedValue] = useState(value);
 
@@ -32,7 +31,6 @@ const VocabList: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   
-  // Stores
   const { vocabs, loading, error, fetchVocabs, deleteVocab, clearError, exportToExcel } = useVocabStore();
   const { topics, fetchTopics } = useTopicStore();
   const { wordTypes, fetchAllTypes } = useWordTypeStore();
@@ -44,9 +42,8 @@ const VocabList: React.FC = () => {
   const [dataLoading, setDataLoading] = useState(true);
   const [searchInput, setSearchInput] = useState(searchParams.get('search') || '');
   
-  const itemsPerPage = 8;
+  const itemsPerPage = 9;
   
-  // Debounce search input
   const debouncedSearch = useDebounce(searchInput, 500);
 
   const getFiltersFromURL = (): VocabFilter => {
@@ -60,13 +57,11 @@ const VocabList: React.FC = () => {
 
   const filters = getFiltersFromURL();
 
-  // Fetch all data khi component mount
   useEffect(() => {
     const fetchAllData = async () => {
       try {
         setDataLoading(true);
         
-        // Luôn fetch vocabs mới nhất khi vào trang
         await Promise.all([
           fetchVocabs({ page: 0, size: 1000 }),
           topics.length === 0 ? fetchTopics() : Promise.resolve(),
@@ -84,7 +79,6 @@ const VocabList: React.FC = () => {
     fetchAllData();
   }, [fetchVocabs]);
 
-  // Cập nhật URL params khi filters thay đổi
   useEffect(() => {
     const params = new URLSearchParams();
     
@@ -98,21 +92,17 @@ const VocabList: React.FC = () => {
     }
   }, [filters, setSearchParams, searchParams]);
 
-  // Đồng bộ search input với URL
   useEffect(() => {
     setSearchInput(filters.search);
   }, [filters.search]);
 
-  // Filter vocabs locally
   const filteredVocabs = useMemo(() => {
     let filtered = [...vocabs];
     
-    // Filter by CEFR
     if (filters.cefr) {
       filtered = filtered.filter(vocab => vocab.cefr === filters.cefr);
     }
     
-    // Filter by search
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
       filtered = filtered.filter(vocab => 
@@ -123,14 +113,12 @@ const VocabList: React.FC = () => {
       );
     }
     
-    // Filter by word type
     if (filters.type) {
       filtered = filtered.filter(vocab => 
         vocab.types.some(type => type.name.toLowerCase() === filters.type?.toLowerCase())
       );
     }
     
-    // Filter by topic
     if (filters.topic) {
       filtered = filtered.filter(vocab => 
         vocab.topic?.name.toLowerCase() === filters.topic?.toLowerCase()
@@ -140,7 +128,6 @@ const VocabList: React.FC = () => {
     return filtered;
   }, [vocabs, filters]);
 
-  // Cập nhật URL khi debounced search thay đổi
   useEffect(() => {
     if (debouncedSearch !== filters.search) {
       const newFilters = { ...filters, search: debouncedSearch };
@@ -156,11 +143,9 @@ const VocabList: React.FC = () => {
     }
   }, [debouncedSearch, filters, setSearchParams]);
 
-  // Refresh data khi quay lại từ các trang khác
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        // Refresh data khi trang trở lại visible (quay lại từ import)
         fetchVocabs({ page: 0, size: 1000 });
       }
     };
@@ -172,7 +157,6 @@ const VocabList: React.FC = () => {
     };
   }, [fetchVocabs]);
 
-  // Handle Export to Excel
   const handleExportExcel = async () => {
     try {
       setExportLoading(true);
@@ -185,7 +169,6 @@ const VocabList: React.FC = () => {
     }
   };
 
-  // Manual refresh function
   const handleRefresh = async () => {
     try {
       setDataLoading(true);
@@ -247,7 +230,6 @@ const VocabList: React.FC = () => {
     try {
       setDeleteLoading(id);
       await deleteVocab(id);
-      // Refresh data sau khi xóa
       await fetchVocabs({ page: 0, size: 1000 });
       alert(`Đã xóa từ "${word}" thành công!`);
     } catch (err: any) {
@@ -307,7 +289,6 @@ const VocabList: React.FC = () => {
     return () => { clearError(); }; 
   }, [clearError]);
 
-  // Hiển thị loading khi đang fetch data
   if ((loading && vocabs.length === 0) || dataLoading) {
     return (
       <div className="flex justify-center items-center h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
@@ -322,7 +303,6 @@ const VocabList: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
       <div className="container mx-auto px-4 py-8">
-        {/* Header */}
         <div className={`mb-8 transform transition-all duration-700 ${pageLoaded ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'}`}>
           <div className="text-center mb-8">
             <div className="flex items-center justify-center mb-3">
@@ -334,7 +314,7 @@ const VocabList: React.FC = () => {
             <p className="text-gray-600 text-lg">Quản lý cơ sở dữ liệu từ vựng một cách hiệu quả</p>
           </div>
 
-          {/* Refresh button */}
+ 
           {/* <div className="flex justify-center mb-4">
             <button
               onClick={handleRefresh}
@@ -347,7 +327,6 @@ const VocabList: React.FC = () => {
           </div> */}
         </div>
 
-        {/* Error Message */}
         {error && (
           <div className="bg-red-50 border-l-4 border-red-500 text-red-700 px-6 py-4 rounded-lg mb-6 flex justify-between items-center shadow-md animate-fade-in">
             <div className="flex items-center">
@@ -360,7 +339,7 @@ const VocabList: React.FC = () => {
           </div>
         )}
 
-        {/* Filters */}
+
         <div className={`bg-white rounded-2xl shadow-xl p-6 mb-8 border border-gray-100 transform transition-all duration-700 delay-200 ${pageLoaded ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
           <div className="flex items-center mb-5">
             <Filter className="w-5 h-5 text-indigo-600 mr-2" />
@@ -550,7 +529,6 @@ const VocabList: React.FC = () => {
                 </div>
               </div>
 
-              {/* Content */}
               <div className="p-5">
                 <div className="flex items-start justify-between mb-3">
                   <h3 className="text-xl font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">{vocab.word}</h3>
@@ -573,7 +551,6 @@ const VocabList: React.FC = () => {
                   <p className="text-gray-600 text-sm mb-4 line-clamp-2">{vocab.interpret}</p>
                 )}
 
-                {/* Topic */}
                 {vocab.topic && (
                   <div className="mb-4">
                     <span className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 rounded-lg text-xs font-medium ring-1 ring-indigo-200">
@@ -583,7 +560,6 @@ const VocabList: React.FC = () => {
                   </div>
                 )}
 
-                {/* Actions */}
                 <div className="flex justify-between items-center pt-4 border-t border-gray-200">
                   <button
                     onClick={() => handleViewDetails(vocab.id)}
@@ -623,7 +599,6 @@ const VocabList: React.FC = () => {
           ))}
         </div>
 
-        {/* Empty State */}
         {currentVocabs.length === 0 && !loading && (
           <div className="text-center py-20 bg-white rounded-2xl shadow-xl">
             <div className="text-gray-300 mb-6">
@@ -654,14 +629,13 @@ const VocabList: React.FC = () => {
           </div>
         )}
 
-        {/* Loading */}
         {loading && vocabs.length > 0 && (
           <div className="flex justify-center items-center py-6">
             <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
           </div>
         )}
 
-        {/* Pagination */}
+
         {totalPages > 1 && (
           <div className="bg-white px-6 py-4 flex items-center justify-between border-t border-gray-200 rounded-2xl shadow-xl">
             <div className="flex-1 flex justify-between items-center">

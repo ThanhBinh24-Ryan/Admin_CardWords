@@ -55,7 +55,7 @@ const BatchUpdatePage: React.FC = () => {
     );
     setEditableTypes(updatedTypes);
     
-    // Check if there are any changes
+
     const changesExist = updatedTypes.some(type => type.name !== type.originalName);
     setHasChanges(changesExist);
   };
@@ -74,7 +74,6 @@ const BatchUpdatePage: React.FC = () => {
     e.preventDefault();
     clearError();
 
-    // Validate all names - SỬA REGEX ĐỂ CHO PHÉP KÝ TỰ ĐẶC BIỆT
     for (const type of editableTypes) {
       const trimmedName = type.name.trim();
       
@@ -88,7 +87,6 @@ const BatchUpdatePage: React.FC = () => {
         return;
       }
 
-      // SỬA REGEX: Cho phép chữ cái, số, khoảng trắng và các ký tự đặc biệt thông thường
       const nameRegex = /^[a-zA-Z0-9\s\-_]+$/;
       if (!nameRegex.test(trimmedName)) {
         alert(`Tên loại từ ID ${type.id} chỉ được chứa chữ cái, số, khoảng trắng, dấu gạch ngang và gạch dưới`);
@@ -96,7 +94,6 @@ const BatchUpdatePage: React.FC = () => {
       }
     }
 
-    // Prepare data for API (only changed items)
     const changedTypes = editableTypes.filter(type => type.name !== type.originalName);
     
     if (changedTypes.length === 0) {
@@ -113,7 +110,7 @@ const BatchUpdatePage: React.FC = () => {
       alert('Cập nhật hàng loạt thành công!');
       navigate('/admin/word-types');
     } catch (error: any) {
-      console.error('❌ Batch update failed:', error);
+      console.error(' Batch update failed:', error);
     }
   };
 
@@ -155,11 +152,9 @@ const BatchUpdatePage: React.FC = () => {
           </div>
         )}
 
-        {/* Batch Update Form */}
         <div className="max-w-4xl mx-auto">
           <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
             <form onSubmit={handleSubmit}>
-              {/* Header Actions */}
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-900">
                   Danh sách Loại từ ({editableTypes.length})
@@ -189,7 +184,6 @@ const BatchUpdatePage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Types List */}
               <div className="space-y-4 max-h-[600px] overflow-y-auto pr-4">
                 {editableTypes.map((type) => (
                   <div
@@ -223,7 +217,6 @@ const BatchUpdatePage: React.FC = () => {
                 ))}
               </div>
 
-              {/* Summary */}
               {hasChanges && (
                 <div className="mt-6 p-4 bg-gradient-to-r from-green-50 to-teal-50 border-2 border-green-200 rounded-xl">
                   <div className="flex items-center justify-between">

@@ -1,4 +1,3 @@
-// notificationService.ts
 import { 
   Notification, 
   CreateNotificationRequest, 
@@ -14,9 +13,9 @@ import {
   isNotificationsPageResponse
 } from '../types/notification';
 
-// const API_BASE_URL = 'http://localhost:8080/api/v1/admin';
+const API_BASE_URL = 'http://localhost:8080/api/v1/admin';
 // const API_BASE_URL = 'https://card-words-services-production.up.railway.app/api/v1/admin';
-const API_BASE_URL = 'http://103.9.77.220:8080/api/v1/admin';
+// const API_BASE_URL = 'http://103.9.77.220:8080/api/v1/admin';
 class NotificationService {
   private getAuthToken(): string | null {
     return localStorage.getItem('accessToken') || null;
@@ -35,7 +34,7 @@ class NotificationService {
 
     const url = `${API_BASE_URL}${endpoint}`;
     
-    console.log('🔔 API Request:', url, options);
+    console.log('API Request:', url, options);
 
     try {
       const response = await fetch(url, {
@@ -43,12 +42,12 @@ class NotificationService {
         ...options,
       });
 
-      console.log('🔔 API Response status:', response.status);
+      console.log(' API Response status:', response.status);
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('❌ API Error Response:', errorText);
-        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+        console.error(' API Error Response:', errorText);
+        throw new Error(`HTTP error status: ${response.status}, message: ${errorText}`);
       }
 
       const contentLength = response.headers.get('content-length');
@@ -57,10 +56,10 @@ class NotificationService {
       }
 
       const data = await response.json();
-      console.log('✅ API Response data:', data);
+      console.log('API Response data:', data);
       return data;
     } catch (error) {
-      console.error('❌ API Error:', error);
+      console.error('API Error:', error);
       throw error;
     }
   }
@@ -81,7 +80,7 @@ class NotificationService {
 
   async getNotificationSummary(): Promise<BaseResponse<NotificationSummary[]>> {
     const response = await this.request<any>('/notifications/summary');
-    console.log('📈 Summary API response:', response);
+    console.log(' Summary API response:', response);
     
     if (Array.isArray(response)) {
       return {
@@ -95,7 +94,7 @@ class NotificationService {
 
   async getNotificationCategories(): Promise<BaseResponse<NotificationCategory[]>> {
     const response = await this.request<any>('/notifications/categories');
-    console.log('📋 Categories API response:', response);
+    console.log(' Categories API response:', response);
     
     if (Array.isArray(response)) {
       return {
@@ -117,7 +116,7 @@ class NotificationService {
     queryParams.append('size', size.toString());
     
     const response = await this.request<BaseResponse<NotificationsPageResponse>>(`/notifications?${queryParams.toString()}`);
-    console.log('📝 All notifications API response:', response);
+    console.log(' All notifications API response:', response);
     
     return response;
   }
@@ -132,7 +131,7 @@ class NotificationService {
     queryParams.append('size', size.toString());
     
     const response = await this.request<BaseResponse<NotificationsPageResponse>>(`/notifications/users/${userId}?${queryParams.toString()}`);
-    console.log('👤 User notifications API response:', response);
+    console.log(' User notifications API response:', response);
     
     return response;
   }
@@ -142,7 +141,7 @@ class NotificationService {
       method: 'POST',
       body: JSON.stringify(request)
     });
-    console.log('📝 Create notification response:', response);
+    console.log(' Create notification response:', response);
     
     return response;
   }
@@ -152,26 +151,25 @@ class NotificationService {
       method: 'POST',
       body: JSON.stringify(request)
     });
-    console.log('📢 Broadcast notification response:', response);
+    console.log(' Broadcast notification response:', response);
     
     return response;
   }
 
-  // API DELETE - XÓA TỪNG CÁI MỘT (URL ĐÃ SỬA)
+
   async deleteUserNotification(userId: string, notificationId: number): Promise<BaseResponse<{}>> {
     try {
-      console.log(`🗑️ Deleting notification ${notificationId} for user ${userId}`);
+      console.log(`Deleting notification ${notificationId} for user ${userId}`);
       
-      // URL ĐÃ SỬA: bỏ chữ "users" trong path
       const response = await this.request<BaseResponse<{}>>(`/notifications/${userId}/${notificationId}`, {
         method: 'DELETE'
       });
       
-      console.log('✅ Delete user notification success:', response);
+      console.log('Delete user notification success:', response);
       return response;
       
     } catch (error) {
-      console.error('❌ Delete user notification failed:', error);
+      console.error('Delete user notification failed:', error);
       
       return {
         status: 'error',
@@ -181,12 +179,10 @@ class NotificationService {
     }
   }
 
-  // XÓA NHIỀU THÔNG BÁO - DÙNG BATCH ENDPOINT
   async deleteMultipleUserNotifications(userId: string, notificationIds: number[]): Promise<BaseResponse<{successful: number[], failed: number[]}>> {
     try {
-      console.log(`🗑️ Deleting ${notificationIds.length} notifications for user ${userId} using batch`);
+      console.log(` Deleting ${notificationIds.length} notifications for user ${userId} using batch`);
       
-      // Kiểm tra mảng rỗng
       if (!notificationIds || notificationIds.length === 0) {
         return {
           status: 'success',
@@ -195,10 +191,8 @@ class NotificationService {
         };
       }
 
-      // Tạo query string với các IDs
       const idsParam = notificationIds.join(',');
       
-      // Dùng batch endpoint
       const response = await this.request<BaseResponse<{successful: number[], failed: number[]}>>(
         `/notifications/${userId}/batch?ids=${idsParam}`, 
         {
@@ -206,9 +200,8 @@ class NotificationService {
         }
       );
       
-      console.log('✅ Batch delete response:', response);
+      console.log('Batch delete response:', response);
       
-      // Nếu API trả về thành công
       if (response.status === 'success' || response.status === '200') {
         return {
           status: 'success',
@@ -216,8 +209,7 @@ class NotificationService {
           data: { successful: notificationIds, failed: [] }
         };
       }
-      
-      // Nếu có lỗi
+
       return {
         status: 'error',
         message: response.message || 'Failed to delete notifications',
@@ -225,45 +217,41 @@ class NotificationService {
       };
       
     } catch (error) {
-      console.error('❌ Batch delete notifications failed:', error);
+      console.error(' Batch delete notifications failed:', error);
       
-      // Fallback: xóa từng cái một nếu batch không hoạt động
-      console.log('🔄 Falling back to individual deletion...');
+      console.log('Falling back to individual deletion...');
       return await this.deleteMultipleUserNotificationsFallback(userId, notificationIds);
     }
   }
 
-  // Fallback method - xóa từng cái một nếu batch không hoạt động
   private async deleteMultipleUserNotificationsFallback(userId: string, notificationIds: number[]): Promise<BaseResponse<{successful: number[], failed: number[]}>> {
     try {
       const successful: number[] = [];
       const failed: number[] = [];
       
-      // Xóa từng notification một
       for (const notificationId of notificationIds) {
         try {
-          console.log(`🔄 Deleting notification ${notificationId}...`);
+          console.log(`Deleting notification ${notificationId}...`);
           const result = await this.deleteUserNotification(userId, notificationId);
           
           if (result.status === 'success' || result.status === '200') {
             successful.push(notificationId);
-            console.log(`✅ Successfully deleted notification ${notificationId}`);
+            console.log(`Successfully deleted notification ${notificationId}`);
           } else {
             failed.push(notificationId);
-            console.error(`❌ Failed to delete notification ${notificationId}:`, result.message);
+            console.error(`Failed to delete notification ${notificationId}:`, result.message);
           }
           
-          // Chờ 50ms giữa các request để tránh overload server
           await new Promise(resolve => setTimeout(resolve, 50));
           
         } catch (error) {
           failed.push(notificationId);
-          console.error(`❌ Failed to delete notification ${notificationId}:`, error);
+          console.error(`Failed to delete notification ${notificationId}:`, error);
         }
       }
       
       const resultMessage = `Deleted ${successful.length} notifications successfully, ${failed.length} failed`;
-      console.log(`🎯 Delete multiple completed: ${resultMessage}`);
+      console.log(` Delete multiple completed: ${resultMessage}`);
       
       if (failed.length > 0 && successful.length > 0) {
         return {
@@ -286,7 +274,7 @@ class NotificationService {
       };
       
     } catch (error) {
-      console.error('❌ Fallback delete multiple notifications failed:', error);
+      console.error('Fallback delete multiple notifications failed:', error);
       
       return {
         status: 'error',
@@ -296,7 +284,6 @@ class NotificationService {
     }
   }
 
-  // XÓA TẤT CẢ THÔNG BÁO CỦA USER
   async deleteAllUserNotifications(userId: string, allNotificationIds: number[]): Promise<BaseResponse<{successful: number[], failed: number[]}>> {
     return this.deleteMultipleUserNotifications(userId, allNotificationIds);
   }

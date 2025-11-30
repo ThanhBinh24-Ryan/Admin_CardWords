@@ -10,7 +10,6 @@ import {
   Calendar, Filter, Loader2
 } from 'lucide-react';
 
-// Component GameStatsCard
 const GameStatsCard: React.FC<{
   title: string;
   value: number;
@@ -59,7 +58,6 @@ const GameStatsCard: React.FC<{
   );
 };
 
-// Session Details Modal Component
 const SessionDetailsModal: React.FC<{
   session: GameSession;
   details: any;
@@ -154,7 +152,6 @@ const SessionDetailsModal: React.FC<{
   );
 };
 
-// Component chính GamesList
 const GamesList: React.FC = () => {
   const navigate = useNavigate();
   const { games, overviewStatistics, loading, error, fetchAllGames, fetchGamesOverviewStatistics, deleteGameSession, clearError } = useGameStore();

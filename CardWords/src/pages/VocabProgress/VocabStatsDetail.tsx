@@ -74,7 +74,6 @@ const VocabStatsDetail: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
         <div className="mb-8">
           <div className="flex items-center">
             <button
@@ -96,7 +95,6 @@ const VocabStatsDetail: React.FC = () => {
           </div>
         </div>
 
-        {/* Statistics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="flex items-center justify-between">
@@ -135,7 +133,6 @@ const VocabStatsDetail: React.FC = () => {
           </div>
         </div>
 
-        {/* Detailed Stats */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
             <BarChart3 className="h-6 w-6 mr-2 text-blue-600" />
@@ -143,7 +140,6 @@ const VocabStatsDetail: React.FC = () => {
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Correct Answers */}
             <div className="bg-green-50 rounded-lg p-6 border border-green-200">
               <div className="flex items-center justify-between">
                 <div>
@@ -162,7 +158,6 @@ const VocabStatsDetail: React.FC = () => {
               </div>
             </div>
 
-            {/* Wrong Answers */}
             <div className="bg-red-50 rounded-lg p-6 border border-red-200">
               <div className="flex items-center justify-between">
                 <div>
@@ -182,7 +177,6 @@ const VocabStatsDetail: React.FC = () => {
             </div>
           </div>
 
-          {/* Progress Bar */}
           <div className="mt-8">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium text-gray-700">Tỷ lệ chính xác</span>
@@ -203,7 +197,6 @@ const VocabStatsDetail: React.FC = () => {
             </div>
           </div>
 
-          {/* Additional Info */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8 pt-6 border-t border-gray-200">
             <div className="text-center">
               <p className="text-sm text-gray-600">Tổng lượt tương tác</p>

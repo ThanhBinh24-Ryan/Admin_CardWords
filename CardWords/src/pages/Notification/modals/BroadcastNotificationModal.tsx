@@ -40,7 +40,6 @@ const BroadcastNotificationModal: React.FC<BroadcastNotificationModalProps> = ({
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  // Các loại thông báo
   const notificationTypes = [
     { value: 'study_progress', label: 'Tiến độ Học tập' },
     { value: 'vocab_reminder', label: 'Nhắc nhở Từ vựng' },

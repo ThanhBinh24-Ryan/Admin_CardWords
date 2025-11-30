@@ -52,7 +52,7 @@ const LeaderboardSection: React.FC<LeaderboardSectionProps> = ({ topPlayers, loa
     }
   };
 
-  // SỬA: Thêm default empty array để tránh undefined
+  
   const renderLeaderboard = (title: string, data: LeaderboardEntry[] | undefined, game: string) => (
     <div className="bg-gray-50 rounded-lg p-4">
       <h4 className="font-semibold text-gray-900 mb-3 flex items-center">

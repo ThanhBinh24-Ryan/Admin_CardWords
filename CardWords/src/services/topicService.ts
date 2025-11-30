@@ -9,10 +9,10 @@ import {
   StorageApiResponse
 } from '../types/topic';
 // const API_BASE_URL = 'https://card-words-services-production.up.railway.app/api/v1/admin';
-// const API_BASE_URL = 'http://localhost:8080/api/v1/admin';
-// const STORAGE_API_URL = 'http://localhost:8080/api/v1';
-const API_BASE_URL = 'http://103.9.77.220:8080/api/v1/admin';
-const STORAGE_API_URL = 'http://103.9.77.220:8080/api/v1';
+const API_BASE_URL = 'http://localhost:8080/api/v1/admin';
+const STORAGE_API_URL = 'http://localhost:8080/api/v1';
+// const API_BASE_URL = 'http://103.9.77.220:8080/api/v1/admin';
+// const STORAGE_API_URL = 'http://103.9.77.220:8080/api/v1';
 // const STORAGE_API_URL = 'https://card-words-services-production.up.railway.app/api/v1';
 class TopicService {
   private getAuthToken(): string | null {
@@ -45,7 +45,7 @@ class TopicService {
       ...options,
     };
 
-    console.log('🔍 Making request to:', url, {
+    console.log(' Making request to:', url, {
       method: config.method,
       headers: config.headers
     });
@@ -54,7 +54,7 @@ class TopicService {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('❌ API Error:', {
+      console.error(' API Error:', {
         status: response.status,
         statusText: response.statusText,
         url,
@@ -71,11 +71,10 @@ class TopicService {
     }
 
     const responseData = await response.json();
-    console.log('✅ API Success:', responseData);
+    console.log('API Success:', responseData);
     return responseData;
   }
 
-  // ========== TOPIC APIs ==========
   async getAllTopics(): Promise<TopicApiResponse<Topic[]>> {
     return this.request<TopicApiResponse<Topic[]>>(`${API_BASE_URL}/topics`, {
       method: 'GET',
@@ -149,7 +148,6 @@ class TopicService {
   async bulkCreateTopics(
     bulkData: BulkTopicCreate
   ): Promise<TopicApiResponse<BulkOperationResult>> {
-    // Sử dụng JSON payload
     const payload = {
       topics: bulkData.topics.map(topic => ({
         name: topic.name,
@@ -158,7 +156,7 @@ class TopicService {
       }))
     };
 
-    console.log('📤 Sending bulk create request with JSON:', payload);
+    console.log(' Sending bulk create request with JSON:', payload);
 
     return this.request<TopicApiResponse<BulkOperationResult>>(`${API_BASE_URL}/topics/bulk-create`, {
       method: 'POST',
@@ -173,7 +171,6 @@ class TopicService {
   async bulkUpdateTopics(
     bulkData: BulkTopicUpdate
   ): Promise<TopicApiResponse<BulkOperationResult>> {
-    // Sử dụng JSON payload
     const payload = {
       topics: bulkData.topics.map(topic => ({
         id: topic.id,
@@ -195,12 +192,11 @@ class TopicService {
     });
   }
 
-  // ========== UPLOAD APIs ==========
   async uploadImage(file: File): Promise<StorageApiResponse<any>> {
     const formData = new FormData();
     formData.append('file', file);
 
-    console.log('📤 Uploading image:', {
+    console.log(' Uploading image:', {
       name: file.name,
       size: file.size,
       type: file.type
@@ -214,11 +210,10 @@ class TopicService {
       body: formData,
     });
 
-    console.log('✅ Upload response:', response);
+    console.log(' Upload response:', response);
     return response;
   }
 
-  // Token utilities
   checkTokenValidity(): boolean {
     const token = this.getAuthToken();
     if (!token) return false;

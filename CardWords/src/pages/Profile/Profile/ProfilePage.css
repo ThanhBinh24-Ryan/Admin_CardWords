@@ -1,4 +1,3 @@
-/* ===== PROFILE PAGE ===== */
 .profile-page {
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -32,7 +31,6 @@
   z-index: 1;
 }
 
-/* ===== HEADER ===== */
 .profile-header {
   text-align: center;
   margin-bottom: 40px;
@@ -64,7 +62,6 @@
   font-weight: 500;
 }
 
-/* ===== MESSAGES ===== */
 .error-message,
 .success-message {
   max-width: 600px;
@@ -117,7 +114,6 @@
   background: rgba(0, 0, 0, 0.1);
 }
 
-/* ===== CONTENT LAYOUT ===== */
 .profile-content {
   display: grid;
   grid-template-columns: 380px 1fr;
@@ -137,7 +133,6 @@
   }
 }
 
-/* ===== SIDEBAR ===== */
 .profile-sidebar {
   background: white;
   border-radius: 24px;
@@ -153,7 +148,6 @@
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.2);
 }
 
-/* ===== AVATAR SECTION ===== */
 .avatar-section {
   text-align: center;
   margin-bottom: 32px;
@@ -181,7 +175,6 @@
   transform: scale(1.05);
 }
 
-/* ẨN BUTTON CHOOSE FILE */
 .avatar-input {
   display: none !important;
   position: absolute;
@@ -260,7 +253,6 @@
   width: fit-content;
 }
 
-/* ===== QUICK ACTIONS ===== */
 .quick-actions {
   display: flex;
   flex-direction: column;
@@ -305,7 +297,6 @@
   transform: translateY(-3px);
 }
 
-/* ===== STATS SECTION ===== */
 .stats-section {
   padding-top: 28px;
   border-top: 2px solid #f3f4f6;
@@ -367,7 +358,6 @@
   font-weight: 600;
 }
 
-/* ===== PROFILE DETAILS ===== */
 .profile-details {
   background: white;
   border-radius: 24px;
@@ -455,7 +445,6 @@
   align-items: center;
 }
 
-/* ===== DETAILS GRID ===== */
 .details-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -538,7 +527,6 @@
   font-family: inherit;
 }
 
-/* ===== LOADING & ERROR ===== */
 .loading-container,
 .error-container {
   text-align: center;
@@ -582,7 +570,6 @@
   box-shadow: 0 6px 30px rgba(0, 0, 0, 0.25);
 }
 
-/* ===== RESPONSIVE ===== */
 @media (max-width: 1200px) {
   .profile-content {
     grid-template-columns: 1fr;

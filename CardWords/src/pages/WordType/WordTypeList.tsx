@@ -101,7 +101,7 @@ const WordTypeList: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <div className="container mx-auto px-4 py-8">
-        {/* Header */}
+     
         <div className="mb-8">
           <div className="flex flex-col items-center justify-center text-center mb-6">
             <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-3 rounded-xl shadow-lg mb-4">
@@ -134,7 +134,7 @@ const WordTypeList: React.FC = () => {
           </div>
         )}
 
-        {/* Search and Actions */}
+    
         <div className="bg-white rounded-2xl shadow-xl p-6 mb-6 border border-gray-100">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div className="flex-1 w-full md:w-auto">
@@ -160,7 +160,7 @@ const WordTypeList: React.FC = () => {
           </div>
         </div>
 
-        {/* Word Types Grid */}
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredTypes.map((type) => (
             <div
@@ -214,11 +214,11 @@ const WordTypeList: React.FC = () => {
           </div>
         )}
 
-        {/* Create Modal */}
+    
         {showCreateModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
             <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl transform transition-all">
-              {/* Header */}
+       
               <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-5 rounded-t-2xl">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
@@ -236,7 +236,6 @@ const WordTypeList: React.FC = () => {
                 </div>
               </div>
 
-              {/* Body */}
               <form onSubmit={handleCreateType} className="p-6">
                 <div className="space-y-4 mb-6">
                   <div>
@@ -267,7 +266,6 @@ const WordTypeList: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Actions */}
                 <div className="flex gap-3 pt-4 border-t-2 border-gray-200">
                   <button
                     type="button"

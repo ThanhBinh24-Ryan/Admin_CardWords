@@ -107,7 +107,6 @@ const TopicDetail: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex justify-between items-start">
         <div>
           <Link
@@ -137,11 +136,9 @@ const TopicDetail: React.FC = () => {
         </div>
       </div>
 
-      {/* Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Info */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Image */}
+  
           <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
             <img
               src={currentTopic.img || '/default-topic.jpg'}
@@ -162,9 +159,9 @@ const TopicDetail: React.FC = () => {
           </div>
         </div>
 
-        {/* Sidebar */}
+      
         <div className="space-y-6">
-          {/* Basic Info */}
+ 
           <div className="bg-white rounded-lg border border-gray-200 p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Thông tin cơ bản
@@ -198,7 +195,7 @@ const TopicDetail: React.FC = () => {
             </div>
           </div>
 
-          {/* Quick Actions */}
+    
           <div className="bg-white rounded-lg border border-gray-200 p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Hành động nhanh
@@ -223,7 +220,6 @@ const TopicDetail: React.FC = () => {
         </div>
       </div>
 
-      {/* Delete Confirmation Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-md w-full p-6">

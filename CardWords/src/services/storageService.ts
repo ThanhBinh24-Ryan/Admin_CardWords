@@ -1,4 +1,3 @@
-// services/storageService.ts
 import { 
   UploadResponse, 
   BulkUploadResponse, 
@@ -7,9 +6,9 @@ import {
   EmptyResponse 
 } from '../types/storage';
 
-// const API_BASE_URL = 'http://localhost:8080/api/v1/storage';
+const API_BASE_URL = 'http://localhost:8080/api/v1/storage';
 // const API_BASE_URL = 'https://card-words-services-production.up.railway.app/api/v1/storage';
-const API_BASE_URL = 'http://103.9.77.220:8080/api/v1/storage';
+// const API_BASE_URL = 'http://103.9.77.220:8080/api/v1/storage';
 class StorageService {
   private getAuthToken(): string | null {
     return localStorage.getItem('accessToken') || null;
@@ -26,8 +25,8 @@ class StorageService {
 
     const url = `${API_BASE_URL}${endpoint}`;
     
-    console.log('📤 Storage Request:', url);
-    console.log('🔑 Token exists:', !!token);
+    console.log(' Storage Request:', url);
+    console.log(' Token exists:', !!token);
 
     try {
       const response = await fetch(url, {
@@ -35,11 +34,11 @@ class StorageService {
         ...options,
       });
 
-      console.log('📥 Storage Response status:', response.status);
+      console.log('Storage Response status:', response.status);
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('❌ Storage Error:', errorText);
+        console.error(' Storage Error:', errorText);
         
         let errorMessage = `HTTP error! status: ${response.status}`;
         try {
@@ -53,10 +52,10 @@ class StorageService {
       }
 
       const data = await response.json();
-      console.log('✅ Storage Response data:', data);
+      console.log(' Storage Response data:', data);
       return data;
     } catch (error) {
-      console.error('❌ Storage Request failed:', error);
+      console.error(' Storage Request failed:', error);
       throw error;
     }
   }

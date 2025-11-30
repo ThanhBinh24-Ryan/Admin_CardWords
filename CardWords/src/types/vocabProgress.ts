@@ -1,11 +1,9 @@
-// Base response type
 export interface ApiResponse<T> {
   status: string;
   message: string;
   data: T;
 }
 
-// Types cho Vocab Progress
 export interface VocabProgressStats {
   vocabId: string;
   totalLearners: number;
@@ -105,7 +103,6 @@ export interface UserResponse {
   last: boolean;
 }
 
-// Types cho Vocab
 export interface Vocab {
   id: string;
   word: string;
@@ -150,7 +147,6 @@ export interface ListParams {
   sortDir?: string;
 }
 
-// Empty response for delete operations
 export interface EmptyResponse {
   status: string;
   message: string;

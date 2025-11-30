@@ -29,7 +29,6 @@ interface DashboardState {
 }
 
 interface DashboardStore extends DashboardState {
-  // Actions
   fetchSystemOverview: () => Promise<void>;
   fetchUserStatistics: () => Promise<void>;
   fetchRegistrationChart: (days?: number) => Promise<void>;
@@ -149,7 +148,6 @@ export const useDashboardStore = create<DashboardStore>()(
         }
       },
 
-      // Leaderboard Actions
       fetchWordDefinitionLeaderboard: async (limit = 10) => {
         try {
           set({ loading: true, error: null });
@@ -294,7 +292,6 @@ export const useDashboardStore = create<DashboardStore>()(
   )
 );
 
-// Selectors
 export const useSystemOverview = () => useDashboardStore((state) => state.systemOverview);
 export const useUserStatistics = () => useDashboardStore((state) => state.userStatistics);
 export const useRegistrationChart = () => useDashboardStore((state) => state.registrationChart);

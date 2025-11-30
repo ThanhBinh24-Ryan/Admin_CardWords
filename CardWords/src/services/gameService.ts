@@ -1,4 +1,3 @@
-// services/gameService.ts
 import { 
   GamesResponse, 
   GameResponse, 
@@ -10,9 +9,9 @@ import {
   PaginationParams
 } from '../types/game';
 
-// const API_BASE_URL = 'http://localhost:8080/api/v1/admin';
+const API_BASE_URL = 'http://localhost:8080/api/v1/admin';
 // const API_BASE_URL = 'https://card-words-services-production.up.railway.app/api/v1/admin';
-const API_BASE_URL = 'http://103.9.77.220:8080/api/v1/admin';
+// const API_BASE_URL = 'http://103.9.77.220:8080/api/v1/admin';
 class GameService {
   private getAuthToken(): string | null {
     return localStorage.getItem('accessToken') || null;
@@ -31,8 +30,8 @@ class GameService {
 
     const url = `${API_BASE_URL}${endpoint}`;
     
-    console.log('🎮 Game Request:', url);
-    console.log('🔑 Token exists:', !!token);
+    console.log('Game Request:', url);
+    console.log('Token exists:', !!token);
 
     try {
       const response = await fetch(url, {
@@ -44,7 +43,7 @@ class GameService {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('❌ Game Error:', errorText);
+        console.error(' Game Error:', errorText);
         
         let errorMessage = `HTTP error! status: ${response.status}`;
         try {
@@ -58,30 +57,26 @@ class GameService {
       }
 
       const data = await response.json();
-      console.log('✅ Game Response data:', data);
+      console.log(' Game Response data:', data);
       return data;
     } catch (error) {
-      console.error('❌ Game Request failed:', error);
+      console.error(' Game Request failed:', error);
       throw error;
     }
   }
 
-  // Lấy danh sách tất cả game
   async getAllGames(): Promise<GamesResponse> {
     return this.request<GamesResponse>('/games');
   }
 
-  // Lấy thông tin game theo ID
   async getGameById(id: number): Promise<GameResponse> {
     return this.request<GameResponse>(`/games/${id}`);
   }
 
-  // Lấy thống kê game theo ID
   async getGameStatistics(id: number): Promise<GameStatisticsResponse> {
     return this.request<GameStatisticsResponse>(`/games/${id}/statistics`);
   }
 
-  // Lấy danh sách session của game
   async getGameSessions(id: number, params: PaginationParams = {}): Promise<GameSessionsPageResponse> {
     const { page = 0, size = 20 } = params;
     const queryParams = new URLSearchParams({
@@ -92,17 +87,14 @@ class GameService {
     return this.request<GameSessionsPageResponse>(`/games/${id}/sessions?${queryParams}`);
   }
 
-  // Lấy tổng quan thống kê tất cả game
   async getGamesOverviewStatistics(): Promise<GamesOverviewStatisticsResponse> {
     return this.request<GamesOverviewStatisticsResponse>('/games/statistics/overview');
   }
 
-  // Lấy chi tiết session
   async getGameSessionDetail(sessionId: number): Promise<GameSessionDetailResponse> {
     return this.request<GameSessionDetailResponse>(`/games/sessions/${sessionId}`);
   }
 
-  // Xóa session
   async deleteGameSession(sessionId: number): Promise<EmptyResponse> {
     return this.request<EmptyResponse>(`/games/sessions/${sessionId}`, {
       method: 'DELETE',

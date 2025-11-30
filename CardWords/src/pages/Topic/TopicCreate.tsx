@@ -40,7 +40,6 @@ const TopicCreate: React.FC = () => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     
-    // Clear validation error when user types
     if (validationErrors[name as keyof typeof validationErrors]) {
       setValidationErrors(prev => ({ ...prev, [name]: undefined }));
     }
@@ -100,7 +99,6 @@ const TopicCreate: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex justify-between items-center">
         <div>
           <button
@@ -127,12 +125,12 @@ const TopicCreate: React.FC = () => {
         </div>
       )}
 
-      {/* Form */}
+  
       <form onSubmit={handleSubmit} className="bg-white rounded-lg border border-gray-200 p-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Form Fields */}
+     
           <div className="lg:col-span-2 space-y-6">
-            {/* Name Field */}
+   
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
                 Tên chủ đề *
@@ -156,7 +154,7 @@ const TopicCreate: React.FC = () => {
               )}
             </div>
 
-            {/* Description Field */}
+        
             <div>
               <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
                 Mô tả
@@ -184,9 +182,9 @@ const TopicCreate: React.FC = () => {
             </div>
           </div>
 
-          {/* Right Column - Image Upload */}
+    
           <div className="space-y-6">
-            {/* Image Upload */}
+  
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Hình ảnh

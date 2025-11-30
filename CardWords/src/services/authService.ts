@@ -7,13 +7,14 @@ import {
   ForgotPasswordResponse 
 } from '../types/auth';
 
-// const API = axios.create({
-//   baseURL: 'http://localhost:8080', 
-//   headers: {
-//     'Content-Type': 'application/json',
-//   },
-//   timeout: 10000,
-// });
+const API = axios.create({
+  baseURL: 'http://localhost:8080', 
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  timeout: 10000,
+});
+
 // const API = axios.create({
 //   baseURL: 'https://card-words-services-production.up.railway.app', 
 //   headers: {
@@ -21,13 +22,13 @@ import {
 //   },
 //   timeout: 10000,
 // });
-const API = axios.create({
-  baseURL: 'http://103.9.77.220:8080', 
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  timeout: 10000,
-});
+// const API = axios.create({
+//   baseURL: 'http://103.9.77.220:8080', 
+//   headers: {
+//     'Content-Type': 'application/json',
+//   },
+//   timeout: 10000,
+// });
 // const API_BASE_URL = 'http://103.9.77.220:8080/api/v1/admin';
 export const authService = {
   async login(credentials: LoginRequest): Promise<LoginResponse> {
@@ -60,7 +61,7 @@ export const authService = {
       console.log('Đang gửi request quên mật khẩu:', emailData);
       
       const response = await API.post<ForgotPasswordResponse>(
-        '/api/v1/auth/forgot-password', // THAY BẰNG ENDPOINT THỰC TẾ
+        '/api/v1/auth/forgot-password', 
         emailData
       );
 

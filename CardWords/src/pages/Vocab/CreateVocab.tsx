@@ -69,7 +69,6 @@ const CreateVocab: React.FC = () => {
   const [uploadingAudio, setUploadingAudio] = useState(false);
   const [dataLoading, setDataLoading] = useState(true);
 
-  // Fetch data
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -183,7 +182,7 @@ const CreateVocab: React.FC = () => {
     }
 
     try {
-      // Upload files if they exist
+   
       if (formData.imageFile && !formData.img) {
         await handleImageUpload(formData.imageFile);
       }
@@ -191,7 +190,7 @@ const CreateVocab: React.FC = () => {
         await handleAudioUpload(formData.audioFile);
       }
 
-      // Prepare data for submission - FIXED: Handle optional fields properly
+     
       const submitData = {
         word: formData.word.trim(),
         transcription: formData.transcription.trim() || undefined,
@@ -209,7 +208,7 @@ const CreateVocab: React.FC = () => {
       await createVocab(submitData);
       setSuccess('Tạo từ vựng thành công!');
       
-      // Reset form after successful creation
+    
       setTimeout(() => {
         navigate('/admin/vocabs');
       }, 1500);
@@ -252,7 +251,7 @@ const CreateVocab: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-8">
       <div className="container mx-auto px-4 max-w-4xl">
-        {/* Header */}
+   
         <div className="mb-8">
           <button
             onClick={() => navigate('/admin/vocabs')}
@@ -273,7 +272,7 @@ const CreateVocab: React.FC = () => {
           </div>
         </div>
 
-        {/* Error & Success Messages */}
+   
         {error && (
           <div className="bg-red-50 border-l-4 border-red-500 text-red-700 px-6 py-4 rounded-xl mb-6 flex items-start shadow-lg">
             <AlertCircle className="w-5 h-5 mr-3 flex-shrink-0 mt-0.5" />
@@ -300,12 +299,11 @@ const CreateVocab: React.FC = () => {
           </div>
         )}
 
-        {/* Form */}
         <div className="bg-white rounded-2xl shadow-xl p-6 border border-gray-100">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Basic Information */}
+         
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Word */}
+            
               <div>
                 <label className=" text-sm font-medium text-gray-700 mb-2 flex items-center">
                   <Type className="w-4 h-4 mr-2" />
@@ -321,7 +319,7 @@ const CreateVocab: React.FC = () => {
                 />
               </div>
 
-              {/* Transcription */}
+          
               <div>
                 <label className=" text-sm font-medium text-gray-700 mb-2 flex items-center">
                   <MessageSquare className="w-4 h-4 mr-2" />
@@ -336,7 +334,7 @@ const CreateVocab: React.FC = () => {
                 />
               </div>
 
-              {/* Meaning Vietnamese */}
+          
               <div>
                 <label className=" text-sm font-medium text-gray-700 mb-2 flex items-center">
                   <BookOpen className="w-4 h-4 mr-2" />
@@ -352,7 +350,6 @@ const CreateVocab: React.FC = () => {
                 />
               </div>
 
-              {/* CEFR Level */}
               <div>
                 <label className=" text-sm font-medium text-gray-700 mb-2 flex items-center">
                   <Award className="w-4 h-4 mr-2" />
@@ -372,7 +369,6 @@ const CreateVocab: React.FC = () => {
               </div>
             </div>
 
-            {/* Word Types */}
             <div>
               <label className=" text-sm font-medium text-gray-700 mb-2 flex items-center">
                 <Type className="w-4 h-4 mr-2" />
@@ -400,9 +396,8 @@ const CreateVocab: React.FC = () => {
               )}
             </div>
 
-            {/* Interpret and Example Sentence */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Interpret */}
+       
               <div>
                 <label className=" text-sm font-medium text-gray-700 mb-2 flex items-center">
                   <MessageSquare className="w-4 h-4 mr-2" />
@@ -418,7 +413,7 @@ const CreateVocab: React.FC = () => {
                 />
               </div>
 
-              {/* Example Sentence */}
+            
               <div>
                 <label className=" text-sm font-medium text-gray-700 mb-2 flex items-center">
                   <FileText className="w-4 h-4 mr-2" />
@@ -435,9 +430,9 @@ const CreateVocab: React.FC = () => {
               </div>
             </div>
 
-            {/* Topic and Credit */}
+     
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Topic */}
+        
               <div>
                 <label className=" text-sm font-medium text-gray-700 mb-2 flex items-center">
                   <Tag className="w-4 h-4 mr-2" />
@@ -455,7 +450,6 @@ const CreateVocab: React.FC = () => {
                 </select>
               </div>
 
-              {/* Credit */}
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-2 flex items-center">
                   <Bookmark className="w-4 h-4 mr-2" />
@@ -471,9 +465,9 @@ const CreateVocab: React.FC = () => {
               </div>
             </div>
 
-            {/* Media Uploads */}
+      
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Image Upload */}
+         
               <div>
                 <label className=" text-sm font-medium text-gray-700 mb-2 flex items-center">
                   <ImageIcon className="w-4 h-4 mr-2" />
@@ -533,7 +527,6 @@ const CreateVocab: React.FC = () => {
                 </div>
               </div>
 
-              {/* Audio Upload */}
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-2 flex items-center">
                   <Volume2 className="w-4 h-4 mr-2" />
@@ -599,7 +592,6 @@ const CreateVocab: React.FC = () => {
               </div>
             </div>
 
-            {/* Submit Button */}
             <div className="flex justify-end pt-6 border-t border-gray-200">
               <button
                 type="submit"

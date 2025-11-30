@@ -20,9 +20,7 @@ const ActionLogsFilter: React.FC<ActionLogsFilterProps> = ({
   const [localFilters, setLocalFilters] = useState<Partial<ActionLogFilter>>({});
   const [showAdvanced, setShowAdvanced] = useState(false);
 
-  // Sync local filters với global filters khi reset
   useEffect(() => {
-    // Reset local filters khi global filters trở về default
     const isDefaultFilters = 
       filters.page === DEFAULT_PAGINATION.page &&
       filters.size === DEFAULT_PAGINATION.size &&
@@ -52,7 +50,6 @@ const ActionLogsFilter: React.FC<ActionLogsFilterProps> = ({
 
   const handleClearLocal = () => {
     setLocalFilters({});
-    // Reset hoàn toàn về trạng thái ban đầu
     onReset();
   };
 

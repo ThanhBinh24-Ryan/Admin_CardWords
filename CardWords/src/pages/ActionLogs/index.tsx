@@ -47,13 +47,11 @@ const ActionLogsPage: React.FC = () => {
     await fetchActionLogs(filtersWithResetPage);
   };
 
-  // Xử lý reset filter
   const handleResetFilters = async () => {
     resetFilters();
     await fetchActionLogs();
   };
 
-  // Xử lý phân trang
   const handlePageChange = async (page: number) => {
     const newFilters = { ...filters, page };
     setFilters(newFilters);
@@ -75,7 +73,7 @@ const ActionLogsPage: React.FC = () => {
 
   const handleExport = async () => {
     try {
-      // Export với filters hiện tại (không bao gồm pagination)
+  
       const { page, size, sortBy, sortDirection, ...exportFilters } = filters;
       await actionLogService.downloadActionLogsExport(exportFilters);
     } catch (error) {

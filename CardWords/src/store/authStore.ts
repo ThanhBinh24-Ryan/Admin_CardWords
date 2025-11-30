@@ -1,4 +1,4 @@
-import { create } from 'zustand'; // Correct named import
+import { create } from 'zustand'; 
 
 interface AuthState {
   isAuthenticated: boolean;

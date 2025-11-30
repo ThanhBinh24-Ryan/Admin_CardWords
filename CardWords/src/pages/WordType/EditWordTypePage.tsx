@@ -1,4 +1,3 @@
-// EditWordTypePage.tsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useWordTypeStore } from '../../store/wordTypeStore';
@@ -84,7 +83,7 @@ const EditWordTypePage: React.FC = () => {
       alert('Cập nhật loại từ thành công!');
       navigate('/admin/word-types');
     } catch (error: any) {
-      console.error('❌ Update failed:', error);
+      console.error(' Update failed:', error);
     }
   };
 

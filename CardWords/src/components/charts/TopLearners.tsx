@@ -3,7 +3,7 @@ import { RegistrationChartData } from '../../types/dashboard';
 import { Award, Star, TrendingUp, Book, Zap, Users } from 'lucide-react';
 
 interface TopLearnersProps {
-  data: RegistrationChartData['topLearners'] | null | undefined; // THÊM undefined
+  data: RegistrationChartData['topLearners'] | null | undefined; 
   loading: boolean;
 }
 
@@ -46,7 +46,7 @@ const TopLearners: React.FC<TopLearnersProps> = ({ data, loading }) => {
     }
   };
 
-  // SỬA: Sử dụng data || [] để tránh undefined
+
   const learners = data || [];
 
   return (

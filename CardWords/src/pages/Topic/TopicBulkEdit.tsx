@@ -98,10 +98,10 @@ const TopicBulkEdit: React.FC = () => {
       return;
     }
 
-    // Tạo preview URL
+ 
     const previewUrl = URL.createObjectURL(file);
 
-    // Set uploading state và preview
+   
     setEditableTopics(prev =>
       prev.map(topic =>
         topic.id === topicId
@@ -133,7 +133,7 @@ const TopicBulkEdit: React.FC = () => {
                 : topic
             )
           );
-          console.log('✅ Upload thành công:', imageUrl);
+          console.log(' Upload thành công:', imageUrl);
         } else {
           throw new Error('Không thể lấy URL ảnh từ response');
         }
@@ -149,7 +149,6 @@ const TopicBulkEdit: React.FC = () => {
           imageFile: 'Upload ảnh thất bại: ' + error.message
         }
       }));
-      // Clean up preview URL on error
       URL.revokeObjectURL(previewUrl);
       setEditableTopics(prev =>
         prev.map(topic =>
@@ -188,7 +187,6 @@ const TopicBulkEdit: React.FC = () => {
       )
     );
 
-    // Clear validation error
     if (validationErrors[id]?.[field]) {
       setValidationErrors(prev => ({
         ...prev,
@@ -218,7 +216,6 @@ const TopicBulkEdit: React.FC = () => {
       )
     );
 
-    // Clear validation errors for this topic
     setValidationErrors(prev => {
       const newErrors = { ...prev };
       delete newErrors[id];
@@ -250,7 +247,6 @@ const TopicBulkEdit: React.FC = () => {
       if (topic.edited) {
         const topicErrors: { name?: string; description?: string; imageFile?: string } = {};
 
-        // Validate name và description
         const nameError = validateTopicName(topic.name);
         if (nameError) {
           topicErrors.name = nameError;
@@ -263,8 +259,7 @@ const TopicBulkEdit: React.FC = () => {
           isValid = false;
         }
 
-        // Validate image upload
-        if (topic.imageFile && topic.uploading) {
+          if (topic.imageFile && topic.uploading) {
           topicErrors.imageFile = 'Vui lòng chờ upload ảnh hoàn tất';
           isValid = false;
         }
@@ -308,21 +303,18 @@ const TopicBulkEdit: React.FC = () => {
       setResults(response.data);
       
       if (response.data.failureCount === 0) {
-        // Clean up all preview URLs
         editableTopics.forEach(topic => {
           if (topic.imageFile && topic.imagePreview && topic.imagePreview.startsWith('blob:')) {
             URL.revokeObjectURL(topic.imagePreview);
           }
         });
         
-        // Reload topics to get updated data
         await loadTopics();
         
         setTimeout(() => {
           alert(`🎉 Đã cập nhật thành công ${response.data.successCount} chủ đề!`);
         }, 500);
       } else {
-        // Hiển thị chi tiết lỗi nếu có thất bại
         setShowDetailedResults(true);
       }
     } catch (error: any) {
@@ -445,7 +437,6 @@ const TopicBulkEdit: React.FC = () => {
                 </div>
               </div>
 
-              {/* Nút xem chi tiết kết quả */}
               {results.failureCount > 0 && (
                 <div className="border-t border-gray-200 pt-4">
                   <button
@@ -456,7 +447,7 @@ const TopicBulkEdit: React.FC = () => {
                     {showDetailedResults ? 'Ẩn chi tiết' : 'Xem chi tiết lỗi'}
                   </button>
 
-                  {/* Chi tiết kết quả */}
+  
                   {showDetailedResults && (
                     <div className="mt-3 space-y-2">
                       <h4 className="font-medium text-gray-900">Chi tiết kết quả:</h4>
@@ -607,7 +598,7 @@ const TopicBulkEdit: React.FC = () => {
                           </div>
                         </td>
 
-                        {/* Name */}
+    
                         <td className="px-6 py-4">
                           <div>
                             <input
@@ -626,7 +617,7 @@ const TopicBulkEdit: React.FC = () => {
                           </div>
                         </td>
 
-                        {/* Description */}
+              
                         <td className="px-6 py-4">
                           <div>
                             <textarea
@@ -648,7 +639,7 @@ const TopicBulkEdit: React.FC = () => {
                           </div>
                         </td>
 
-                        {/* Image Upload */}
+  
                         <td className="px-6 py-4">
                           <div className="space-y-2">
                             <div>
@@ -671,7 +662,6 @@ const TopicBulkEdit: React.FC = () => {
                               )}
                             </div>
                             
-                            {/* Upload Status & Preview */}
                             <div className="space-y-1">
                               {topic.uploading && (
                                 <p className="text-xs text-blue-600 flex items-center">
@@ -741,7 +731,7 @@ const TopicBulkEdit: React.FC = () => {
                       <strong>{editedCount}</strong> chủ đề đã được chỉnh sửa
                       {isUploading && (
                         <span className="text-orange-600 ml-2">
-                          • Đang upload ảnh, vui lòng chờ...
+                           Đang upload ảnh, vui lòng chờ...
                         </span>
                       )}
                     </div>
@@ -778,7 +768,7 @@ const TopicBulkEdit: React.FC = () => {
             </div>
           </form>
 
-          {/* Empty State */}
+        
           {filteredTopics.length === 0 && !loading && (
             <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
               <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
@@ -792,25 +782,24 @@ const TopicBulkEdit: React.FC = () => {
           )}
         </div>
 
-        {/* Sidebar */}
+  
         <div className="space-y-6">
-          {/* Instructions */}
+
           <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
             <h3 className="font-semibold text-blue-900 mb-2 flex items-center">
               <Edit className="w-4 h-4 mr-2" />
               Hướng dẫn
             </h3>
             <ul className="text-blue-800 text-sm space-y-2">
-              <li>• Chỉnh sửa trực tiếp trong bảng</li>
-              <li>• Các thay đổi sẽ được đánh dấu màu xanh</li>
-              <li>• Upload ảnh mới thay thế ảnh cũ</li>
-              <li>• Chờ upload hoàn tất trước khi cập nhật</li>
-              <li>• Nhấn "Hủy" để hoàn tác thay đổi</li>
+              <li> Chỉnh sửa trực tiếp trong bảng</li>
+              <li> Các thay đổi sẽ được đánh dấu màu xanh</li>
+              <li>Upload ảnh mới thay thế ảnh cũ</li>
+              <li> Chờ upload hoàn tất trước khi cập nhật</li>
+              <li> Nhấn "Hủy" để hoàn tác thay đổi</li>
             </ul>
           </div>
 
-          {/* Quick Stats */}
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
+           <div className="bg-white rounded-lg border border-gray-200 p-4">
             <h3 className="font-semibold text-gray-900 mb-3">Thống kê nhanh</h3>
             <div className="space-y-3 text-sm">
               <div className="flex justify-between items-center">

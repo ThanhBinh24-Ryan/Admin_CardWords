@@ -41,7 +41,6 @@ const ActionLogsStatistics: React.FC<ActionLogsStatisticsProps> = ({
     );
   }
 
-  // Đảm bảo tất cả các giá trị đều có giá trị mặc định nếu undefined
   const safeStatistics = {
     totalActions: statistics.totalActions || 0,
     successfulActions: statistics.successfulActions || 0,

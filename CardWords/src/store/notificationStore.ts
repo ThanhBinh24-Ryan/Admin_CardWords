@@ -32,26 +32,21 @@ interface NotificationState {
 }
 
 interface NotificationStore extends NotificationState {
-  // User methods
   fetchUsers: (page?: number, size?: number, sortBy?: string, sortDir?: string) => Promise<void>;
   fetchUsersPage: (page?: number, size?: number, sortBy?: string, sortDir?: string) => Promise<void>;
   setSelectedUser: (user: User | null) => void;
   
-  // Notification methods
   fetchSummary: () => Promise<void>;
   fetchCategories: () => Promise<void>;
   createNotification: (request: CreateNotificationRequest) => Promise<Notification>;
   broadcastNotification: (request: BroadcastNotificationRequest) => Promise<void>;
   
-  // METHOD DELETE - TRẢ VỀ THÔNG TIN CHI TIẾT
   deleteUserNotification: (userId: string, notificationId: number) => Promise<{success: boolean, message?: string}>;
   deleteMultipleUserNotifications: (userId: string, notificationIds: number[]) => Promise<{success: boolean, successful: number[], failed: number[], message?: string}>;
   
-  // New notification methods
   fetchAllNotifications: (filter?: NotificationFilter) => Promise<void>;
   fetchUserNotifications: (userId: string, filter?: NotificationFilter) => Promise<void>;
   
-  // Utility methods
   clearError: () => void;
   clearLastCreated: () => void;
   refreshAllData: () => Promise<void>;
@@ -78,12 +73,12 @@ export const useNotificationStore = create<NotificationStore>()(
     (set, get) => ({
       ...initialState,
 
-      // Lấy danh sách users dạng mảng đơn giản
+      
       fetchUsers: async (page = 0, size = 100, sortBy = 'createdAt', sortDir = 'desc') => {
         try {
-          console.log('🔄 Fetching users...', { page, size, sortBy, sortDir });
+          console.log('Fetching users...', { page, size, sortBy, sortDir });
           const response = await notificationService.getUsers(page, size, sortBy, sortDir);
-          console.log('✅ Users response:', response);
+          console.log('Users response:', response);
           
           let usersList: User[] = [];
           
@@ -101,18 +96,18 @@ export const useNotificationStore = create<NotificationStore>()(
           console.log('👥 Final users list:', usersList);
           set({ users: Array.isArray(usersList) ? usersList : [] });
         } catch (error) {
-          console.error('❌ Failed to fetch users:', error);
+          console.error(' Failed to fetch users:', error);
           set({ users: [] });
         }
       },
 
-      // Lấy users với đầy đủ thông tin phân trang
+
       fetchUsersPage: async (page = 0, size = 20, sortBy = 'createdAt', sortDir = 'desc') => {
         try {
           set({ loading: true, error: null });
-          console.log('🔄 Fetching users page...', { page, size, sortBy, sortDir });
+          console.log('Fetching users page...', { page, size, sortBy, sortDir });
           const response = await notificationService.getUsers(page, size, sortBy, sortDir);
-          console.log('✅ Users page response:', response);
+          console.log('Users page response:', response);
           
           let usersPageData: UsersPageResponse | null = null;
           
@@ -129,7 +124,7 @@ export const useNotificationStore = create<NotificationStore>()(
             loading: false 
           });
         } catch (error) {
-          console.error('❌ Failed to fetch users page:', error);
+          console.error('Failed to fetch users page:', error);
           set({ 
             usersPage: null,
             loading: false,
@@ -146,9 +141,9 @@ export const useNotificationStore = create<NotificationStore>()(
       fetchSummary: async () => {
         try {
           set({ loading: true, error: null });
-          console.log('🔄 Fetching summary...');
+          console.log(' Fetching summary...');
           const response = await notificationService.getNotificationSummary();
-          console.log('✅ Summary response:', response);
+          console.log(' Summary response:', response);
           
           let summaryData: NotificationSummary[] = [];
           
@@ -162,13 +157,13 @@ export const useNotificationStore = create<NotificationStore>()(
             summaryData = (response as any).data.content;
           }
           
-          console.log('📊 Final summary data:', summaryData);
+          console.log(' Final summary data:', summaryData);
           set({ 
             summary: Array.isArray(summaryData) ? summaryData : [],
             loading: false 
           });
         } catch (error) {
-          console.error('❌ Failed to fetch summary:', error);
+          console.error(' Failed to fetch summary:', error);
           set({ 
             summary: [],
             loading: false,
@@ -180,9 +175,9 @@ export const useNotificationStore = create<NotificationStore>()(
       fetchCategories: async () => {
         try {
           set({ loading: true, error: null });
-          console.log('🔄 Fetching categories...');
+          console.log(' Fetching categories...');
           const response = await notificationService.getNotificationCategories();
-          console.log('✅ Categories response:', response);
+          console.log(' Categories response:', response);
           
           let categoriesData: NotificationCategory[] = [];
           
@@ -196,13 +191,13 @@ export const useNotificationStore = create<NotificationStore>()(
             categoriesData = (response as any).data.content;
           }
           
-          console.log('📋 Final categories data:', categoriesData);
+          console.log(' Final categories data:', categoriesData);
           set({ 
             categories: Array.isArray(categoriesData) ? categoriesData : [],
             loading: false 
           });
         } catch (error) {
-          console.error('❌ Failed to fetch categories:', error);
+          console.error(' Failed to fetch categories:', error);
           set({ 
             categories: [],
             loading: false,
@@ -214,9 +209,9 @@ export const useNotificationStore = create<NotificationStore>()(
       fetchAllNotifications: async (filter: NotificationFilter = {}) => {
         try {
           set({ loading: true, error: null });
-          console.log('🔄 Fetching all notifications...', filter);
+          console.log(' Fetching all notifications...', filter);
           const response = await notificationService.getAllNotifications(filter);
-          console.log('✅ All notifications response:', response);
+          console.log(' All notifications response:', response);
           
           let notificationsData: NotificationsPageResponse | null = null;
           
@@ -231,7 +226,7 @@ export const useNotificationStore = create<NotificationStore>()(
             loading: false 
           });
         } catch (error) {
-          console.error('❌ Failed to fetch all notifications:', error);
+          console.error(' Failed to fetch all notifications:', error);
           set({ 
             allNotifications: null,
             loading: false,
@@ -243,9 +238,9 @@ export const useNotificationStore = create<NotificationStore>()(
       fetchUserNotifications: async (userId: string, filter: NotificationFilter = {}) => {
         try {
           set({ loading: true, error: null });
-          console.log(`🔄 Fetching notifications for user ${userId}...`, filter);
+          console.log(`Fetching notifications for user ${userId}...`, filter);
           const response = await notificationService.getUserNotifications(userId, filter);
-          console.log('✅ User notifications response:', response);
+          console.log('User notifications response:', response);
           
           let notificationsData: NotificationsPageResponse | null = null;
           
@@ -263,7 +258,7 @@ export const useNotificationStore = create<NotificationStore>()(
             loading: false 
           }));
         } catch (error) {
-          console.error('❌ Failed to fetch user notifications:', error);
+          console.error(' Failed to fetch user notifications:', error);
           set({ 
             loading: false,
             error: error instanceof Error ? error.message : 'Failed to fetch user notifications' 
@@ -272,14 +267,14 @@ export const useNotificationStore = create<NotificationStore>()(
       },
 
       refreshAllData: async () => {
-        console.log('🔄 Refreshing all data...');
+        console.log('Refreshing all data...');
         const { fetchUsers, fetchSummary, fetchCategories } = get();
         await Promise.all([
           fetchUsers(),
           fetchSummary(),
           fetchCategories()
         ]);
-        console.log('✅ All data refreshed');
+        console.log('All data refreshed');
       },
 
       createNotification: async (request: CreateNotificationRequest) => {
@@ -328,14 +323,12 @@ export const useNotificationStore = create<NotificationStore>()(
         }
       },
 
-      // METHOD DELETE - XÓA TỪNG CÁI MỘT
       deleteUserNotification: async (userId: string, notificationId: number): Promise<{success: boolean, message?: string}> => {
         try {
           set({ deleting: true, error: null });
           
           const response = await notificationService.deleteUserNotification(userId, notificationId);
           
-          // Kiểm tra response status
           if (response.status === 'error') {
             set({ 
               deleting: false, 
@@ -344,7 +337,6 @@ export const useNotificationStore = create<NotificationStore>()(
             return { success: false, message: response.message };
           }
           
-          // Refresh data sau khi xóa thành công
           if (get().userNotifications[userId]) {
             await get().fetchUserNotifications(userId);
           }
@@ -354,7 +346,7 @@ export const useNotificationStore = create<NotificationStore>()(
           return { success: true, message: 'Notification deleted successfully' };
           
         } catch (error) {
-          console.error('❌ Store: Failed to delete notification:', error);
+          console.error(' Store: Failed to delete notification:', error);
           const errorMessage = error instanceof Error ? error.message : 'Failed to delete notification';
           
           set({ 
@@ -369,17 +361,16 @@ export const useNotificationStore = create<NotificationStore>()(
         try {
           set({ deleting: true, error: null });
           
-          // Validate input
+
           if (!notificationIds || notificationIds.length === 0) {
             set({ deleting: false });
             return { success: true, successful: [], failed: [], message: 'No notifications to delete' };
           }
           
-          console.log(`🔄 Store: Deleting ${notificationIds.length} notifications for user ${userId}`);
+          console.log(`Store: Deleting ${notificationIds.length} notifications for user ${userId}`);
           
           const response = await notificationService.deleteMultipleUserNotifications(userId, notificationIds);
           
-          // Kiểm tra response status
           if (response.status === 'error') {
             set({ 
               deleting: false, 
@@ -393,7 +384,6 @@ export const useNotificationStore = create<NotificationStore>()(
             };
           }
           
-          // Refresh data sau khi xóa
           if (get().userNotifications[userId]) {
             await get().fetchUserNotifications(userId);
           }
@@ -409,7 +399,7 @@ export const useNotificationStore = create<NotificationStore>()(
           };
           
         } catch (error) {
-          console.error('❌ Store: Failed to delete multiple notifications:', error);
+          console.error(' Store: Failed to delete multiple notifications:', error);
           const errorMessage = error instanceof Error ? error.message : 'Failed to delete notifications';
           
           set({ 

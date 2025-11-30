@@ -1,4 +1,3 @@
-// Base response types to match your pattern
 export interface BaseResponse<T = any> {
   status: string;
   message: string;
@@ -41,7 +40,6 @@ export interface PageResponse<T> {
   empty: boolean;
 }
 
-// Action Log types - CHỈ GIỮ LẠI CÁC TRƯỜNG CÓ TRONG API
 export interface ActionLog {
   id: number;
   userId: string;

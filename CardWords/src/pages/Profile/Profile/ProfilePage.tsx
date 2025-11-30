@@ -1,4 +1,3 @@
-// pages/Profile/ProfilePage.tsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProfileStore } from '../../../store/ProfileStore';
@@ -107,14 +106,12 @@ const ProfilePage: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
     const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
     if (!validTypes.includes(file.type)) {
       alert('❌ Chỉ chấp nhận file ảnh: JPG, JPEG, PNG, GIF, WEBP');
       return;
     }
 
-    // Validate file size (5MB)
     if (file.size > 5 * 1024 * 1024) {
       alert('❌ Kích thước file không được vượt quá 5MB');
       return;
@@ -129,7 +126,6 @@ const ProfilePage: React.FC = () => {
       console.error('Failed to update avatar:', error);
     } finally {
       setActionLoading(null);
-      // Clear file input
       e.target.value = '';
     }
   };
@@ -233,9 +229,7 @@ const ProfilePage: React.FC = () => {
         )}
 
         <div className="profile-content">
-          {/* Left Side - Profile Info */}
           <div className="profile-sidebar">
-            {/* Avatar Section */}
             <div className="avatar-section">
               <div className="avatar-container">
                 <img 
@@ -277,7 +271,6 @@ const ProfilePage: React.FC = () => {
               </div>
             </div>
 
-            {/* Quick Actions */}
             <div className="quick-actions">
               <button 
                 className="action-btn primary"
@@ -288,7 +281,6 @@ const ProfilePage: React.FC = () => {
               </button>
             </div>
 
-            {/* Stats */}
             <div className="stats-section">
               <h3>Thống Kê</h3>
               <div className="stats-grid">
@@ -302,7 +294,6 @@ const ProfilePage: React.FC = () => {
             </div>
           </div>
 
-          {/* Right Side - Profile Details */}
           <div className="profile-details">
             <div className="details-header">
               <h3>Thông Tin Cá Nhân</h3>
@@ -442,7 +433,6 @@ const ProfilePage: React.FC = () => {
               </div>
             </div>
 
-            {/* Additional Information */}
           
           </div>
         </div>

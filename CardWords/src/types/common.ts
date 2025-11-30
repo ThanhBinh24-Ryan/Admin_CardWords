@@ -1,4 +1,3 @@
-// Common types used across the application
 export interface ApiResponse<T> {
   status: string;
   message: string;

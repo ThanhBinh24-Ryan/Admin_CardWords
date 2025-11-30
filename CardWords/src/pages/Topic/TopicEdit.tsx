@@ -111,17 +111,11 @@ const TopicEdit: React.FC = () => {
     }
   };
 
-  const removeImage = () => {
-    setFormData(prev => ({ ...prev, image: null }));
-    
-    // Nếu đang xem ảnh mới (tempPreviewUrl), quay lại ảnh cũ
-    if (tempPreviewUrl) {
-      URL.revokeObjectURL(tempPreviewUrl);
-      setTempPreviewUrl('');
-      setPreviewUrl(currentTopic?.img || '');
-    } else {
-      // Nếu đang xem ảnh cũ, xóa ảnh
-      setPreviewUrl('');
+  const handleNewImageUpload = () => {
+    // Trigger the hidden file input
+    const fileInput = document.getElementById('image-upload') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.click();
     }
   };
 
@@ -282,6 +276,14 @@ const TopicEdit: React.FC = () => {
                 Hình ảnh
               </label>
               <div className="space-y-4">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                  id="image-upload"
+                />
+                
                 {previewUrl ? (
                   <div className="relative">
                     <img
@@ -289,17 +291,18 @@ const TopicEdit: React.FC = () => {
                       alt="Preview"
                       className="w-full h-48 object-cover rounded-lg border border-gray-300"
                     />
-                    <button
-                      type="button"
-                      onClick={removeImage}
-                      className="absolute top-2 right-2 bg-red-600 text-white p-1 rounded-full hover:bg-red-700 transition-colors"
-                      title="Xóa ảnh"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
                     <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
                       {tempPreviewUrl ? 'Ảnh mới' : 'Ảnh hiện tại'}
                     </div>
+                    <button
+                      type="button"
+                      onClick={handleNewImageUpload}
+                      className="absolute top-2 right-2 bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-1 shadow-md"
+                      title="Upload ảnh mới"
+                    >
+                      <Upload className="w-4 h-4" />
+                      <span className="text-xs font-medium">Mới</span>
+                    </button>
                   </div>
                 ) : (
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
@@ -307,13 +310,6 @@ const TopicEdit: React.FC = () => {
                     <p className="text-sm text-gray-600 mb-2">
                       Kéo thả hình ảnh hoặc click để chọn
                     </p>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageChange}
-                      className="hidden"
-                      id="image-upload"
-                    />
                     <label
                       htmlFor="image-upload"
                       className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 cursor-pointer inline-block transition-colors"
@@ -431,7 +427,7 @@ const TopicEdit: React.FC = () => {
           <div>
             <p className="text-yellow-800 font-medium">Lưu ý khi cập nhật</p>
             <ul className="text-yellow-700 text-sm mt-1 list-disc list-inside space-y-1">
-              <li>Nếu bạn upload hình ảnh mới, hình ảnh cũ sẽ bị xóa khỏi hệ thống</li>
+              <li>Nếu bạn upload hình ảnh mới, hình ảnh cũ sẽ bị thay thế</li>
               <li>Chỉ những trường được thay đổi sẽ được cập nhật</li>
               <li>Thời gian cập nhật sẽ được tự động cập nhật</li>
             </ul>
@@ -439,7 +435,6 @@ const TopicEdit: React.FC = () => {
         </div>
       </div>
 
-      {/* Success Message (temporary) */}
       {!loading && !error && (
         <div className="bg-green-50 border border-green-200 rounded-lg p-4">
           <div className="flex items-center">

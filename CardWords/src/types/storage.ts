@@ -1,4 +1,3 @@
-// types/storage.ts
 export interface UploadResponse {
   status: string;
   message: string;
@@ -7,7 +6,7 @@ export interface UploadResponse {
     fileName?: string;
     fileSize?: number;
     contentType?: string;
-    [key: string]: any; // For additional properties
+    [key: string]: any;
   };
 }
 

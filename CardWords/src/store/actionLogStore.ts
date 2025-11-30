@@ -10,7 +10,6 @@ import {
 import { actionLogService } from '../services/actionLogService';
 
 interface ActionLogStore extends ActionLogState {
-  // Actions
   fetchActionLogs: (filters?: Partial<ActionLogFilter>) => Promise<void>;
   fetchStatistics: () => Promise<void>;
   cleanupOldLogs: (daysToKeep?: number) => Promise<void>;
@@ -59,7 +58,7 @@ export const useActionLogStore = create<ActionLogStore>()(
             },
           });
         } catch (error) {
-          console.error('❌ Failed to fetch action logs:', error);
+          console.error('Failed to fetch action logs:', error);
           set({ 
             loading: false, 
             error: error instanceof Error ? error.message : 'Failed to fetch action logs' 
@@ -73,7 +72,7 @@ export const useActionLogStore = create<ActionLogStore>()(
           const statistics = await actionLogService.getActionLogStatistics();
           set({ statistics, loading: false });
         } catch (error) {
-          console.error('❌ Failed to fetch statistics:', error);
+          console.error(' Failed to fetch statistics:', error);
           set({ 
             loading: false, 
             error: error instanceof Error ? error.message : 'Failed to fetch statistics' 
@@ -87,7 +86,6 @@ export const useActionLogStore = create<ActionLogStore>()(
           await actionLogService.cleanupActionLogs(daysToKeep);
           set({ loading: false });
           
-          // Refresh the list after cleanup
           get().fetchActionLogs();
           get().fetchStatistics();
         } catch (error) {
@@ -120,7 +118,6 @@ export const useActionLogStore = create<ActionLogStore>()(
   )
 );
 
-// Selectors
 export const useActionLogs = () => useActionLogStore((state) => state.logs);
 export const useActionLogsLoading = () => useActionLogStore((state) => state.loading);
 export const useActionLogsError = () => useActionLogStore((state) => state.error);

@@ -13,7 +13,6 @@ interface UserRoleModalProps {
   onClose: () => void;
 }
 
-// Mock roles data
 const availableRoles: Role[] = [
   { id: 1, name: 'USER', description: 'Regular user with basic access' },
   { id: 2, name: 'PREMIUM', description: 'Premium user with enhanced features' },
@@ -23,12 +22,11 @@ const availableRoles: Role[] = [
   { id: 6, name: 'CONTENT_CREATOR', description: 'Can create and manage learning content' }
 ];
 
-// Mock current user roles
 const getUserCurrentRoles = (userId: string): Role[] => {
   const userRoles: { [key: string]: Role[] } = {
-    '1': [availableRoles[0], availableRoles[1]], // John Doe: USER, PREMIUM
-    '2': [availableRoles[0], availableRoles[3]], // Sarah Wilson: USER, ADMIN
-    '6': [availableRoles[0], availableRoles[1], availableRoles[3]] // David Patel: USER, PREMIUM, MODERATOR
+    '1': [availableRoles[0], availableRoles[1]], 
+    '2': [availableRoles[0], availableRoles[3]], 
+    '6': [availableRoles[0], availableRoles[1], availableRoles[3]] 
   };
   return userRoles[userId] || [availableRoles[0]];
 };
@@ -43,12 +41,10 @@ const UserRoleModal: React.FC<UserRoleModalProps> = ({ userId, userName, show, o
   useEffect(() => {
     if (show) {
       setLoading(true);
-      // Simulate API call to get current roles
       setTimeout(() => {
         const userRoles = getUserCurrentRoles(userId);
         setCurrentRoles(userRoles);
         
-        // Filter out roles that user already has
         const availableRolesFiltered = availableRoles.filter(
           role => !userRoles.some(userRole => userRole.id === role.id)
         );
@@ -67,7 +63,6 @@ const UserRoleModal: React.FC<UserRoleModalProps> = ({ userId, userName, show, o
     }
 
     setSaving(true);
-    // Simulate API call
     setTimeout(() => {
       const roleToAdd = availableRoles.find(role => role.id === parseInt(selectedRole));
       if (roleToAdd) {
@@ -94,7 +89,6 @@ const UserRoleModal: React.FC<UserRoleModalProps> = ({ userId, userName, show, o
     }
 
     setSaving(true);
-    // Simulate API call
     setTimeout(() => {
       setCurrentRoles(prev => prev.filter(role => role.id !== roleId));
       setAvailableRoleOptions(prev => [...prev, roleToRemove]);
@@ -182,7 +176,6 @@ const UserRoleModal: React.FC<UserRoleModalProps> = ({ userId, userName, show, o
             )}
           </div>
 
-          {/* Assign New Role */}
           <div className="p-6">
             <h4 className="text-sm font-medium text-gray-700 mb-4">Assign New Role</h4>
             
@@ -229,7 +222,6 @@ const UserRoleModal: React.FC<UserRoleModalProps> = ({ userId, userName, show, o
             )}
           </div>
 
-          {/* Role Information */}
           <div className="p-6 bg-gray-50 border-t border-gray-200">
             <h4 className="text-sm font-medium text-gray-700 mb-3">About Roles</h4>
             <div className="text-sm text-gray-600 space-y-2">

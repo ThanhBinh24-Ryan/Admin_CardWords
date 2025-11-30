@@ -1,4 +1,3 @@
-// Constants
 export const TOPIC_VALIDATION = {
   NAME: {
     MIN_LENGTH: 1,
@@ -9,7 +8,7 @@ export const TOPIC_VALIDATION = {
   },
   IMAGE: {
     ACCEPTED_TYPES: ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'],
-    MAX_SIZE: 5 * 1024 * 1024, // 5MB
+    MAX_SIZE: 5 * 1024 * 1024, 
   },
 };
 
@@ -31,7 +30,7 @@ export const TOPIC_MESSAGES = {
   NO_CHANGES: 'Không có thay đổi nào để cập nhật',
 };
 
-// Validation functions
+
 export const validateTopicName = (name: string): string | null => {
   if (!name.trim()) {
     return TOPIC_ERRORS.NAME_REQUIRED;
@@ -62,7 +61,6 @@ export const validateImageFile = (file: File): string | null => {
   return null;
 };
 
-// Helper functions
 export const hasFormChanges = (
   originalTopic: any, 
   formData: any, 

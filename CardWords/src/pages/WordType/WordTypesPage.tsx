@@ -13,7 +13,7 @@ import {
   Loader2,
   AlertCircle,
   Eye,
-  RefreshCw  // MỚI THÊM
+  RefreshCw  
 } from 'lucide-react';
 
 const WordTypesPage: React.FC = () => {
@@ -59,7 +59,6 @@ const WordTypesPage: React.FC = () => {
     navigate('/admin/word-types/create');
   };
 
-  // MỚI THÊM: Điều hướng đến trang batch update
   const handleBatchUpdate = () => {
     navigate('/admin/word-types/batch-update');
   };
@@ -133,7 +132,7 @@ const WordTypesPage: React.FC = () => {
           </div>
         )}
 
-        {/* Search and Actions */}
+
         <div className="bg-white rounded-2xl shadow-xl p-6 mb-6 border border-gray-100">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div className="flex-1 w-full md:w-auto">
@@ -150,7 +149,6 @@ const WordTypesPage: React.FC = () => {
             </div>
             
             <div className="flex gap-3">
-              {/* MỚI THÊM: Nút Batch Update */}
               <button
                 onClick={handleBatchUpdate}
                 className="px-6 py-3 bg-gradient-to-r from-green-600 to-teal-600 text-white font-bold rounded-xl hover:from-green-700 hover:to-teal-700 transition-all transform hover:scale-105 shadow-md flex items-center"
@@ -170,7 +168,6 @@ const WordTypesPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Word Types Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredTypes.map((type) => (
             <div

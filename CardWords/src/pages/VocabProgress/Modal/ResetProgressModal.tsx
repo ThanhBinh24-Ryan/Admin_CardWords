@@ -19,7 +19,7 @@ const ResetProgressModal: React.FC<ResetProgressModalProps> = ({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-lg max-w-md w-full">
-        {/* Header */}
+   
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center">
             <RefreshCw className="h-6 w-6 text-red-600 mr-2" />
@@ -33,7 +33,7 @@ const ResetProgressModal: React.FC<ResetProgressModalProps> = ({
           </button>
         </div>
 
-        {/* Body */}
+ 
         <div className="p-6">
           <div className="flex items-center justify-center mb-4">
             <div className="bg-red-100 p-3 rounded-full">
@@ -64,7 +64,6 @@ const ResetProgressModal: React.FC<ResetProgressModalProps> = ({
           </div>
         </div>
 
-        {/* Footer */}
         <div className="flex space-x-3 p-6 border-t border-gray-200">
           <button
             onClick={onClose}

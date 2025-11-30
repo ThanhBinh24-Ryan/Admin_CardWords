@@ -13,12 +13,13 @@ import {
   UploadResponse
 } from '../types/vocab';
 
-// const API_BASE_URL = 'http://localhost:8080/api/v1/admin';
-// const STORAGE_API_URL = 'http://localhost:8080/api/v1/storage';
+const API_BASE_URL = 'http://localhost:8080/api/v1/admin';
+// const API_BASE_URL = 'http://103.9.77.220:8080/api/v1/admin';
+const STORAGE_API_URL = 'http://localhost:8080/api/v1/storage';
 // const STORAGE_API_URL = 'https://card-words-services-production.up.railway.app/api/v1/storage';
 // const API_BASE_URL = 'https://card-words-services-production.up.railway.app/api/v1/admin';
-const API_BASE_URL = 'http://103.9.77.220:8080/api/v1/admin';
-const STORAGE_API_URL = 'http://103.9.77.220:8080/api/v1/storage';
+// const API_BASE_URL = 'http://103.9.77.220:8080/api/v1/admin';
+// const STORAGE_API_URL = 'http://103.9.77.220:8080/api/v1/storage';
 class VocabService {
   private getAuthToken(): string | null {
     return localStorage.getItem('accessToken') || null;
@@ -36,7 +37,7 @@ class VocabService {
     }
 
     const fullUrl = `${API_BASE_URL}${url}`;
-    console.log('🔍 Making request to:', fullUrl);
+    console.log('Making request to:', fullUrl);
 
     try {
       const response = await fetch(fullUrl, {
@@ -44,14 +45,14 @@ class VocabService {
         ...options,
       });
 
-      console.log('🔍 Response status:', response.status);
+      console.log(' Response status:', response.status);
 
       if (!response.ok) {
         let errorMessage = `HTTP error! status: ${response.status}`;
         
         try {
           const responseText = await response.text();
-          console.log('🔍 Response body:', responseText);
+          console.log('Response body:', responseText);
           
           const errorData = JSON.parse(responseText);
           errorMessage = errorData.message || errorData.error || errorMessage;
@@ -63,22 +64,21 @@ class VocabService {
       }
 
       const data = await response.json();
-      console.log('🔍 Response data:', data);
+      console.log(' Response data:', data);
       return data;
 
     } catch (error) {
-      console.error('❌ Request failed:', error);
+      console.error(' Request failed:', error);
       throw error;
     }
   }
 
-  // Upload image to Firebase Storage - ĐÃ SỬA THEO RESPONSE THỰC TẾ
   async uploadImage(file: File): Promise<string> {
     const token = this.getAuthToken();
     const formData = new FormData();
     formData.append('file', file);
 
-    console.log('🖼️ Uploading image:', file.name, file.type, file.size);
+    console.log(' Uploading image:', file.name, file.type, file.size);
 
     const response = await fetch(`${STORAGE_API_URL}/upload/image`, {
       method: 'POST',
@@ -90,14 +90,14 @@ class VocabService {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('❌ Image upload failed:', errorText);
+      console.error(' Image upload failed:', errorText);
       throw new Error(`Upload failed: ${response.status} - ${errorText}`);
     }
 
     const result: UploadResponse = await response.json();
-    console.log('✅ Image upload success:', result);
+    console.log(' Image upload success:', result);
     
-    // Extract URL từ response - FIXED THEO RESPONSE THỰC TẾ
+  
     if (!result.data || !result.data.url) {
       throw new Error('Không thể lấy URL ảnh từ response');
     }
@@ -105,13 +105,12 @@ class VocabService {
     return result.data.url;
   }
 
-  // Upload audio to Firebase Storage - ĐÃ SỬA THEO RESPONSE THỰC TẾ
   async uploadAudio(file: File): Promise<string> {
     const token = this.getAuthToken();
     const formData = new FormData();
     formData.append('file', file);
 
-    console.log('🔊 Uploading audio:', file.name, file.type, file.size);
+    console.log(' Uploading audio:', file.name, file.type, file.size);
 
     const response = await fetch(`${STORAGE_API_URL}/upload/audio`, {
       method: 'POST',
@@ -123,14 +122,13 @@ class VocabService {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('❌ Audio upload failed:', errorText);
+      console.error('Audio upload failed:', errorText);
       throw new Error(`Upload failed: ${response.status} - ${errorText}`);
     }
 
     const result: UploadResponse = await response.json();
-    console.log('✅ Audio upload success:', result);
+    console.log('Audio upload success:', result);
     
-    // Extract URL từ response - FIXED THEO RESPONSE THỰC TẾ
     if (!result.data || !result.data.url) {
       throw new Error('Không thể lấy URL audio từ response');
     }
@@ -138,7 +136,6 @@ class VocabService {
     return result.data.url;
   }
 
-  // Export to Excel
   async exportToExcel(): Promise<Blob> {
     const token = this.getAuthToken();
     const headers: Record<string, string> = {};
@@ -157,13 +154,12 @@ class VocabService {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    console.log('✅ Excel export success');
+    console.log(' Excel export success');
     return response.blob();
   }
 
-  // Lấy từ vựng theo ID
+
   async getVocabById(id: string): Promise<VocabResponse> {
-    // Validate UUID format
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(id)) {
       throw new Error('Tham số "id" không đúng định dạng. Yêu cầu kiểu: UUID');
@@ -171,12 +167,11 @@ class VocabService {
     return this.request<VocabResponse>(`/vocabs/${id}`);
   }
 
-  // Lấy từ vựng theo từ
   async getVocabByWord(word: string): Promise<VocabResponse> {
     return this.request<VocabResponse>(`/vocabs/word/${encodeURIComponent(word)}`);
   }
 
-  // Lấy danh sách từ vựng với phân trang
+
   async getVocabs(params: PaginationParams = {}): Promise<VocabsResponse> {
     const { page = 0, size = 20, sortBy = 'createdAt', sortDir = 'desc' } = params;
     const queryParams = new URLSearchParams({
@@ -189,7 +184,6 @@ class VocabService {
     return this.request<VocabsResponse>(`/vocabs?${queryParams}`);
   }
 
-  // Tìm kiếm từ vựng
   async searchVocabs(params: SearchParams): Promise<VocabsResponse> {
     const { keyword, page = 0, size = 20 } = params;
     const queryParams = new URLSearchParams({
@@ -201,7 +195,6 @@ class VocabService {
     return this.request<VocabsResponse>(`/vocabs/search?${queryParams}`);
   }
 
-  // Lấy từ vựng theo CEFR level
   async getVocabsByCefr(params: CefrParams): Promise<VocabsResponse> {
     const { cefr, page = 0, size = 20 } = params;
     const queryParams = new URLSearchParams({
@@ -212,7 +205,6 @@ class VocabService {
     return this.request<VocabsResponse>(`/vocabs/cefr/${cefr}?${queryParams}`);
   }
 
-  // Tạo từ vựng mới
   async createVocab(vocabData: CreateVocabRequest): Promise<VocabResponse> {
     return this.request<VocabResponse>('/vocabs', {
       method: 'POST',
@@ -220,9 +212,8 @@ class VocabService {
     });
   }
 
-  // Cập nhật từ vựng theo ID
+
   async updateVocabById(id: string, vocabData: UpdateVocabRequest): Promise<VocabResponse> {
-    // Validate UUID format
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(id)) {
       throw new Error('Tham số "id" không đúng định dạng. Yêu cầu kiểu: UUID');
@@ -233,7 +224,6 @@ class VocabService {
     });
   }
 
-  // Cập nhật từ vựng theo từ
   async updateVocabByWord(word: string, vocabData: UpdateVocabRequest): Promise<VocabResponse> {
     return this.request<VocabResponse>(`/vocabs/word/${encodeURIComponent(word)}`, {
       method: 'PUT',
@@ -241,9 +231,7 @@ class VocabService {
     });
   }
 
-  // Xóa từ vựng
   async deleteVocab(id: string): Promise<EmptyResponse> {
-    // Validate UUID format
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(id)) {
       throw new Error('Tham số "id" không đúng định dạng. Yêu cầu kiểu: UUID');
@@ -253,7 +241,6 @@ class VocabService {
     });
   }
 
-  // Import nhiều từ vựng
   async bulkImport(vocabs: CreateVocabRequest[]): Promise<BulkImportResponse> {
     return this.request<BulkImportResponse>('/vocabs/bulk-import', {
       method: 'POST',

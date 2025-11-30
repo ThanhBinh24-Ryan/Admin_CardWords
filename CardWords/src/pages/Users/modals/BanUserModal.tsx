@@ -52,7 +52,6 @@ const BanUserModal: React.FC<BanUserModalProps> = ({
           </button>
         </div>
 
-        {/* Body */}
         <form onSubmit={handleSubmit} className="p-6">
           <div className="mb-6">
             <div className="flex items-start mb-4">
@@ -75,7 +74,6 @@ const BanUserModal: React.FC<BanUserModalProps> = ({
             </div>
           </div>
 
-          {/* Actions */}
           <div className="flex gap-3 pt-4">
             <button
               type="button"

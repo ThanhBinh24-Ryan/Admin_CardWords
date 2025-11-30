@@ -172,7 +172,6 @@ const UserProgressDetail: React.FC = () => {
           </div>
         </div>
 
-        {/* Search and Filter */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
             <div className="flex-1 max-w-md">
@@ -202,7 +201,6 @@ const UserProgressDetail: React.FC = () => {
           </div>
         </div>
 
-        {/* Progress Table */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           {loadingUserProgress ? (
             <div className="flex justify-center py-16">
@@ -306,7 +304,6 @@ const UserProgressDetail: React.FC = () => {
                 </table>
               </div>
 
-              {/* Pagination */}
               {totalPages > 1 && (
                 <div className="bg-white px-6 py-4 border-t border-gray-200">
                   <div className="flex items-center justify-between">
@@ -370,7 +367,6 @@ const UserProgressDetail: React.FC = () => {
         </div>
       </div>
 
-      {/* Modals */}
       <DeleteProgressModal
         isOpen={showDeleteModal}
         onClose={() => {

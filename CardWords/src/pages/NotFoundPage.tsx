@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-
+import {Search} from 'lucide-react'
 const NotFoundPage: React.FC = () => {
   const navigate = useNavigate();
 
@@ -15,7 +15,6 @@ const NotFoundPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="max-w-2xl w-full text-center">
-        {/* Animated 404 Number */}
         <div className="relative mb-8">
           <div className="text-9xl font-bold text-gray-800 opacity-10 absolute inset-0 transform -translate-y-4">
             404
@@ -33,17 +32,17 @@ const NotFoundPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Main Content */}
+       
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-2xl p-8 mb-8 border border-white/20">
-          {/* Animated Icon */}
+       
           <div className="mb-6">
             <div className="relative inline-block">
               <div className="w-20 h-20 bg-gradient-to-r from-orange-400 to-pink-500 rounded-full flex items-center justify-center text-white text-2xl mb-4 mx-auto shadow-lg">
-                🔍
+                <Search/>
               </div>
               <div className="absolute -top-2 -right-2">
                 <div className="w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center text-sm animate-pulse">
-                  ❗
+                  ⚠️
                 </div>
               </div>
             </div>
@@ -102,48 +101,13 @@ const NotFoundPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Helpful Links */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-2xl p-6 border border-white/20">
-          <h3 className="text-lg font-semibold text-gray-700 mb-4">
-            Quick Links
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <a href="/dashboard" className="group">
-              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 text-center hover:shadow-lg transition-all duration-300 group-hover:transform group-hover:scale-105 border border-blue-200">
-                <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white mx-auto mb-2 group-hover:bg-blue-600 transition-colors">
-                  📊
-                </div>
-                <span className="font-medium text-blue-700">Dashboard</span>
-              </div>
-            </a>
-            
-            <a href="/users" className="group">
-              <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 text-center hover:shadow-lg transition-all duration-300 group-hover:transform group-hover:scale-105 border border-green-200">
-                <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white mx-auto mb-2 group-hover:bg-green-600 transition-colors">
-                  👥
-                </div>
-                <span className="font-medium text-green-700">Users</span>
-              </div>
-            </a>
-            
-            <a href="/settings" className="group">
-              <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 text-center hover:shadow-lg transition-all duration-300 group-hover:transform group-hover:scale-105 border border-purple-200">
-                <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center text-white mx-auto mb-2 group-hover:bg-purple-600 transition-colors">
-                  ⚙️
-                </div>
-                <span className="font-medium text-purple-700">Settings</span>
-              </div>
-            </a>
-          </div>
-        </div>
 
-        {/* Floating Elements for Visual Interest */}
         <div className="absolute top-10 left-10 w-8 h-8 bg-yellow-400 rounded-full opacity-20 animate-pulse"></div>
         <div className="absolute top-20 right-20 w-12 h-12 bg-blue-400 rounded-full opacity-30 animate-bounce"></div>
         <div className="absolute bottom-20 left-20 w-10 h-10 bg-green-400 rounded-full opacity-25 animate-pulse delay-1000"></div>
         <div className="absolute bottom-10 right-10 w-6 h-6 bg-purple-400 rounded-full opacity-40 animate-bounce delay-500"></div>
 
-        {/* Footer */}
+
         <div className="mt-8 text-gray-500 text-sm">
           <p>If you believe this is an error, please contact our support team.</p>
           <p className="mt-2">
@@ -154,7 +118,7 @@ const NotFoundPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Background Animation */}
+  
       <style>{`
         @keyframes float {
           0%, 100% { transform: translateY(0px) rotate(0deg); }

@@ -1,4 +1,3 @@
-// pages/Profile/ChangePasswordPage.tsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProfileStore } from '../../../store/ProfileStore';
@@ -38,7 +37,6 @@ const ChangePasswordPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Password strength requirements
   const [passwordRequirements, setPasswordRequirements] = useState({
     length: false,
     uppercase: false,
@@ -97,9 +95,8 @@ const ChangePasswordPage: React.FC = () => {
 
     try {
       await changePassword(passwords);
-      setSuccessMessage('✅ Đổi mật khẩu thành công!');
+      setSuccessMessage('Đổi mật khẩu thành công!');
       
-      // Reset form
       setPasswords({
         currentPassword: '',
         newPassword: '',
@@ -113,7 +110,6 @@ const ChangePasswordPage: React.FC = () => {
         special: false
       });
     } catch (error) {
-      // Error is handled by the store
       console.error('Failed to change password:', error);
     } finally {
       setIsLoading(false);
@@ -134,8 +130,7 @@ const ChangePasswordPage: React.FC = () => {
   return (
     <div className="change-password-page">
       <div className="change-password-container">
-        {/* Header */}
-        <div className="password-header">
+         <div className="password-header">
           <button 
             className="back-button"
             onClick={() => navigate('/profile')}
@@ -155,7 +150,6 @@ const ChangePasswordPage: React.FC = () => {
         </div>
 
         <div className="password-content">
-          {/* Left Side - Form */}
           <div className="password-form-section">
             <form onSubmit={handleSubmit} className="password-form">
               {error && (
@@ -175,7 +169,6 @@ const ChangePasswordPage: React.FC = () => {
                 </div>
               )}
 
-              {/* Current Password */}
               <div className="input-group">
                 <label className="input-label">
                   <Lock size={16} />
@@ -202,8 +195,7 @@ const ChangePasswordPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* New Password */}
-              <div className="input-group">
+                <div className="input-group">
                 <label className="input-label">
                   <Key size={16} />
                   Mật khẩu mới
@@ -228,7 +220,6 @@ const ChangePasswordPage: React.FC = () => {
                   </button>
                 </div>
 
-                {/* Password Strength */}
                 {passwords.newPassword && (
                   <div className="password-strength">
                     <div className="strength-bar">
@@ -246,7 +237,6 @@ const ChangePasswordPage: React.FC = () => {
                   </div>
                 )}
 
-                {/* Password Requirements */}
                 <div className="password-requirements">
                   <h4>Yêu cầu mật khẩu:</h4>
                   <div className="requirements-list">
@@ -274,7 +264,6 @@ const ChangePasswordPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Confirm Password */}
               <div className="input-group">
                 <label className="input-label">
                   <Lock size={16} />
@@ -307,8 +296,7 @@ const ChangePasswordPage: React.FC = () => {
                 )}
               </div>
 
-              {/* Security Tips */}
-              <div className="security-tips">
+                <div className="security-tips">
                 <h4>💡 Mẹo bảo mật:</h4>
                 <ul>
                   <li>Không sử dụng mật khẩu cũ đã từng dùng</li>
@@ -318,7 +306,6 @@ const ChangePasswordPage: React.FC = () => {
                 </ul>
               </div>
 
-              {/* Submit Button */}
               <button
                 type="submit"
                 className="submit-button"
@@ -336,7 +323,6 @@ const ChangePasswordPage: React.FC = () => {
             </form>
           </div>
 
-          {/* Right Side - Security Info */}
           <div className="security-info-section">
             <div className="security-card">
               <div className="security-icon">
@@ -347,7 +333,7 @@ const ChangePasswordPage: React.FC = () => {
               
               <div className="security-features">
                 <div className="feature">
-                  <div className="feature-icon">🔒</div>
+                  <div className="feature-icon"></div>
                   <div>
                     <h4>Mật khẩu mạnh</h4>
                     <p>Bảo vệ chống lại tấn công brute-force</p>
@@ -355,7 +341,7 @@ const ChangePasswordPage: React.FC = () => {
                 </div>
                 
                 <div className="feature">
-                  <div className="feature-icon">🔄</div>
+                  <div className="feature-icon"></div>
                   <div>
                     <h4>Đổi mật khẩu định kỳ</h4>
                     <p>Nên thay đổi mật khẩu 3-6 tháng/lần</p>
@@ -363,7 +349,7 @@ const ChangePasswordPage: React.FC = () => {
                 </div>
                 
                 <div className="feature">
-                  <div className="feature-icon">📧</div>
+                  <div className="feature-icon"></div>
                   <div>
                     <h4>Thông báo bảo mật</h4>
                     <p>Nhận cảnh báo khi có đăng nhập mới</p>

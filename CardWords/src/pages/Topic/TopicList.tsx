@@ -36,11 +36,9 @@ const TopicList: React.FC = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [topicToDelete, setTopicToDelete] = useState<Topic | null>(null);
   
-  // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(9);
   
-  // Filter state
   const [sortBy, setSortBy] = useState<'name' | 'id'>('id');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -57,12 +55,51 @@ const TopicList: React.FC = () => {
     }
   };
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-    setCurrentPage(1); // Reset to first page when searching
+  const getFirstLetter = (name: string): string => {
+    if (!name || name.trim().length === 0) return '?';
+    return name.trim().charAt(0).toUpperCase();
   };
 
-  // Filter and sort topics
+  const TopicAvatar: React.FC<{ topic: Topic; size?: 'small' | 'large' }> = ({ 
+    topic, 
+    size = 'large' 
+  }) => {
+    const firstLetter = getFirstLetter(topic.name);
+    
+    if (topic.img) {
+      return (
+        <img
+          src={topic.img}
+          alt={topic.name}
+          className={`
+            object-cover
+            ${size === 'small' ? 'w-10 h-10 rounded-lg' : 'w-full h-48'}
+          `}
+        />
+      );
+    }
+    
+    return (
+      <div
+        className={`
+          flex items-center justify-center text-white font-bold
+          bg-gradient-to-r from-purple-600 to-pink-600
+          ${size === 'small' 
+            ? 'w-10 h-10 rounded-lg text-lg' 
+            : 'w-full h-48 text-6xl'
+          }
+        `}
+      >
+        {firstLetter}
+      </div>
+    );
+  };
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1); 
+  };
+
   const filteredAndSortedTopics = topics
     .filter(topic =>
       topic.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -90,7 +127,6 @@ const TopicList: React.FC = () => {
       }
     });
 
-  // Pagination calculations
   const totalPages = Math.ceil(filteredAndSortedTopics.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentTopics = filteredAndSortedTopics.slice(startIndex, startIndex + itemsPerPage);
@@ -106,7 +142,6 @@ const TopicList: React.FC = () => {
         await deleteTopic(topicToDelete.id);
         setShowDeleteModal(false);
         setTopicToDelete(null);
-        // Reset to first page if needed
         if (currentTopics.length === 1 && currentPage > 1) {
           setCurrentPage(currentPage - 1);
         }
@@ -136,7 +171,6 @@ const TopicList: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header với icon folder và tiêu đề chính giữa */}
       <div className="text-center relative">
         <div className="flex justify-center mb-4">
           <div className="bg-blue-100 p-4 rounded-full">
@@ -147,7 +181,6 @@ const TopicList: React.FC = () => {
         <p className="text-gray-600 text-lg">Quản lý và tổ chức các chủ đề học tập</p>
       </div>
 
-      {/* Action Buttons - Centered */}
       <div className="flex justify-center">
         <div className="flex gap-3 bg-white rounded-lg border border-gray-200 p-3 shadow-sm">
           <Link
@@ -174,7 +207,6 @@ const TopicList: React.FC = () => {
         </div>
       </div>
 
-      {/* Error Alert */}
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start">
           <AlertCircle className="w-5 h-5 text-red-600 mr-2 mt-0.5" />
@@ -191,10 +223,8 @@ const TopicList: React.FC = () => {
         </div>
       )}
 
-      {/* Search and Filters */}
       <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
         <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center">
-          {/* Search */}
           <div className="flex-1 w-full">
             <div className="relative">
               <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
@@ -208,9 +238,8 @@ const TopicList: React.FC = () => {
             </div>
           </div>
 
-          {/* View Controls */}
           <div className="flex flex-wrap gap-3">
-            {/* Sort Controls */}
+
             <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
               <button
                 onClick={() => handleSort('name')}
@@ -236,7 +265,6 @@ const TopicList: React.FC = () => {
               </button>
             </div>
 
-            {/* View Mode */}
             <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
               <button
                 onClick={() => setViewMode('grid')}
@@ -260,7 +288,6 @@ const TopicList: React.FC = () => {
           </div>
         </div>
 
-        {/* Results Info */}
         <div className="mt-4 flex justify-between items-center text-sm text-gray-600">
           <span>
             Hiển thị {Math.min(itemsPerPage, currentTopics.length)} trong tổng số {filteredAndSortedTopics.length} chủ đề
@@ -270,7 +297,6 @@ const TopicList: React.FC = () => {
         </div>
       </div>
 
-      {/* Topics Grid/List */}
       {viewMode === 'grid' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {currentTopics.map((topic) => (
@@ -279,11 +305,7 @@ const TopicList: React.FC = () => {
               className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 hover:border-blue-300"
             >
               <div className="relative">
-                <img
-                  src={topic.img || '/default-topic.jpg'}
-                  alt={topic.name}
-                  className="w-full h-48 object-cover"
-                />
+                <TopicAvatar topic={topic} size="large" />
                 <div className="absolute bottom-3 left-3 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-sm">
                   ID: {topic.id}
                 </div>
@@ -299,7 +321,7 @@ const TopicList: React.FC = () => {
                 
                 <div className="flex justify-between items-center pt-3 border-t border-gray-100">
                   <div className="text-xs text-gray-500">
-                    {/* Đã bỏ ngày tạo */}
+        
                   </div>
                   <div className="flex gap-1">
                     <Link
@@ -351,11 +373,9 @@ const TopicList: React.FC = () => {
                 <tr key={topic.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
-                      <img
-                        src={topic.img || '/default-topic.jpg'}
-                        alt={topic.name}
-                        className="w-10 h-10 rounded-lg object-cover mr-3"
-                      />
+                      <div className="mr-3">
+                        <TopicAvatar topic={topic} size="small" />
+                      </div>
                       <div>
                         <div className="text-sm font-medium text-gray-900">{topic.name}</div>
                         <div className="text-sm text-gray-500">ID: {topic.id}</div>
@@ -399,7 +419,6 @@ const TopicList: React.FC = () => {
         </div>
       )}
 
-      {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex justify-center items-center gap-2 py-6">
           <button
@@ -454,7 +473,6 @@ const TopicList: React.FC = () => {
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
       {showDeleteModal && topicToDelete && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-md w-full p-6">

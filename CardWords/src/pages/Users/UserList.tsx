@@ -34,7 +34,7 @@ import ActivateUserModal from './modals/ActivateUserModal';
 const UserList: React.FC = () => {
   const navigate = useNavigate();
   const {
-    users, // users từ store
+    users, 
     loading,
     error,
     pagination,
@@ -53,14 +53,12 @@ const UserList: React.FC = () => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
   
-  // Modal states
   const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showBanModal, setShowBanModal] = useState(false);
   const [showActivateModal, setShowActivateModal] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   
-  // Filter states
   const [filters, setFilters] = useState<UserFilter>({
     search: '',
     status: '',
@@ -71,10 +69,8 @@ const UserList: React.FC = () => {
 
   const [isSearching, setIsSearching] = useState(false);
 
-  // Debounce search
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
 
-  // Load users khi component mount
   useEffect(() => {
     loadInitialUsers();
   }, []);
@@ -88,12 +84,11 @@ const UserList: React.FC = () => {
     };
   }, []);
 
-  // Load users ban đầu
   const loadInitialUsers = async () => {
     try {
       await fetchUsers({
         page: 0,
-        size: 100, // Load đủ để hiển thị
+        size: 100, 
         sortBy: 'createdAt',
         sortDir: 'desc'
       });
@@ -102,15 +97,13 @@ const UserList: React.FC = () => {
     }
   };
 
-  // Filter users locally based on filters
   const filteredUsers = useMemo(() => {
     if (isSearching) {
-      return users; // Use search results directly
+      return users; 
     }
 
     let result = [...users];
 
-    // Filter by search
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
       result = result.filter(user => 
@@ -119,22 +112,18 @@ const UserList: React.FC = () => {
       );
     }
 
-    // Filter by activation status
     if (filters.activated !== null) {
       result = result.filter(user => user.activated === filters.activated);
     }
 
-    // Filter by ban status
     if (filters.banned !== null) {
       result = result.filter(user => user.banned === filters.banned);
     }
 
-    // Filter by level
     if (filters.current_level) {
       result = result.filter(user => user.currentLevel === filters.current_level);
     }
 
-    // Filter by status
     if (filters.status) {
       result = result.filter(user => user.status === filters.status);
     }
@@ -142,7 +131,6 @@ const UserList: React.FC = () => {
     return result;
   }, [users, filters, isSearching]);
 
-  // Paginate filtered users
   const paginatedUsers = useMemo(() => {
     const startIndex = currentPage * itemsPerPage;
     return filteredUsers.slice(startIndex, startIndex + itemsPerPage);
@@ -152,10 +140,9 @@ const UserList: React.FC = () => {
 
   const handleSearch = async () => {
     if (!filters.search.trim()) {
-      // If search is empty, switch back to local filtering
       setIsSearching(false);
       setCurrentPage(0);
-      await loadInitialUsers(); // Reload original data
+      await loadInitialUsers(); 
       return;
     }
 
@@ -164,7 +151,7 @@ const UserList: React.FC = () => {
     try {
       await searchUsers({
         keyword: filters.search,
-        page: 0, // Always start from page 0 when searching
+        page: 0, 
         size: itemsPerPage
       });
     } catch (error) {
@@ -172,21 +159,18 @@ const UserList: React.FC = () => {
     }
   };
 
-  // Debounced search handler
   const handleSearchChange = (value: string) => {
     setFilters(prev => ({ ...prev, search: value }));
     
-    // Clear existing timeout
+
     if (searchTimeout) {
       clearTimeout(searchTimeout);
     }
     
-    // Set new timeout for debounced search
     const newTimeout = setTimeout(() => {
       if (value.trim()) {
         handleSearch();
       } else {
-        // If search is cleared, switch back to local data
         setIsSearching(false);
         setCurrentPage(0);
         loadInitialUsers();
@@ -208,7 +192,6 @@ const UserList: React.FC = () => {
     try {
       await deleteUser(selectedUser.id);
       setShowDeleteModal(false);
-      // Reload data after delete
       await loadInitialUsers();
     } catch (error: any) {
       console.error('Delete failed:', error);
@@ -265,7 +248,6 @@ const UserList: React.FC = () => {
     try {
       await updateUserRoles(selectedUser.id, selectedRoles);
       setShowRoleModal(false);
-      // Reload data after update
       await loadInitialUsers();
     } catch (error) {
       console.error('Update roles failed:', error);
@@ -286,7 +268,6 @@ const UserList: React.FC = () => {
     try {
       await banUser(selectedUser.id, banned);
       setShowBanModal(false);
-      // Reload data after ban
       await loadInitialUsers();
     } catch (error) {
       console.error('Ban user failed:', error);
@@ -307,7 +288,6 @@ const UserList: React.FC = () => {
     try {
       await activateUser(selectedUser.id, activated);
       setShowActivateModal(false);
-      // Reload data after activation
       await loadInitialUsers();
     } catch (error) {
       console.error('Activate user failed:', error);
@@ -322,7 +302,6 @@ const UserList: React.FC = () => {
       [key]: value
     }));
     setCurrentPage(0);
-    // When using other filters, switch back to local data
     if (key !== 'search') {
       setIsSearching(false);
     }
@@ -402,7 +381,6 @@ const UserList: React.FC = () => {
     );
   };
 
-  // Get active filter count for badge
   const getActiveFilterCount = () => {
     let count = 0;
     if (filters.search) count++;
@@ -461,7 +439,6 @@ const UserList: React.FC = () => {
           </div>
         )}
 
-        {/* Filters */}
         <div className="bg-white rounded-2xl shadow-xl p-6 mb-6 border border-gray-100">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center">
@@ -585,7 +562,6 @@ const UserList: React.FC = () => {
           </div>
         </div>
 
-        {/* User Table */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
@@ -750,7 +726,6 @@ const UserList: React.FC = () => {
             </div>
           )}
 
-          {/* Pagination */}
           {totalPages > 1 && (
             <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 flex items-center justify-between border-t-2 border-gray-200">
               <div>
@@ -809,8 +784,6 @@ const UserList: React.FC = () => {
           )}
         </div>
 
-        {/* Các modal components giữ nguyên */}
-        {/* Role Modal */}
         {showRoleModal && selectedUser && (
           <UserRoleModal
             user={selectedUser}
@@ -822,7 +795,6 @@ const UserList: React.FC = () => {
           />
         )}
 
-        {/* Reset Password Modal */}
         {showResetPasswordModal && selectedUser && (
           <ResetPasswordModal
             isOpen={showResetPasswordModal}
@@ -834,7 +806,6 @@ const UserList: React.FC = () => {
           />
         )}
 
-        {/* Delete Modal */}
         {showDeleteModal && selectedUser && (
           <DeleteUserModal
             isOpen={showDeleteModal}
@@ -846,7 +817,6 @@ const UserList: React.FC = () => {
           />
         )}
 
-        {/* Ban Modal */}
         {showBanModal && selectedUser && (
           <BanUserModal
             isOpen={showBanModal}
@@ -857,7 +827,6 @@ const UserList: React.FC = () => {
           />
         )}
 
-        {/* Activate Modal */}
         {showActivateModal && selectedUser && (
           <ActivateUserModal
             isOpen={showActivateModal}
@@ -872,7 +841,6 @@ const UserList: React.FC = () => {
   );
 };
 
-// Role Modal Component (giữ nguyên)
 const UserRoleModal: React.FC<{
   user: User;
   selectedRoles: string[];
@@ -908,7 +876,6 @@ const UserRoleModal: React.FC<{
           </p>
         </div>
 
-        {/* Body */}
         <div className="p-6">
           <div className="space-y-3 mb-6">
             {availableRoles.map((role) => (
@@ -939,7 +906,6 @@ const UserRoleModal: React.FC<{
             ))}
           </div>
 
-          {/* Actions */}
           <div className="flex gap-3 pt-4 border-t-2 border-gray-200">
             <button
               onClick={onClose}

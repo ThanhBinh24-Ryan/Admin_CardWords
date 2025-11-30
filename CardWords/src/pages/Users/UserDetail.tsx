@@ -21,7 +21,6 @@ import {
   Loader2
 } from 'lucide-react';
 
-// Modal components
 import ResetPasswordModal from './modals/ResetPasswordModal';
 import DeleteUserModal from './modals/DeleteUserModal';
 
@@ -117,7 +116,7 @@ const UserDetail: React.FC = () => {
       try {
         await activateUser(currentUser.id, !currentUser.activated);
        
-        await loadUserData(); // Reload data
+        await loadUserData(); 
       } catch (error) {
       
       } finally {
@@ -137,7 +136,7 @@ const UserDetail: React.FC = () => {
       try {
         await banUser(currentUser.id, !currentUser.banned);
        
-        await loadUserData(); // Reload data
+        await loadUserData(); 
       } catch (error) {
    
       } finally {
@@ -346,9 +345,7 @@ const UserDetail: React.FC = () => {
           </div>
         </div>
 
-        {/* Main Content */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          {/* Tabs */}
           <div className="border-b border-gray-200">
             <nav className="flex overflow-x-auto">
               {[
@@ -372,10 +369,8 @@ const UserDetail: React.FC = () => {
           </div>
 
           <div className="p-6">
-            {/* Overview Tab */}
             {activeTab === 'overview' && (
               <div className="space-y-8">
-                {/* Personal Information */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                   <div className="space-y-6">
                     <h3 className="text-xl font-semibold text-gray-900 flex items-center">
@@ -478,7 +473,6 @@ const UserDetail: React.FC = () => {
               </div>
             )}
 
-            {/* Settings Tab */}
             {activeTab === 'settings' && (
               <div className="space-y-8">
                 <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
@@ -498,8 +492,7 @@ const UserDetail: React.FC = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Reset Password */}
-                  <div className="border border-gray-200 rounded-xl p-6 hover:border-blue-300 transition-colors">
+                    <div className="border border-gray-200 rounded-xl p-6 hover:border-blue-300 transition-colors">
                     <div className="flex items-start space-x-4">
                       <div className="p-3 bg-orange-100 rounded-lg">
                         <Key className="w-6 h-6 text-orange-600" />
@@ -520,7 +513,6 @@ const UserDetail: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Activation Status */}
                   <div className="border border-gray-200 rounded-xl p-6 hover:border-blue-300 transition-colors">
                     <div className="flex items-start space-x-4">
                       <div className="p-3 bg-green-100 rounded-lg">
@@ -550,8 +542,7 @@ const UserDetail: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Ban/Unban */}
-                  <div className="border border-gray-200 rounded-xl p-6 hover:border-blue-300 transition-colors">
+                     <div className="border border-gray-200 rounded-xl p-6 hover:border-blue-300 transition-colors">
                     <div className="flex items-start space-x-4">
                       <div className="p-3 bg-red-100 rounded-lg">
                         <Ban className="w-6 h-6 text-red-600" />
@@ -580,8 +571,7 @@ const UserDetail: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Delete Account */}
-                  <div className="border border-gray-200 rounded-xl p-6 hover:border-red-300 transition-colors">
+                    <div className="border border-gray-200 rounded-xl p-6 hover:border-red-300 transition-colors">
                     <div className="flex items-start space-x-4">
                       <div className="p-3 bg-red-100 rounded-lg">
                         <Trash2 className="w-6 h-6 text-red-600" />
@@ -608,7 +598,6 @@ const UserDetail: React.FC = () => {
         </div>
       </div>
 
-      {/* Modals */}
       <ResetPasswordModal
         isOpen={showResetPasswordModal}
         onClose={() => setShowResetPasswordModal(false)}

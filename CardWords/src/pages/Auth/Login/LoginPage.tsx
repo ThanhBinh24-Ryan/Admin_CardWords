@@ -1,4 +1,3 @@
-// src/components/LoginForm.tsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../../../services/authService';
@@ -53,17 +52,14 @@ const LoginForm: React.FC = () => {
       
       setSuccess('Đăng nhập thành công!');
       
-      // Lưu token vào localStorage
       localStorage.setItem('accessToken', result.data.accessToken);
       localStorage.setItem('refreshToken', result.data.refreshToken);
       
-      // Lưu remember me
       if (rememberMe) {
         localStorage.setItem('rememberMe', 'true');
         localStorage.setItem('savedEmail', formData.email);
       }
 
-      // Chuyển hướng sau 1 giây
       setTimeout(() => {
         navigate('/dashboard');
       }, 1000);

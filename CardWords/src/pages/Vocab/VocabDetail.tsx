@@ -373,9 +373,9 @@ const VocabDetail: React.FC = () => {
             </div>
           </div>
 
-          {/* Right Column - Detailed Information */}
+      
           <div className="lg:col-span-2 space-y-6">
-            {/* Definition */}
+         
             <div className="bg-white rounded-2xl shadow-xl p-6 border border-gray-100 transform transition-all hover:shadow-2xl">
               <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
                 <BookOpen className="w-6 h-6 mr-2 text-blue-500" />
@@ -388,7 +388,7 @@ const VocabDetail: React.FC = () => {
               </div>
             </div>
 
-            {/* Example Sentence */}
+        
             <div className="bg-white rounded-2xl shadow-xl p-6 border border-gray-100 transform transition-all hover:shadow-2xl">
               <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
                 <MessageSquare className="w-6 h-6 mr-2 text-green-500" />
@@ -403,7 +403,6 @@ const VocabDetail: React.FC = () => {
               </div>
             </div>
 
-            {/* Topic */}
             {vocab.topic && (
               <div className="bg-white rounded-2xl shadow-xl p-6 border border-gray-100 transform transition-all hover:shadow-2xl">
                 <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
@@ -419,7 +418,6 @@ const VocabDetail: React.FC = () => {
               </div>
             )}
 
-            {/* Word Types */}
             {vocab.types && vocab.types.length > 0 && (
               <div className="bg-white rounded-2xl shadow-xl p-6 border border-gray-100 transform transition-all hover:shadow-2xl">
                 <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
@@ -440,7 +438,7 @@ const VocabDetail: React.FC = () => {
               </div>
             )}
 
-            {/* Usage Notes */}
+         
             <div className="bg-white rounded-2xl shadow-xl p-6 border border-gray-100 transform transition-all hover:shadow-2xl">
               <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
                 <CheckCircle2 className="w-6 h-6 mr-2 text-teal-500" />
@@ -473,7 +471,6 @@ const VocabDetail: React.FC = () => {
           </div>
         </div>
 
-        {/* Action Buttons */}
         <div className="flex justify-end space-x-4 mt-8 pt-6 border-t border-gray-200">
           <button
             onClick={handleBack}

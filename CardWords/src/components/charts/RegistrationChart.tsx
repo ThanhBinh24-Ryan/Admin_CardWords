@@ -88,7 +88,7 @@ const RegistrationChart: React.FC<RegistrationChartProps> = ({ data, loading }) 
     }
   ];
 
-  // Simple bar chart implementation
+  
   const maxCount = Math.max(...(data?.userRegistrationChart?.map(item => item.count) || [0]));
   const chartData = data?.userRegistrationChart?.slice(-15) || [];
   

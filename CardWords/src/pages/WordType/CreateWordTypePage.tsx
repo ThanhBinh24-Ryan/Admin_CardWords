@@ -27,7 +27,6 @@ const CreateWordTypePage: React.FC = () => {
     clearError();
     setValidationError('');
 
-    // Validate kỹ hơn
     const trimmedName = formData.name.trim();
     
     if (!trimmedName) {
@@ -40,29 +39,26 @@ const CreateWordTypePage: React.FC = () => {
       return;
     }
 
-    // Chỉ cho phép chữ cái và số, không có ký tự đặc biệt
     const nameRegex = /^[a-zA-Z0-9\s]+$/;
     if (!nameRegex.test(trimmedName)) {
       setValidationError('Tên loại từ chỉ được chứa chữ cái, số và khoảng trắng');
       return;
     }
 
-    // Chuẩn bị dữ liệu gửi đi
     const submitData: CreateWordTypeRequest = {
       name: trimmedName,
-      description: formData.description?.trim() || undefined // Gửi undefined thay vì empty string
+      description: formData.description?.trim() || undefined 
     };
 
     console.log('🎯 Final submit data:', submitData);
 
     try {
       const result = await createType(submitData);
-      console.log('✅ Create success:', result);
+      console.log(' Create success:', result);
       alert('Tạo loại từ thành công!');
       navigate('/admin/word-types');
     } catch (error: any) {
-      console.error('❌ Create failed:', error);
-      // Hiển thị thông báo lỗi cụ thể
+      console.error(' Create failed:', error);
       if (error.message.includes('Tên loại từ không được để trống')) {
         setValidationError('Tên loại từ không được để trống. Vui lòng kiểm tra lại.');
       }
@@ -75,14 +71,13 @@ const CreateWordTypePage: React.FC = () => {
       [field]: value
     }));
     
-    // Clear errors khi user nhập
+ 
     if (field === 'name' && (validationError || error)) {
       setValidationError('');
       clearError();
     }
   };
 
-  // Thử với các giá trị mẫu
   const trySampleData = (sampleName: string, sampleDesc: string = '') => {
     setFormData({
       name: sampleName,
@@ -95,7 +90,7 @@ const CreateWordTypePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <div className="container mx-auto px-4 py-8">
-        {/* Header */}
+
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center">
@@ -120,8 +115,7 @@ const CreateWordTypePage: React.FC = () => {
           </div>
         </div>
 
-        {/* Sample data buttons - Để test nhanh */}
-        <div className="bg-yellow-50 border-l-4 border-yellow-500 text-yellow-700 px-6 py-4 rounded-xl mb-6">
+        {/* <div className="bg-yellow-50 border-l-4 border-yellow-500 text-yellow-700 px-6 py-4 rounded-xl mb-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="font-semibold">Debug: Thử với dữ liệu mẫu</p>
@@ -148,9 +142,8 @@ const CreateWordTypePage: React.FC = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div> */}
 
-        {/* Hiển thị lỗi từ server */}
         {error && (
           <div className="bg-red-50 border-l-4 border-red-500 text-red-700 px-6 py-4 rounded-xl mb-6 flex items-start">
             <AlertCircle className="w-5 h-5 mr-3 flex-shrink-0 mt-0.5" />
@@ -161,7 +154,6 @@ const CreateWordTypePage: React.FC = () => {
           </div>
         )}
 
-        {/* Hiển thị lỗi validation */}
         {validationError && (
           <div className="bg-orange-50 border-l-4 border-orange-500 text-orange-700 px-6 py-4 rounded-xl mb-6 flex items-start">
             <AlertCircle className="w-5 h-5 mr-3 flex-shrink-0 mt-0.5" />
@@ -172,11 +164,9 @@ const CreateWordTypePage: React.FC = () => {
           </div>
         )}
 
-        {/* Form */}
         <div className="max-w-2xl mx-auto">
           <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Name Field */}
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-3">
                   Tên Loại từ *
@@ -195,7 +185,7 @@ const CreateWordTypePage: React.FC = () => {
                 </p>
               </div>
 
-              {/* Description Field */}
+             
               {/* <div>
                 <label className="block text-sm font-bold text-gray-700 mb-3">
                   Mô tả (tùy chọn)
@@ -210,7 +200,7 @@ const CreateWordTypePage: React.FC = () => {
                 />
               </div> */}
 
-              {/* Preview */}
+          
               {(formData.name.trim() || formData.description?.trim()) && (
                 <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-2xl border-2 border-blue-200">
                   <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
@@ -238,7 +228,7 @@ const CreateWordTypePage: React.FC = () => {
                 </div>
               )}
 
-              {/* Actions */}
+            
               <div className="flex gap-4 pt-6 border-t-2 border-gray-200">
                 <button
                   type="button"

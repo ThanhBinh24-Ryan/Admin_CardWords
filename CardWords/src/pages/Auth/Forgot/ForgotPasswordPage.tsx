@@ -1,4 +1,3 @@
-// src/components/ForgotPassword.tsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, ArrowLeft, Loader2, CheckCircle, Shield } from 'lucide-react';
@@ -25,7 +24,6 @@ const ForgotPassword: React.FC = () => {
       return;
     }
 
-    // Validation email cơ bản
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       setError('Email không hợp lệ');
@@ -35,8 +33,7 @@ const ForgotPassword: React.FC = () => {
 
     try {
       const result = await authService.forgotPassword({ email });
-      
-      // Kiểm tra response từ server
+    
       if (result.status === 'success' || result.status === '200') {
         setSuccess(result.message || 'Hướng dẫn khôi phục mật khẩu đã được gửi đến email của bạn');
       } else {

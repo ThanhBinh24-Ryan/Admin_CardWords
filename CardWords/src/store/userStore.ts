@@ -210,7 +210,6 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
         user.id === id ? { ...user, activated: response.data.activated } : user
       );
       
-      // Update current user if it's the same user
       const updatedCurrentUser = currentUser?.id === id 
         ? response.data 
         : currentUser;

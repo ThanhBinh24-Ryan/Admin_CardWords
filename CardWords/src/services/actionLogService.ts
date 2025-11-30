@@ -8,9 +8,10 @@ import {
   CleanupParams
 } from '../types/actionLog';
 
-// const API_BASE_URL = 'http://localhost:8080/api/v1/admin';
+const API_BASE_URL = 'http://localhost:8080/api/v1/admin';
+// const API_BASE_URL = 'http://103.9.77.220:8080/api/v1/admin';
 // const API_BASE_URL = 'https://card-words-services-production.up.railway.app/api/v1/admin';
-const API_BASE_URL = 'http://103.9.77.220:8080//api/v1/admin';
+// const API_BASE_URL = 'http://103.9.77.220:8080//api/v1/admin';
 class ActionLogService {
   private getAuthToken(): string | null {
     return localStorage.getItem('accessToken') || null;
@@ -29,8 +30,8 @@ class ActionLogService {
 
     const url = `${API_BASE_URL}${endpoint}`;
     
-    console.log('📊 ActionLog Request:', url);
-    console.log('🔑 Token exists:', !!token);
+    console.log(' ActionLog Request:', url);
+    console.log(' Token exists:', !!token);
 
     try {
       const response = await fetch(url, {
@@ -38,11 +39,11 @@ class ActionLogService {
         ...options,
       });
 
-      console.log('📊 ActionLog Response status:', response.status);
+      console.log('ActionLog Response status:', response.status);
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('❌ ActionLog Error:', errorText);
+        console.error(' ActionLog Error:', errorText);
         
         let errorMessage = `HTTP error! status: ${response.status}`;
         try {
@@ -56,19 +57,18 @@ class ActionLogService {
       }
 
       const data = await response.json();
-      console.log('✅ ActionLog Response data:', data);
+      console.log(' ActionLog Response data:', data);
       return data;
     } catch (error) {
-      console.error('❌ ActionLog Request failed:', error);
+      console.error(' ActionLog Request failed:', error);
       throw error;
     }
   }
 
-  // Lấy danh sách action logs với filters và pagination
+
   async getActionLogs(filters: ActionLogFilter): Promise<PageResponse<ActionLog>> {
     const queryParams = new URLSearchParams();
     
-    // Chỉ gửi các parameters có giá trị
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== '') {
         queryParams.append(key, String(value));
@@ -79,13 +79,11 @@ class ActionLogService {
     return response.data;
   }
 
-  // Lấy thống kê action logs
   async getActionLogStatistics(): Promise<ActionLogStatistics> {
     const response = await this.request<BaseResponse<ActionLogStatistics>>('/action-logs/statistics');
     return response.data;
   }
 
-  // Export action logs
   async exportActionLogs(filters: ExportFilter): Promise<ActionLog[]> {
     const queryParams = new URLSearchParams();
     
@@ -99,7 +97,6 @@ class ActionLogService {
     return response.data;
   }
 
-  // Download export as file
   async downloadActionLogsExport(filters: ExportFilter, filename: string = 'action-logs.csv'): Promise<void> {
     const token = this.getAuthToken();
     const queryParams = new URLSearchParams();
@@ -122,11 +119,11 @@ class ActionLogService {
 
       const response = await fetch(url, { headers });
 
-      console.log('📥 Download Response status:', response.status);
+      console.log(' Download Response status:', response.status);
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('❌ Download Error:', errorText);
+        console.error(' Download Error:', errorText);
         throw new Error(`Download failed with status: ${response.status}`);
       }
 
@@ -140,14 +137,14 @@ class ActionLogService {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(downloadUrl);
 
-      console.log('✅ Download completed successfully');
+      console.log(' Download completed successfully');
     } catch (error) {
-      console.error('❌ Download failed:', error);
+      console.error(' Download failed:', error);
       throw error;
     }
   }
 
-  // Xóa action logs cũ
+  
   async cleanupActionLogs(daysToKeep: number = 90): Promise<BaseResponse<{}>> {
     const queryParams = new URLSearchParams({
       daysToKeep: daysToKeep.toString()

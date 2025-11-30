@@ -1,4 +1,3 @@
-// src/pages/Topic/TopicBulkCreate.tsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTopicStore } from '../../store/topicStore';
@@ -46,7 +45,6 @@ const TopicBulkCreate: React.FC = () => {
   const [previewImage, setPreviewImage] = useState<{ url: string; name: string } | null>(null);
   const [showDetailedResults, setShowDetailedResults] = useState(false);
 
-  // Fetch danh sách chủ đề hiện có khi component mount
   useEffect(() => {
     fetchTopics();
   }, [fetchTopics]);
@@ -122,7 +120,7 @@ const TopicBulkCreate: React.FC = () => {
         const imageUrl = response.data?.url;
         if (imageUrl && typeof imageUrl === 'string') {
           updateTopic(index, 'imageUrl', imageUrl);
-          console.log('✅ Upload thành công:', imageUrl);
+          console.log('Upload thành công:', imageUrl);
         } else {
           throw new Error('Không thể lấy URL ảnh từ response');
         }
@@ -154,7 +152,6 @@ const TopicBulkCreate: React.FC = () => {
     setPreviewImage(null);
   };
 
-  // Kiểm tra chủ đề đã tồn tại trong hệ thống
   const checkExistingTopics = (topicNames: string[]): string[] => {
     const existingNames = existingTopics.map(topic => topic.name.toLowerCase());
     return topicNames.filter(name => 
@@ -169,14 +166,12 @@ const TopicBulkCreate: React.FC = () => {
     topics.forEach((topic, index) => {
       const topicErrors: { name?: string; description?: string; imageFile?: string } = {};
 
-      // Validate tên bắt buộc
       const nameError = validateTopicName(topic.name);
       if (nameError) {
         topicErrors.name = nameError;
         isValid = false;
       }
 
-      // Kiểm tra trùng tên trong form hiện tại
       const isDuplicateInForm = topics.some((t, i) => 
         i !== index && t.name.toLowerCase() === topic.name.toLowerCase()
       );
@@ -185,21 +180,18 @@ const TopicBulkCreate: React.FC = () => {
         isValid = false;
       }
 
-      // Kiểm tra trùng tên với hệ thống
       const existingNames = checkExistingTopics([topic.name]);
       if (existingNames.length > 0) {
         topicErrors.name = `Tên chủ đề "${topic.name}" đã tồn tại trong hệ thống`;
         isValid = false;
       }
 
-      // Validate mô tả
       const descriptionError = validateTopicDescription(topic.description);
       if (descriptionError) {
         topicErrors.description = descriptionError;
         isValid = false;
       }
 
-      // Validate ảnh
       if (topic.imageFile && !topic.imageUrl) {
         topicErrors.imageFile = 'Vui lòng chờ upload ảnh hoàn tất';
         isValid = false;
@@ -220,8 +212,7 @@ const TopicBulkCreate: React.FC = () => {
     setResults(null);
     setShowDetailedResults(false);
 
-    // Refresh danh sách chủ đề hiện có trước khi validate
-    await fetchTopics();
+     await fetchTopics();
 
     if (!validateAllTopics()) {
       return;
@@ -242,7 +233,6 @@ const TopicBulkCreate: React.FC = () => {
       setResults(response.data);
       
       if (response.data.failureCount === 0) {
-        // Clean up all preview URLs
         topics.forEach(topic => {
           if (topic.imagePreview) {
             URL.revokeObjectURL(topic.imagePreview);
@@ -255,7 +245,6 @@ const TopicBulkCreate: React.FC = () => {
           alert(`🎉 Đã tạo thành công ${response.data.successCount} chủ đề!`);
         }, 500);
       } else {
-        // Hiển thị chi tiết lỗi nếu có thất bại
         setShowDetailedResults(true);
       }
     } catch (error: any) {
@@ -378,7 +367,6 @@ const TopicBulkCreate: React.FC = () => {
                 </div>
               </div>
 
-              {/* Nút xem chi tiết kết quả */}
               {results.failureCount > 0 && (
                 <div className="border-t border-gray-200 pt-4">
                   <button
@@ -389,7 +377,7 @@ const TopicBulkCreate: React.FC = () => {
                     {showDetailedResults ? 'Ẩn chi tiết' : 'Xem chi tiết lỗi'}
                   </button>
 
-                  {/* Chi tiết kết quả */}
+              
                   {showDetailedResults && (
                     <div className="mt-3 space-y-2">
                       <h4 className="font-medium text-gray-900">Chi tiết kết quả:</h4>
@@ -437,16 +425,15 @@ const TopicBulkCreate: React.FC = () => {
         </div>
       )}
 
-      {/* Warning về trùng tên */}
       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
         <div className="flex items-start">
           <AlertCircle className="w-5 h-5 text-yellow-600 mr-2 mt-0.5 flex-shrink-0" />
           <div>
             <p className="text-yellow-800 font-medium">Lưu ý quan trọng</p>
             <p className="text-yellow-700 text-sm">
-              • Tên chủ đề phải là duy nhất trong hệ thống<br/>
-              • Không thể tạo chủ đề trùng tên với các chủ đề đã tồn tại<br/>
-              • Hệ thống sẽ tự động kiểm tra trùng tên trước khi tạo
+              Tên chủ đề phải là duy nhất trong hệ thống<br/>
+              Không thể tạo chủ đề trùng tên với các chủ đề đã tồn tại<br/>
+              Hệ thống sẽ tự động kiểm tra trùng tên trước khi tạo
             </p>
           </div>
         </div>
@@ -517,7 +504,7 @@ const TopicBulkCreate: React.FC = () => {
                       )}
                     </div>
 
-                    {/* Description */}
+                
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Mô tả
@@ -542,7 +529,7 @@ const TopicBulkCreate: React.FC = () => {
                       </p>
                     </div>
 
-                    {/* Image Upload */}
+              
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Hình ảnh
@@ -565,8 +552,7 @@ const TopicBulkCreate: React.FC = () => {
                           {validationErrors[index]?.imageFile}
                         </p>
                       )}
-                      
-                      {/* Upload Status & Preview */}
+          
                       <div className="mt-2 space-y-2">
                         {topic.uploading && (
                           <p className="text-sm text-blue-600 flex items-center">
@@ -578,7 +564,7 @@ const TopicBulkCreate: React.FC = () => {
                         {topic.imageFile && !topic.uploading && !topic.imageUrl && (
                           <div className="flex items-center justify-between">
                             <p className="text-sm text-orange-600">
-                              ⚠️ Chưa upload ảnh: {topic.imageFile.name}
+                               Chưa upload ảnh: {topic.imageFile.name}
                             </p>
                           </div>
                         )}
@@ -600,7 +586,7 @@ const TopicBulkCreate: React.FC = () => {
                           </div>
                         )}
 
-                        {/* Image Preview Thumbnail */}
+                      
                         {(topic.imagePreview || topic.imageUrl) && (
                           <div className="mt-2">
                             <p className="text-sm text-gray-600 mb-1">Preview:</p>
@@ -626,7 +612,7 @@ const TopicBulkCreate: React.FC = () => {
               ))}
             </div>
 
-            {/* Submit Button */}
+
             <div className="mt-6 pt-6 border-t border-gray-200">
               <button
                 type="submit"
@@ -646,42 +632,41 @@ const TopicBulkCreate: React.FC = () => {
                 )}
               </button>
               
-              {/* Warning Messages */}
+           
               {isUploading && (
                 <p className="mt-2 text-sm text-blue-600 text-center">
-                  ⏳ Đang upload ảnh, vui lòng chờ...
+                   Đang upload ảnh, vui lòng chờ...
                 </p>
               )}
               
               {hasUnuploadedImages && !isUploading && (
                 <p className="mt-2 text-sm text-red-600 text-center">
-                  ⚠️ Vui lòng upload ảnh cho tất cả chủ đề trước khi tạo
+                  Vui lòng upload ảnh cho tất cả chủ đề trước khi tạo
                 </p>
               )}
             </div>
           </form>
         </div>
 
-        {/* Sidebar */}
+      
         <div className="space-y-6">
-          {/* Instructions */}
+        
           <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
             <h3 className="font-semibold text-blue-900 mb-2 flex items-center">
               <FileText className="w-4 h-4 mr-2" />
               Hướng dẫn sử dụng
             </h3>
             <ul className="text-blue-800 text-sm space-y-2">
-              <li>• Nhập thông tin cho từng chủ đề</li>
-              <li>• <strong>Tên chủ đề phải là duy nhất</strong></li>
-              <li>• Mô tả tối đa 500 ký tự</li>
-              <li>• Chọn ảnh - ảnh sẽ tự động upload</li>
-              <li>• Xem preview ảnh sau khi upload</li>
-              <li>• Chờ upload hoàn tất trước khi tạo</li>
-              <li>• Tối đa 20 chủ đề mỗi lần</li>
+              <li>Nhập thông tin cho từng chủ đề</li>
+              <li><strong>Tên chủ đề phải là duy nhất</strong></li>
+              <li> Mô tả tối đa 500 ký tự</li>
+              <li> Chọn ảnh - ảnh sẽ tự động upload</li>
+              <li> Xem preview ảnh sau khi upload</li>
+              <li> Chờ upload hoàn tất trước khi tạo</li>
+              <li> Tối đa 20 chủ đề mỗi lần</li>
             </ul>
           </div>
 
-          {/* Stats */}
           <div className="bg-gray-50 rounded-lg p-4">
             <h3 className="font-semibold text-gray-900 mb-3">Thống kê</h3>
             <div className="space-y-2 text-sm">

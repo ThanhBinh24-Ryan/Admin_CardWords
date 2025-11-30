@@ -88,7 +88,6 @@ const BulkImportVocabs: React.FC = () => {
   const [dataLoading, setDataLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
 
-  // Fetch data
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -105,7 +104,6 @@ const BulkImportVocabs: React.FC = () => {
     fetchData();
   }, [fetchTopics, fetchAllTypes]);
 
-  // === CÁC HÀM QUẢN LÝ DÒNG ===
   const addMultipleRows = (count: number = batchSize) => {
     const newRows = Array.from({ length: count }, () => ({
       word: '',
@@ -218,7 +216,6 @@ const BulkImportVocabs: React.FC = () => {
     setImportResult(null);
   };
 
-  // === CÁC HÀM CẬP NHẬT DỮ LIỆU ===
   const updateRow = (index: number, field: keyof VocabFormData, value: any) => {
     setVocabs(prev => prev.map((vocab, i) => 
       i === index ? { ...vocab, [field]: value } : vocab
@@ -238,7 +235,6 @@ const BulkImportVocabs: React.FC = () => {
     }));
   };
 
-  // Upload ảnh cho từng dòng
   const handleImageUpload = async (index: number, file: File) => {
     const previewUrl = URL.createObjectURL(file);
     updateRow(index, 'uploadingImage', true);
@@ -246,13 +242,13 @@ const BulkImportVocabs: React.FC = () => {
     updateRow(index, 'imagePreview', previewUrl);
 
     try {
-      console.log(`📤 Uploading image for row ${index + 1}:`, file.name);
+      console.log(` Uploading image for row ${index + 1}:`, file.name);
       const imageUrl = await uploadImage(file);
-      console.log(`✅ Image uploaded: ${imageUrl}`);
+      console.log(` Image uploaded: ${imageUrl}`);
       
       updateRow(index, 'img', imageUrl);
     } catch (error: any) {
-      console.error(`❌ Image upload failed for row ${index + 1}:`, error);
+      console.error(` Image upload failed for row ${index + 1}:`, error);
       updateRow(index, 'imageFile', null);
       URL.revokeObjectURL(previewUrl);
       updateRow(index, 'imagePreview', '');
@@ -262,19 +258,18 @@ const BulkImportVocabs: React.FC = () => {
     }
   };
 
-  // Upload audio cho từng dòng
   const handleAudioUpload = async (index: number, file: File) => {
     updateRow(index, 'uploadingAudio', true);
     updateRow(index, 'audioFile', file);
 
     try {
-      console.log(`📤 Uploading audio for row ${index + 1}:`, file.name);
+      console.log(` Uploading audio for row ${index + 1}:`, file.name);
       const audioUrl = await uploadAudio(file);
-      console.log(`✅ Audio uploaded: ${audioUrl}`);
+      console.log(` Audio uploaded: ${audioUrl}`);
       
       updateRow(index, 'audio', audioUrl);
     } catch (error: any) {
-      console.error(`❌ Audio upload failed for row ${index + 1}:`, error);
+      console.error(` Audio upload failed for row ${index + 1}:`, error);
       updateRow(index, 'audioFile', null);
       throw new Error(`Lỗi upload audio: ${error.message}`);
     } finally {
@@ -309,7 +304,6 @@ const BulkImportVocabs: React.FC = () => {
 
   const duplicateRow = (index: number) => {
     const rowToDuplicate = { ...vocabs[index] };
-    // Clear file references when duplicating
     rowToDuplicate.imageFile = null;
     rowToDuplicate.audioFile = null;
     rowToDuplicate.imagePreview = '';
@@ -344,7 +338,6 @@ const BulkImportVocabs: React.FC = () => {
     });
   };
 
-  // === CÁC HÀM IMPORT VÀ VALIDATION ===
   const validateData = () => {
     const validationErrors: string[] = [];
     const validRows: VocabFormData[] = [];
@@ -359,12 +352,10 @@ const BulkImportVocabs: React.FC = () => {
       if (!vocab.cefr) rowErrors.push('Chưa chọn cấp độ CEFR');
       if (vocab.types.length === 0) rowErrors.push('Chưa chọn loại từ');
 
-      // Check if files are still uploading
       if (vocab.uploadingImage || vocab.uploadingAudio) {
         rowErrors.push('File đang được upload, vui lòng chờ');
       }
 
-      // Check if files are selected but not uploaded
       if (vocab.imageFile && !vocab.img) {
         rowErrors.push('Ảnh chưa được upload');
       }
@@ -382,24 +373,20 @@ const BulkImportVocabs: React.FC = () => {
     return { validationErrors, validRows };
   };
 
-  // Upload files for all rows before import
   const uploadAllFiles = async () => {
     setUploading(true);
     
     try {
-      // Upload images and audios for all rows
       for (let i = 0; i < vocabs.length; i++) {
         const vocab = vocabs[i];
         
-        // Upload image if exists
         if (vocab.imageFile && !vocab.img) {
-          console.log(`📤 Uploading image for: ${vocab.word || `row ${i + 1}`}`);
+          console.log(` Uploading image for: ${vocab.word || `row ${i + 1}`}`);
           await handleImageUpload(i, vocab.imageFile);
         }
 
-        // Upload audio if exists
         if (vocab.audioFile && !vocab.audio) {
-          console.log(`📤 Uploading audio for: ${vocab.word || `row ${i + 1}`}`);
+          console.log(` Uploading audio for: ${vocab.word || `row ${i + 1}`}`);
           await handleAudioUpload(i, vocab.audioFile);
         }
       }
@@ -415,7 +402,6 @@ const BulkImportVocabs: React.FC = () => {
     setSuccess(null);
     setImportResult(null);
 
-    // First upload all files
     try {
       await uploadAllFiles();
     } catch (uploadError: any) {
@@ -423,7 +409,6 @@ const BulkImportVocabs: React.FC = () => {
       return;
     }
 
-    // Then validate data
     const { validationErrors, validRows } = validateData();
 
     if (validationErrors.length > 0) {
@@ -437,9 +422,8 @@ const BulkImportVocabs: React.FC = () => {
     }
 
     try {
-      console.log(`🔄 Bắt đầu import ${validRows.length} từ vựng...`);
+      console.log(`Bắt đầu import ${validRows.length} từ vựng...`);
 
-      // Prepare data for import
       const importData = validRows.map(vocab => ({
         word: vocab.word.trim(),
         transcription: vocab.transcription.trim() || undefined,
@@ -454,16 +438,13 @@ const BulkImportVocabs: React.FC = () => {
         audio: vocab.audio || undefined
       }));
 
-      console.log('📤 Gửi dữ liệu import:', importData);
+      console.log('Gửi dữ liệu import:', importData);
 
-      // Gọi API import - ĐÃ SỬA: Không kiểm tra response phức tạp
       await bulkImport(importData);
       
-      // Hiển thị thông báo thành công
       setSuccess(`Import thành công ${validRows.length} từ vựng!`);
       setActiveTab('result');
       
-      // Clear form sau khi import thành công
       clearAll();
 
     } catch (err: any) {
@@ -472,7 +453,6 @@ const BulkImportVocabs: React.FC = () => {
     }
   };
 
-  // === RENDER COMPONENTS ===
   const getTypeBadge = (type: string) => {
     const typeColors: { [key: string]: string } = {
       'noun': 'bg-blue-100 text-blue-800 border-blue-200',
@@ -536,7 +516,6 @@ const BulkImportVocabs: React.FC = () => {
 
   const renderMediaUpload = (index: number, vocab: VocabFormData) => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-      {/* Image Upload */}
       <div>
         <label className=" text-sm font-medium text-gray-700 mb-2 flex items-center">
           <ImageIcon className="w-4 h-4 mr-2" />
@@ -596,7 +575,6 @@ const BulkImportVocabs: React.FC = () => {
         </div>
       </div>
 
-      {/* Audio Upload */}
       <div>
         <label className=" text-sm font-medium text-gray-700 mb-2 flex items-center">
           <Volume2 className="w-4 h-4 mr-2" />
@@ -677,7 +655,6 @@ const BulkImportVocabs: React.FC = () => {
           </p>
         </div>
 
-        {/* Success Message */}
         <div className="bg-green-50 border border-green-200 rounded-xl p-6 mb-6">
           <div className="flex items-center">
             <CheckCircle2 className="w-8 h-8 text-green-600 mr-4" />
@@ -690,7 +667,6 @@ const BulkImportVocabs: React.FC = () => {
           </div>
         </div>
 
-        {/* Next Steps */}
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6">
           <h4 className="text-lg font-semibold text-blue-800 mb-3">Bước tiếp theo</h4>
           <div className="space-y-3">
@@ -709,7 +685,6 @@ const BulkImportVocabs: React.FC = () => {
           </div>
         </div>
 
-        {/* Action Buttons */}
         <div className="flex justify-end space-x-4 mt-8 pt-6 border-t border-gray-200">
           <button
             onClick={() => setActiveTab('form')}
@@ -745,7 +720,6 @@ const BulkImportVocabs: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-8">
       <div className="container mx-auto px-4 max-w-7xl">
-        {/* Header */}
         <div className="mb-8">
           <button
             onClick={() => navigate('/admin/vocabs')}
@@ -769,7 +743,6 @@ const BulkImportVocabs: React.FC = () => {
           </div>
         </div>
 
-        {/* Error & Success Messages */}
         {error && (
           <div className="bg-red-50 border-l-4 border-red-500 text-red-700 px-6 py-4 rounded-xl mb-6 flex items-start shadow-lg">
             <AlertCircle className="w-5 h-5 mr-3 flex-shrink-0 mt-0.5" />
@@ -796,7 +769,6 @@ const BulkImportVocabs: React.FC = () => {
           </div>
         )}
 
-        {/* Tabs */}
         <div className="bg-white rounded-2xl shadow-xl mb-6 overflow-hidden">
           <div className="border-b border-gray-200">
             <nav className="flex -mb-px">
@@ -827,10 +799,9 @@ const BulkImportVocabs: React.FC = () => {
           </div>
         </div>
 
-        {/* Form Tab */}
         {activeTab === 'form' && (
           <div className="space-y-6">
-            {/* Quick Actions Panel */}
+    
             <div className="bg-white rounded-2xl shadow-xl p-6 border border-gray-100">
               <div className="flex flex-wrap gap-4 justify-between items-center mb-4">
                 <div>
@@ -902,7 +873,7 @@ const BulkImportVocabs: React.FC = () => {
               </div>
             </div>
 
-            {/* Vocabulary List - Table View */}
+    
             <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
               <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-purple-50">
                 <div className="flex justify-between items-center">
@@ -975,7 +946,6 @@ const BulkImportVocabs: React.FC = () => {
                             </div>
                           </td>
                           
-                          {/* Word */}
                           <td className="px-4 py-3">
                             <input
                               type="text"
@@ -986,7 +956,6 @@ const BulkImportVocabs: React.FC = () => {
                             />
                           </td>
 
-                          {/* Transcription */}
                           <td className="px-4 py-3">
                             <input
                               type="text"
@@ -997,7 +966,6 @@ const BulkImportVocabs: React.FC = () => {
                             />
                           </td>
 
-                          {/* Meaning Vietnamese */}
                           <td className="px-4 py-3">
                             <input
                               type="text"
@@ -1008,7 +976,6 @@ const BulkImportVocabs: React.FC = () => {
                             />
                           </td>
 
-                          {/* CEFR Level */}
                           <td className="px-4 py-3">
                             <select
                               value={vocab.cefr}
@@ -1021,8 +988,6 @@ const BulkImportVocabs: React.FC = () => {
                               ))}
                             </select>
                           </td>
-
-                          {/* Word Types */}
                           <td className="px-4 py-3">
                             <select
                               multiple
@@ -1047,7 +1012,6 @@ const BulkImportVocabs: React.FC = () => {
                             )}
                           </td>
 
-                          {/* Topic */}
                           <td className="px-4 py-3">
                             <select
                               value={vocab.topic}
@@ -1061,20 +1025,18 @@ const BulkImportVocabs: React.FC = () => {
                             </select>
                           </td>
 
-                          {/* Actions */}
                           <td className="px-4 py-3">
                             {renderRowActions(index)}
                           </td>
                         </tr>
 
-                        {/* Expanded Row for Additional Fields */}
                         {expandedRows.has(index) && (
                           <tr className="bg-blue-50">
                             <td colSpan={8} className="px-4 py-4">
                               <div className="space-y-4">
-                                {/* Interpret and Example Sentence */}
+                            
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                                  {/* Interpret */}
+                         
                                   <div>
                                     <label className=" text-sm font-medium text-gray-700 mb-2 flex items-center">
                                       <MessageSquare className="w-4 h-4 mr-2" />
@@ -1089,7 +1051,7 @@ const BulkImportVocabs: React.FC = () => {
                                     />
                                   </div>
 
-                                  {/* Example Sentence */}
+          
                                   <div>
                                     <label className=" text-sm font-medium text-gray-700 mb-2 flex items-center">
                                       <FileTextIcon className="w-4 h-4 mr-2" />
@@ -1105,7 +1067,7 @@ const BulkImportVocabs: React.FC = () => {
                                   </div>
                                 </div>
 
-                                {/* Credit */}
+                    
                                 <div>
                                   <label className=" text-sm font-medium text-gray-700 mb-2 flex items-center">
                                     <Bookmark className="w-4 h-4 mr-2" />
@@ -1120,7 +1082,7 @@ const BulkImportVocabs: React.FC = () => {
                                   />
                                 </div>
 
-                                {/* Media Uploads */}
+                           
                                 {renderMediaUpload(index, vocab)}
                               </div>
                             </td>
@@ -1132,7 +1094,7 @@ const BulkImportVocabs: React.FC = () => {
                 </table>
               </div>
 
-              {/* Summary & Import Button */}
+      
               <div className="p-6 border-t border-gray-200 bg-gray-50">
                 <div className="flex justify-between items-center">
                   <div className="text-sm text-gray-600 flex items-center">
@@ -1171,7 +1133,6 @@ const BulkImportVocabs: React.FC = () => {
           </div>
         )}
 
-        {/* Result Tab */}
         {activeTab === 'result' && renderResultTab()}
       </div>
     </div>

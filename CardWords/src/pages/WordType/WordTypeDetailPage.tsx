@@ -155,11 +155,10 @@ const WordTypeDetailPage: React.FC = () => {
           </div>
         )}
 
-        {/* Content */}
         {currentType && (
           <div className="max-w-4xl mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Main Info */}
+         
               <div className="lg:col-span-2">
                 <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
@@ -215,9 +214,8 @@ const WordTypeDetailPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Sidebar */}
               <div className="space-y-6">
-                {/* Quick Stats */}
+         
                 <div className="bg-white rounded-2xl shadow-xl p-6 border border-gray-100">
                   <h3 className="text-lg font-bold text-gray-900 mb-4">
                     Thông tin nhanh
@@ -241,7 +239,6 @@ const WordTypeDetailPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Actions */}
                 <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl shadow-xl p-6 border-2 border-blue-200">
                   <h3 className="text-lg font-bold text-gray-900 mb-4">
                     Thao tác
@@ -270,7 +267,6 @@ const WordTypeDetailPage: React.FC = () => {
           </div>
         )}
 
-        {/* Delete Confirmation Modal */}
         {showDeleteConfirm && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
             <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl transform transition-all">

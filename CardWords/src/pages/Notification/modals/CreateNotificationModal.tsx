@@ -54,8 +54,7 @@ const CreateNotificationModal: React.FC<CreateNotificationModalProps> = ({
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  // Các loại thông báo
-  const notificationTypes = [
+   const notificationTypes = [
     { value: 'study_progress', label: 'Tiến độ Học tập' },
     { value: 'vocab_reminder', label: 'Nhắc nhở Từ vựng' },
     { value: 'streak_reminder', label: 'Nhắc nhở Streak' },

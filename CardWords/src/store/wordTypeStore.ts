@@ -1,4 +1,3 @@
-// wordTypeStore.ts
 import { create } from 'zustand';
 import { wordTypeService } from '../services/wordTypeService';
 import { 

@@ -5,7 +5,7 @@ import {
   Key, ClipboardList, X,
   Loader2
 } from 'lucide-react';
-import { useProfileStore } from '../../store/ProfileStore'; // Điều chỉnh đường dẫn theo project của bạn
+import { useProfileStore } from '../../store/ProfileStore'; 
 
 interface HeaderProps {
   setIsSidebarOpen: (isOpen: boolean) => void;
@@ -16,7 +16,7 @@ const Header: React.FC<HeaderProps> = ({ setIsSidebarOpen }) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
-  // Sử dụng store profile
+
   const {
     profile,
     loading,
@@ -39,7 +39,7 @@ const Header: React.FC<HeaderProps> = ({ setIsSidebarOpen }) => {
   };
 
   useEffect(() => {
-    // Load profile khi component mount
+
     loadProfile();
   }, []);
 
@@ -82,7 +82,7 @@ const Header: React.FC<HeaderProps> = ({ setIsSidebarOpen }) => {
     setShowUserMenu(false);
   };
 
-  // Lấy avatar URL hoặc fallback
+ 
   const getAvatarUrl = () => {
     if (profile?.avatar) {
       return profile.avatar;
@@ -90,7 +90,7 @@ const Header: React.FC<HeaderProps> = ({ setIsSidebarOpen }) => {
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.name || 'User')}&background=6366f1&color=fff`;
   };
 
-  // Lời chào theo thời gian trong ngày
+ 
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return 'Chào buổi sáng';

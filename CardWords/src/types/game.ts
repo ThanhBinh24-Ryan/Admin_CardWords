@@ -1,6 +1,3 @@
-// types/game.ts
-
-// Game
 export interface Game {
   id: number;
   name: string;

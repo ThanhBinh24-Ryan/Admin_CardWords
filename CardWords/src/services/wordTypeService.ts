@@ -1,4 +1,3 @@
-// wordTypeService.ts
 import { 
   WordType, 
   WordTypeResponse, 
@@ -7,9 +6,9 @@ import {
   EmptyResponse 
 } from '../types/wordType';
 
-// const API_BASE_URL = 'http://localhost:8080/api/v1/admin';
+const API_BASE_URL = 'http://localhost:8080/api/v1/admin';
 // const API_BASE_URL = 'https://card-words-services-production.up.railway.app/api/v1/admin';
-const API_BASE_URL = 'http://103.9.77.220:8080/api/v1/admin';
+// const API_BASE_URL = 'http://103.9.77.220:8080/api/v1/admin';
 class WordTypeService {
   private getAuthToken(): string | null {
     return localStorage.getItem('accessToken') || null;
@@ -26,10 +25,10 @@ class WordTypeService {
 
     const fullUrl = `${API_BASE_URL}${url}`;
     
-    console.log('🔍 Making request to:', fullUrl);
-    console.log('🔍 Request method:', options.method);
-    console.log('🔍 Request body:', options.body);
-    console.log('🔍 Request headers:', headers);
+    console.log('Making request to:', fullUrl);
+    console.log('Request method:', options.method);
+    console.log('Request body:', options.body);
+    console.log('Request headers:', headers);
 
     try {
       const response = await fetch(fullUrl, {
@@ -37,20 +36,20 @@ class WordTypeService {
         ...options,
       });
 
-      console.log('🔍 Response status:', response.status);
-      console.log('🔍 Response ok:', response.ok);
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
 
       const responseText = await response.text();
-      console.log('🔍 Raw response body:', responseText);
+      console.log(' Raw response body:', responseText);
 
       if (!response.ok) {
         let errorMessage = `HTTP error! status: ${response.status}`;
         try {
           const errorData = JSON.parse(responseText);
-          console.log('🔍 Parsed error response:', errorData);
+          console.log(' Parsed error response:', errorData);
           errorMessage = errorData.message || errorData.error || errorMessage;
         } catch (parseError) {
-          console.error('❌ Failed to parse error response:', parseError);
+          console.error('Failed to parse error response:', parseError);
           errorMessage = responseText || errorMessage;
         }
         
@@ -59,15 +58,15 @@ class WordTypeService {
 
       try {
         const data = JSON.parse(responseText);
-        console.log('🔍 Success response data:', data);
+        console.log('Success response data:', data);
         return data;
       } catch (parseError) {
-        console.error('❌ Failed to parse success response as JSON:', parseError);
+        console.error('Failed to parse success response as JSON:', parseError);
         throw new Error('Invalid JSON response from server');
       }
 
     } catch (error) {
-      console.error('❌ Request failed:', error);
+      console.error(' Request failed:', error);
       throw error;
     }
   }
@@ -81,7 +80,7 @@ class WordTypeService {
   }
 
   async createType(request: CreateWordTypeRequest): Promise<WordTypeResponse> {
-    console.log('🔍 Original request data:', request);
+    console.log(' Original request data:', request);
     
     const formData = new FormData();
     formData.append('name', request.name.trim());
@@ -90,7 +89,7 @@ class WordTypeService {
       formData.append('description', request.description.trim());
     }
     
-    console.log('🔍 FormData entries:');
+    console.log(' FormData entries:');
     for (let [key, value] of formData.entries()) {
       console.log(`  ${key}:`, value);
     }
@@ -102,7 +101,7 @@ class WordTypeService {
   }
 
   async updateType(id: number, request: { name: string }): Promise<WordTypeResponse> {
-    console.log('🔍 Update type request:', { id, request });
+    console.log(' Update type request:', { id, request });
     
     const formData = new FormData();
     formData.append('name', request.name.trim());
@@ -114,7 +113,7 @@ class WordTypeService {
   }
 
   async updateTypesBatch(requests: Array<{ id: number; name: string }>): Promise<WordTypesResponse> {
-    console.log('🔍 Batch update request:', requests);
+    console.log(' Batch update request:', requests);
     
     const formData = new FormData();
     
@@ -123,7 +122,7 @@ class WordTypeService {
       formData.append(`types[${index}].name`, request.name.trim());
     });
     
-    console.log('🔍 FormData entries for batch:');
+    console.log('FormData entries for batch:');
     for (let [key, value] of formData.entries()) {
       console.log(`  ${key}:`, value);
     }

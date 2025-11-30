@@ -76,11 +76,10 @@ const NotificationList: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<'all' | 'read' | 'unread'>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
 
-  // Lấy thông báo của user được chọn từ store
   const selectedUserNotifications = selectedUserId ? userNotifications[selectedUserId] : null;
 
   useEffect(() => {
-    console.log('🔄 Initial data loading...');
+    console.log(' Initial data loading...');
     fetchUsers();
     fetchSummary();
     fetchCategories();
@@ -101,7 +100,6 @@ const NotificationList: React.FC = () => {
     }
   }, [lastCreatedNotification]);
 
-  // Hàm refresh data
   const handleRefresh = async () => {
     await refreshAllData();
     await fetchAllNotifications();
@@ -110,12 +108,10 @@ const NotificationList: React.FC = () => {
     }
   };
 
-  // Hàm xóa thông báo user - CHỈ DÙNG TRONG TRANG USER
   const handleDeleteUserNotification = async (userId: string, notificationId: number) => {
     try {
       const result = await deleteUserNotification(userId, notificationId);
-      
-      // Nếu xóa thành công thì tự động refresh data
+
       if (result.success) {
         await handleRefresh();
       }
@@ -127,12 +123,10 @@ const NotificationList: React.FC = () => {
     }
   };
 
-  // Hàm xóa nhiều thông báo - CHỈ DÙNG TRONG TRANG USER
   const handleDeleteMultipleUserNotifications = async (userId: string, notificationIds: number[]) => {
     try {
       const result = await deleteMultipleUserNotifications(userId, notificationIds);
       
-      // Nếu xóa thành công (có ít nhất 1 cái thành công) thì tự động refresh data
       if (result.success || result.successful.length > 0) {
         await handleRefresh();
         setSelectedNotifications([]);
@@ -145,37 +139,33 @@ const NotificationList: React.FC = () => {
     }
   };
 
-  // Hàm xóa tất cả thông báo của user
   const handleDeleteAllUserNotifications = async () => {
     if (selectedUserNotifications?.content) {
       const allNotificationIds = selectedUserNotifications.content.map(notif => notif.id);
       const result = await handleDeleteMultipleUserNotifications(selectedUserId, allNotificationIds);
       
-      // Hiển thị thông báo kết quả
       if (result.successful.length > 0) {
-        console.log(`✅ Đã xóa ${result.successful.length} thông báo thành công`);
+        console.log(` Đã xóa ${result.successful.length} thông báo thành công`);
       }
       if (result.failed.length > 0) {
-        console.log(`❌ Không thể xóa ${result.failed.length} thông báo`);
+        console.log(` Không thể xóa ${result.failed.length} thông báo`);
       }
     }
   };
 
-  // Hàm xóa thông báo đơn lẻ - CHỈ DÙNG TRONG TRANG USER
   const handleDeleteSingleNotification = async (notification: Notification) => {
     if (notification.userId && selectedUserId === notification.userId) {
       const result = await handleDeleteUserNotification(notification.userId, notification.id);
       
       if (result.success) {
-        console.log('✅ Đã xóa thông báo thành công');
+        console.log(' Đã xóa thông báo thành công');
       }
     }
     setShowDeleteModal(false);
     setNotificationToDelete(null);
   };
 
-  // Tính toán thống kê
-  const getTotalCount = () => {
+   const getTotalCount = () => {
     if (summary && Array.isArray(summary)) {
       const allItem = summary.find(item => 
         item.category === 'All Notifications' || item.category === 'Total'
@@ -210,7 +200,6 @@ const NotificationList: React.FC = () => {
     return getTotalCount() - getUnreadCount();
   };
 
-  // Hàm chuyển đổi category sang tiếng Việt
   const getTypeLabel = (category: string): string => {
     const labels: Record<string, string> = {
       'All Notifications': 'Tất cả Thông báo',
@@ -237,7 +226,6 @@ const NotificationList: React.FC = () => {
     return labels[category] || category;
   };
 
-  // Hàm lấy icon theo category
   const getTypeIcon = (category: string) => {
     const icons: Record<string, React.ReactNode> = {
       'Study Progress': <BookOpen className="w-5 h-5" />,
@@ -264,7 +252,6 @@ const NotificationList: React.FC = () => {
     return icons[category] || <Bell className="w-5 h-5" />;
   };
 
-  // Hàm lấy màu theo category
   const getTypeColor = (category: string): string => {
     const colors: Record<string, string> = {
       'Study Progress': 'bg-purple-100 text-purple-800 border-purple-200',
@@ -291,26 +278,21 @@ const NotificationList: React.FC = () => {
     return colors[category] || 'bg-gray-100 text-gray-800 border-gray-200';
   };
 
-  // Lọc thông báo
   const filteredNotifications = allNotifications?.content?.filter(notification => {
-    // Lọc theo search term
     const matchesSearch = searchTerm === '' || 
       notification.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       notification.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (notification.userName && notification.userName.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    // Lọc theo trạng thái
     const matchesStatus = statusFilter === 'all' || 
       (statusFilter === 'read' && notification.isRead) ||
       (statusFilter === 'unread' && !notification.isRead);
     
-    // Lọc theo loại
     const matchesType = typeFilter === 'all' || notification.type === typeFilter;
     
     return matchesSearch && matchesStatus && matchesType;
   }) || [];
 
-  // Lấy data để hiển thị - KẾT HỢP CẢ SUMMARY VÀ CATEGORIES
   const getDisplayData = () => {
     if (categories && Array.isArray(categories) && categories.length > 0) {
       return categories;
@@ -325,7 +307,6 @@ const NotificationList: React.FC = () => {
 
   const displayData = getDisplayData();
 
-  // Hàm chọn/bỏ chọn thông báo - CHỈ DÙNG TRONG TRANG USER
   const toggleSelectNotification = (notificationId: number) => {
     setSelectedNotifications(prev => 
       prev.includes(notificationId)
@@ -334,7 +315,6 @@ const NotificationList: React.FC = () => {
     );
   };
 
-  // Hàm chọn/bỏ chọn tất cả - CHỈ DÙNG TRONG TRANG USER
   const toggleSelectAll = () => {
     if (!selectedUserNotifications?.content) return;
     
@@ -345,7 +325,6 @@ const NotificationList: React.FC = () => {
     }
   };
 
-  // Render danh sách thông báo chi tiết
   const renderNotificationList = () => {
     const notificationsToShow = selectedUserId ? 
       selectedUserNotifications?.content || [] : 
@@ -582,7 +561,6 @@ const NotificationList: React.FC = () => {
     );
   };
 
-  // Render user list
   const renderUserList = () => {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -828,7 +806,6 @@ const NotificationList: React.FC = () => {
               )}
             </div>
           ) : (
-            // View chi tiết - danh sách thông báo
             <div>
               {!selectedUserId && (
                 <div className="mb-6">

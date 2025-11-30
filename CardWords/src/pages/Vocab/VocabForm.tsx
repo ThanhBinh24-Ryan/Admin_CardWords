@@ -44,7 +44,6 @@ const VocabForm: React.FC = () => {
   const navigate = useNavigate();
   const isEdit = Boolean(id);
   
-  // Stores
   const { currentVocab, fetchVocabById, createVocab, updateVocabById, uploadImage, uploadAudio, loading } = useVocabStore();
   const { topics, fetchTopics } = useTopicStore();
   const { wordTypes, fetchAllTypes } = useWordTypeStore();
@@ -73,19 +72,18 @@ const VocabForm: React.FC = () => {
 
   const cefrLevels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 
-  // Fetch all data khi component mount
+
   useEffect(() => {
     const fetchAllData = async () => {
       try {
         setDataLoading(true);
         
-        // Fetch topics và word types
         await Promise.all([
           fetchTopics(),
           fetchAllTypes()
         ]);
 
-        // Nếu là edit mode, fetch vocab data
+ 
         if (isEdit && id) {
           await fetchVocabById(id);
         }
@@ -101,7 +99,6 @@ const VocabForm: React.FC = () => {
     fetchAllData();
   }, [isEdit, id, fetchTopics, fetchAllTypes, fetchVocabById]);
 
-  // Cập nhật form khi currentVocab thay đổi (edit mode)
   useEffect(() => {
     if (isEdit && currentVocab) {
       setForm({
@@ -130,7 +127,7 @@ const handleSubmit = async (e: React.FormEvent) => {
   setError(null);
 
   try {
-    // Validation
+  
     const requiredFields = {
       word: form.word,
       meaningVi: form.meaningVi,
@@ -151,7 +148,6 @@ const handleSubmit = async (e: React.FormEvent) => {
       throw new Error('Vui lòng chọn ít nhất một loại từ');
     }
 
-    // Upload files if they exist
     let imgUrl = form.img;
     let audioUrl = form.audio;
 
@@ -159,7 +155,7 @@ const handleSubmit = async (e: React.FormEvent) => {
       setUploading(true);
       try {
         imgUrl = await uploadImage(imageFile);
-        console.log('✅ Image uploaded:', imgUrl);
+        console.log(' Image uploaded:', imgUrl);
       } catch (uploadError: any) {
         throw new Error(`Lỗi upload ảnh: ${uploadError.message}`);
       } finally {
@@ -171,7 +167,7 @@ const handleSubmit = async (e: React.FormEvent) => {
       setUploading(true);
       try {
         audioUrl = await uploadAudio(audioFile);
-        console.log('✅ Audio uploaded:', audioUrl);
+        console.log('Audio uploaded:', audioUrl);
       } catch (uploadError: any) {
         throw new Error(`Lỗi upload audio: ${uploadError.message}`);
       } finally {
@@ -193,13 +189,13 @@ const handleSubmit = async (e: React.FormEvent) => {
       topic: form.topic || undefined
     };
 
-    console.log('📤 Đang gửi dữ liệu:', submitData);
+    console.log('Đang gửi dữ liệu:', submitData);
 
     if (isEdit && id) {
-      console.log('✏️ Cập nhật từ vựng ID:', id);
+      console.log('Cập nhật từ vựng ID:', id);
       await updateVocabById(id, submitData as UpdateVocabRequest);
     } else {
-      console.log('➕ Tạo từ vựng mới');
+      console.log('Tạo từ vựng mới');
       await createVocab(submitData as CreateVocabRequest);
     }
 
@@ -240,11 +236,11 @@ const handleSubmit = async (e: React.FormEvent) => {
     if (file) {
       setImageFile(file);
       
-      // Create preview
+   
       const imageUrl = URL.createObjectURL(file);
       setImagePreview(imageUrl);
       
-      // Clear existing image URL since we'll upload new file
+   
       handleChange('img', '');
     }
   };
@@ -253,19 +249,24 @@ const handleSubmit = async (e: React.FormEvent) => {
     const file = e.target.files?.[0];
     if (file) {
       setAudioFile(file);
-      handleChange('audio', ''); // Clear existing audio URL
+      handleChange('audio', ''); 
     }
   };
 
-  const removeImage = () => {
-    setImageFile(null);
-    setImagePreview('');
-    handleChange('img', '');
+  const handleNewImageUpload = () => {
+
+    const fileInput = document.getElementById('image-upload') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.click();
+    }
   };
 
-  const removeAudio = () => {
-    setAudioFile(null);
-    handleChange('audio', '');
+  const handleNewAudioUpload = () => {
+ 
+    const fileInput = document.getElementById('audio-upload') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.click();
+    }
   };
 
   if (dataLoading) {
@@ -306,7 +307,7 @@ const handleSubmit = async (e: React.FormEvent) => {
           </p>
         </div>
 
-        {/* Error Message */}
+    
         {error && (
           <div className="bg-red-50 border-l-4 border-red-500 text-red-700 px-6 py-4 rounded-xl mb-6 flex items-start shadow-lg animate-shake">
             <AlertCircle className="w-5 h-5 mr-3 flex-shrink-0 mt-0.5" />
@@ -321,7 +322,7 @@ const handleSubmit = async (e: React.FormEvent) => {
           <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
             <div className="p-8">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Basic Information */}
+           
                 <div className="lg:col-span-2">
                   <h3 className="text-xl font-bold text-gray-900 mb-6 pb-3 border-b-2 border-blue-500 flex items-center">
                     <Hash className="w-6 h-6 mr-3 text-blue-500" />
@@ -422,7 +423,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                   />
                 </div>
 
-                {/* Word Types */}
+               
                 <div className="lg:col-span-2">
                   <label className=" text-sm font-bold text-gray-700 mb-3 flex items-center">
                     <Type className="w-4 h-4 mr-2" />
@@ -456,7 +457,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                   )}
                 </div>
 
-                {/* Detailed Information */}
+           
                 <div className="lg:col-span-2 mt-4">
                   <h3 className="text-xl font-bold text-gray-900 mb-6 pb-3 border-b-2 border-green-500 flex items-center">
                     <BookOpen className="w-6 h-6 mr-3 text-green-500" />
@@ -494,7 +495,6 @@ const handleSubmit = async (e: React.FormEvent) => {
                   />
                 </div>
 
-                {/* Media Uploads */}
                 <div className="lg:col-span-2 mt-4">
                   <h3 className="text-xl font-bold text-gray-900 mb-6 pb-3 border-b-2 border-orange-500 flex items-center">
                     <ImageIcon className="w-6 h-6 mr-3 text-orange-500" />
@@ -508,8 +508,17 @@ const handleSubmit = async (e: React.FormEvent) => {
                     Hình ảnh minh họa
                   </label>
                   <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center bg-gradient-to-br from-blue-50 to-purple-50 hover:border-blue-400 transition-all">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="hidden"
+                      id="image-upload"
+                      disabled={uploading}
+                    />
+                    
                     {imagePreview || form.img ? (
-                      <div className="space-y-3">
+                      <div className="space-y-4">
                         <div className="relative inline-block">
                           <img 
                             src={imagePreview || form.img} 
@@ -519,23 +528,16 @@ const handleSubmit = async (e: React.FormEvent) => {
                         </div>
                         <button
                           type="button"
-                          onClick={removeImage}
-                          className="flex items-center justify-center mx-auto px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all transform hover:scale-105 shadow-md"
+                          onClick={handleNewImageUpload}
+                          disabled={uploading}
+                          className="flex items-center justify-center mx-auto px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-md disabled:opacity-50"
                         >
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          Xóa ảnh
+                          <Upload className="w-4 h-4 mr-2" />
+                          {uploading ? 'Đang tải lên...' : 'Upload ảnh mới'}
                         </button>
                       </div>
                     ) : (
                       <>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageChange}
-                          className="hidden"
-                          id="image-upload"
-                          disabled={uploading}
-                        />
                         <label 
                           htmlFor="image-upload" 
                           className={`cursor-pointer block ${uploading ? 'opacity-50' : ''}`}
@@ -566,8 +568,17 @@ const handleSubmit = async (e: React.FormEvent) => {
                     Audio phát âm
                   </label>
                   <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center bg-gradient-to-br from-green-50 to-teal-50 hover:border-green-400 transition-all">
+                    <input
+                      type="file"
+                      accept="audio/*"
+                      onChange={handleAudioChange}
+                      className="hidden"
+                      id="audio-upload"
+                      disabled={uploading}
+                    />
+                    
                     {audioFile || form.audio ? (
-                      <div className="space-y-3">
+                      <div className="space-y-4">
                         <div className="bg-white rounded-xl p-4 shadow-md inline-block">
                           <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-2" />
                           <p className="text-sm font-medium text-gray-700">
@@ -582,23 +593,16 @@ const handleSubmit = async (e: React.FormEvent) => {
                         </div>
                         <button
                           type="button"
-                          onClick={removeAudio}
-                          className="flex items-center justify-center mx-auto px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all transform hover:scale-105 shadow-md"
+                          onClick={handleNewAudioUpload}
+                          disabled={uploading}
+                          className="flex items-center justify-center mx-auto px-4 py-2 bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-lg hover:from-green-600 hover:to-teal-600 transition-all transform hover:scale-105 shadow-md disabled:opacity-50"
                         >
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          Xóa audio
+                          <Upload className="w-4 h-4 mr-2" />
+                          {uploading ? 'Đang tải lên...' : 'Upload audio mới'}
                         </button>
                       </div>
                     ) : (
                       <>
-                        <input
-                          type="file"
-                          accept="audio/*"
-                          onChange={handleAudioChange}
-                          className="hidden"
-                          id="audio-upload"
-                          disabled={uploading}
-                        />
                         <label 
                           htmlFor="audio-upload" 
                           className={`cursor-pointer block ${uploading ? 'opacity-50' : ''}`}
@@ -624,7 +628,6 @@ const handleSubmit = async (e: React.FormEvent) => {
                 </div>
               </div>
 
-              {/* Action Buttons */}
               <div className="mt-10 pt-8 border-t-2 border-gray-200 flex flex-col sm:flex-row justify-end gap-4">
                 <button
                   type="button"
