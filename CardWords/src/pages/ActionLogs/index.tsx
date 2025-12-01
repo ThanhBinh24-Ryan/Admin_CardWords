@@ -23,7 +23,6 @@ const ActionLogsPage: React.FC = () => {
   const pagination = useActionLogsPagination();
   const statistics = useActionLogsStatistics();
   
-  // Lấy actions từ store
   const fetchActionLogs = useActionLogStore((state) => state.fetchActionLogs);
   const fetchStatistics = useActionLogStore((state) => state.fetchStatistics);
   const setFilters = useActionLogStore((state) => state.setFilters);

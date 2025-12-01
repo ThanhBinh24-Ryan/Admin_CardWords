@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGameStore } from '../../store/gameStore';
@@ -7,7 +6,7 @@ import { Game, GameSession } from '../../types/game';
 import { 
   ArrowLeft, Eye, Trash2, Search, X, Gamepad2, Trophy, Target, 
   TrendingUp, BarChart3, Star, Clock, CheckCircle, XCircle, 
-  Calendar, Filter, Loader2
+  Calendar, Filter, Loader2, AlertTriangle
 } from 'lucide-react';
 
 const GameStatsCard: React.FC<{
@@ -163,9 +162,12 @@ const GamesList: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [itemsPerPage] = useState(10);
   const [showSessionModal, setShowSessionModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedSession, setSelectedSession] = useState<GameSession | null>(null);
+  const [sessionToDelete, setSessionToDelete] = useState<GameSession | null>(null);
   const [sessionDetails, setSessionDetails] = useState<any>(null);
   const [loadingSessionDetails, setLoadingSessionDetails] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [pageLoaded, setPageLoaded] = useState(false);
   const [filters, setFilters] = useState({ search: '', sortBy: 'sessionCount', sortDir: 'desc' as 'asc' | 'desc' });
 
@@ -223,13 +225,25 @@ const GamesList: React.FC = () => {
     await loadSessionDetails(session.sessionId);
   };
 
-  const handleDeleteSession = async (sessionId: number) => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa phiên chơi này không? Hành động này không thể hoàn tác.')) {
-      try {
-        await deleteGameSession(sessionId);
-        if (selectedGame) loadGameSessions(selectedGame.id);
-        alert('Xóa phiên chơi thành công!');
-      } catch (error: any) { alert('Xóa phiên chơi thất bại. Vui lòng thử lại.'); }
+  const handleDeleteSession = async (session: GameSession) => {
+    setSessionToDelete(session);
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!sessionToDelete) return;
+    
+    try {
+      setDeleteLoading(true);
+      await deleteGameSession(sessionToDelete.sessionId);
+      if (selectedGame) loadGameSessions(selectedGame.id);
+      alert('Xóa phiên chơi thành công!');
+      setShowDeleteModal(false);
+      setSessionToDelete(null);
+    } catch (error: any) { 
+      alert('Xóa phiên chơi thất bại. Vui lòng thử lại.'); 
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -376,7 +390,7 @@ const GamesList: React.FC = () => {
                           <button onClick={() => handleViewSession(session)} className="flex items-center text-blue-600 hover:text-blue-800 px-4 py-2 rounded-lg text-sm bg-blue-50 hover:bg-blue-100 transition-all duration-200 shadow-sm hover:shadow-md">
                             <Eye className="w-4 h-4 mr-1" />Xem
                           </button>
-                          <button onClick={() => handleDeleteSession(session.sessionId)} className="flex items-center text-red-600 hover:text-red-800 px-4 py-2 rounded-lg text-sm bg-red-50 hover:bg-red-100 transition-all duration-200 shadow-sm hover:shadow-md">
+                          <button onClick={() => handleDeleteSession(session)} className="flex items-center text-red-600 hover:text-red-800 px-4 py-2 rounded-lg text-sm bg-red-50 hover:bg-red-100 transition-all duration-200 shadow-sm hover:shadow-md">
                             <Trash2 className="w-4 h-4 mr-1" />Xóa
                           </button>
                         </div>
@@ -402,6 +416,84 @@ const GamesList: React.FC = () => {
 
           {showSessionModal && selectedSession && (
             <SessionDetailsModal session={selectedSession} details={sessionDetails} loading={loadingSessionDetails} onClose={() => { setShowSessionModal(false); setSelectedSession(null); setSessionDetails(null); }} />
+          )}
+
+          {showDeleteModal && sessionToDelete && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+              <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl">
+                <div className="bg-gradient-to-r from-red-600 to-red-700 px-6 py-5 rounded-t-2xl">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <AlertTriangle className="w-6 h-6 text-white mr-3" />
+                      <h3 className="text-xl font-bold text-white">Xác nhận xóa</h3>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setShowDeleteModal(false);
+                        setSessionToDelete(null);
+                      }}
+                      className="text-white hover:text-gray-200 transition-colors"
+                      disabled={deleteLoading}
+                    >
+                      <X className="w-6 h-6" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="p-6">
+                  <div className="text-center mb-6">
+                    <div className="mx-auto w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-4">
+                      <Trash2 className="w-8 h-8 text-red-600" />
+                    </div>
+                    <h4 className="text-lg font-bold text-gray-900 mb-2">
+                      Xóa phiên chơi của {sessionToDelete.userName}
+                    </h4>
+                    <p className="text-gray-600 mb-4">
+                      Bạn có chắc chắn muốn xóa phiên chơi này? Hành động này không thể hoàn tác.
+                    </p>
+                    <div className="p-4 bg-red-50 rounded-lg border border-red-200">
+                      <p className="text-red-700 text-sm">
+                        <span className="font-bold">Thông tin phiên chơi:</span>
+                        <br />
+                        Điểm: {sessionToDelete.score.toFixed(1)} | Độ chính xác: {sessionToDelete.accuracy}%
+                        <br />
+                        Ngày: {new Date(sessionToDelete.startedAt).toLocaleString('vi-VN')}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 pt-4">
+                    <button
+                      onClick={() => {
+                        setShowDeleteModal(false);
+                        setSessionToDelete(null);
+                      }}
+                      disabled={deleteLoading}
+                      className="flex-1 px-4 py-3 text-gray-700 border-2 border-gray-300 rounded-xl hover:bg-gray-50 disabled:opacity-50 transition-all font-medium hover:shadow-md"
+                    >
+                      Hủy bỏ
+                    </button>
+                    <button
+                      onClick={handleConfirmDelete}
+                      disabled={deleteLoading}
+                      className="flex-1 px-4 py-3 text-white bg-gradient-to-r from-red-600 to-red-700 rounded-xl hover:from-red-700 hover:to-red-800 disabled:opacity-50 transition-all font-medium shadow-lg hover:shadow-xl flex items-center justify-center"
+                    >
+                      {deleteLoading ? (
+                        <>
+                          <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                          Đang xóa...
+                        </>
+                      ) : (
+                        <>
+                          <Trash2 className="w-5 h-5 mr-2" />
+                          Xóa vĩnh viễn
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
         </div>
         <style>{`@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }`}</style>

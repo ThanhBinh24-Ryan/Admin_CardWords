@@ -13,6 +13,7 @@ import {
 import CreateNotificationModal from './modals/CreateNotificationModal';
 import BroadcastNotificationModal from './modals/BroadcastNotificationModal';
 import DeleteConfirmModal from './modals/DeleteConfirmModal';
+import DeleteAllConfirmModal from './modals/DeleteAllConfirmModal';
 import SuccessModal from './modals/SuccessModal';
 import { 
   Bell, 
@@ -67,6 +68,7 @@ const NotificationList: React.FC = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showBroadcastModal, setShowBroadcastModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [viewMode, setViewMode] = useState<'summary' | 'all' | 'user'>('summary');
   const [selectedUserId, setSelectedUserId] = useState<string>('');
@@ -151,6 +153,7 @@ const NotificationList: React.FC = () => {
         console.log(` Không thể xóa ${result.failed.length} thông báo`);
       }
     }
+    setShowDeleteAllModal(false);
   };
 
   const handleDeleteSingleNotification = async (notification: Notification) => {
@@ -412,7 +415,6 @@ const NotificationList: React.FC = () => {
           </h3>
           
           <div className="flex items-center space-x-3">
-            {/* CHỈ HIỂN THỊ NÚT XÓA TRONG TRANG USER */}
             {selectedUserId && selectedNotifications.length > 0 && (
               <button
                 onClick={() => {
@@ -426,14 +428,13 @@ const NotificationList: React.FC = () => {
               </button>
             )}
             
-            {/* Nút xóa tất cả - CHỈ TRONG TRANG USER */}
             {selectedUserId && notificationsToShow.length > 0 && (
               <button
-                onClick={handleDeleteAllUserNotifications}
+                onClick={() => setShowDeleteAllModal(true)}
                 className="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center text-sm"
               >
                 <Trash2 className="w-4 h-4 mr-1" />
-                Xóa tất cả
+                Xóa tất cả ({notificationsToShow.length})
               </button>
             )}
             
@@ -452,7 +453,6 @@ const NotificationList: React.FC = () => {
           </div>
         </div>
 
-        {/* Select All - CHỈ HIỂN THỊ TRONG TRANG USER */}
         {selectedUserId && selectedUserNotifications?.content && selectedUserNotifications.content.length > 0 && (
           <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
             <button
@@ -492,7 +492,6 @@ const NotificationList: React.FC = () => {
             >
               <div className="flex items-start justify-between">
                 <div className="flex items-start space-x-3 flex-1">
-                  {/* CHECKBOX CHỈ HIỂN THỊ TRONG TRANG USER */}
                   {selectedUserId && (
                     <button
                       onClick={() => toggleSelectNotification(notification.id)}
@@ -540,7 +539,6 @@ const NotificationList: React.FC = () => {
                   </div>
                 </div>
 
-                {/* NÚT XÓA CHỈ HIỂN THỊ TRONG TRANG USER */}
                 {selectedUserId && (
                   <button
                     onClick={() => {
@@ -625,7 +623,6 @@ const NotificationList: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div className="mb-8 text-center">
           <div className="flex justify-center mb-4">
             <div className="bg-blue-100 p-4 rounded-full">
@@ -635,7 +632,6 @@ const NotificationList: React.FC = () => {
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Quản lý Thông báo</h1>
           <p className="text-gray-600 text-lg">Tạo và quản lý thông báo cho người dùng</p>
           
-          {/* Action Buttons - ĐÃ BỎ NÚT "LÀM MỚI" */}
           <div className="flex justify-center mt-6 space-x-3 flex-wrap">
             <button
               onClick={() => setShowCreateModal(true)}
@@ -661,7 +657,6 @@ const NotificationList: React.FC = () => {
           </div>
         </div>
 
-        {/* Stats and Actions */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-center space-x-6 mb-4 lg:mb-0">
@@ -687,7 +682,6 @@ const NotificationList: React.FC = () => {
           </div>
         </div>
 
-        {/* Filters - ẨN KHI Ở TRANG USER */}
         {viewMode !== 'summary' && !selectedUserId && (
           <div className="bg-white rounded-lg shadow-md p-4 mb-6">
             <div className="flex flex-col md:flex-row md:items-center md:space-x-4 space-y-3 md:space-y-0">
@@ -730,7 +724,6 @@ const NotificationList: React.FC = () => {
           </div>
         )}
 
-        {/* Content Area */}
         <div className="bg-white rounded-lg shadow-md p-6">
           {loading ? (
             <div className="flex justify-center items-center h-64">
@@ -743,7 +736,6 @@ const NotificationList: React.FC = () => {
               </div>
               <h3 className="text-2xl font-bold text-gray-900 mb-2">Dashboard Thông báo</h3>
               
-              {/* Thống kê tổng quan */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto mb-8">
                 <div className="bg-blue-50 p-6 rounded-lg border border-blue-200">
                   <div className="text-3xl font-bold text-blue-600">{getTotalCount()}</div>
@@ -765,7 +757,6 @@ const NotificationList: React.FC = () => {
                 </div>
               </div>
 
-              {/* Các loại thông báo */}
               {Array.isArray(displayData) && displayData.length > 0 && (
                 <div className="mt-8">
                   <h4 className="font-semibold text-gray-900 mb-6 text-lg">
@@ -792,7 +783,6 @@ const NotificationList: React.FC = () => {
                 </div>
               )}
 
-              {/* Hiển thị khi không có data */}
               {(!Array.isArray(displayData) || displayData.length === 0) && (
                 <div className="mt-8">
                   <h4 className="font-medium text-gray-900 mb-4">Không có dữ liệu thông báo</h4>
@@ -819,7 +809,6 @@ const NotificationList: React.FC = () => {
           )}
         </div>
 
-        {/* Modals */}
         <CreateNotificationModal
           isOpen={showCreateModal}
           onClose={() => setShowCreateModal(false)}
@@ -847,6 +836,15 @@ const NotificationList: React.FC = () => {
           count={notificationToDelete ? 1 : selectedNotifications.length}
           notification={notificationToDelete}
           isLoading={deleting}
+        />
+
+        <DeleteAllConfirmModal
+          isOpen={showDeleteAllModal}
+          onClose={() => setShowDeleteAllModal(false)}
+          onConfirm={handleDeleteAllUserNotifications}
+          count={selectedUserNotifications?.content?.length || 0}
+          isLoading={deleting}
+          userName={users.find(u => u.id === selectedUserId)?.name}
         />
 
         <SuccessModal

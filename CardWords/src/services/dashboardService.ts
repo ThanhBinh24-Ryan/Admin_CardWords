@@ -10,7 +10,8 @@ import {
   PageResponse
 } from '../types/dashboard';
 
-const API_BASE_URL = 'http://localhost:8080/api/v1';
+const API_BASE_URL = 'https://card-words.io.vn/api/v1';
+// const API_BASE_URL = 'http://localhost:8080/api/v1';
 // const API_BASE_URL = 'https://card-words-services-production.up.railway.app/api/v1';
 // const API_BASE_URL = 'http://103.9.77.220:8080/api/v1';
 class DashboardService {

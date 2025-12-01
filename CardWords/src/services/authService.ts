@@ -8,12 +8,19 @@ import {
 } from '../types/auth';
 
 const API = axios.create({
-  baseURL: 'http://localhost:8080', 
+  baseURL: 'https://card-words.io.vn', 
   headers: {
     'Content-Type': 'application/json',
   },
   timeout: 10000,
 });
+// const API = axios.create({
+//   baseURL: 'http://localhost:8080', 
+//   headers: {
+//     'Content-Type': 'application/json',
+//   },
+//   timeout: 10000,
+// });
 
 // const API = axios.create({
 //   baseURL: 'https://card-words-services-production.up.railway.app', 

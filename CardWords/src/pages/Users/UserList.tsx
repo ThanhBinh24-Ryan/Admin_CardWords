@@ -72,8 +72,8 @@ const UserList: React.FC = () => {
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    loadInitialUsers();
-  }, []);
+    loadUsers(currentPage);
+  }, [currentPage]);
 
   useEffect(() => {
     return () => {
@@ -84,11 +84,11 @@ const UserList: React.FC = () => {
     };
   }, []);
 
-  const loadInitialUsers = async () => {
+  const loadUsers = async (page: number = 0) => {
     try {
       await fetchUsers({
-        page: 0,
-        size: 100, 
+        page: page,
+        size: itemsPerPage,
         sortBy: 'createdAt',
         sortDir: 'desc'
       });
@@ -132,17 +132,17 @@ const UserList: React.FC = () => {
   }, [users, filters, isSearching]);
 
   const paginatedUsers = useMemo(() => {
-    const startIndex = currentPage * itemsPerPage;
+    const startIndex = 0; 
     return filteredUsers.slice(startIndex, startIndex + itemsPerPage);
-  }, [filteredUsers, currentPage, itemsPerPage]);
+  }, [filteredUsers, itemsPerPage]);
 
-  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const totalPages = Math.ceil((pagination?.totalElements || filteredUsers.length) / itemsPerPage);
 
   const handleSearch = async () => {
     if (!filters.search.trim()) {
       setIsSearching(false);
       setCurrentPage(0);
-      await loadInitialUsers(); 
+      await loadUsers(0);
       return;
     }
 
@@ -173,11 +173,24 @@ const UserList: React.FC = () => {
       } else {
         setIsSearching(false);
         setCurrentPage(0);
-        loadInitialUsers();
+        loadUsers(0);
       }
     }, 500);
     
     setSearchTimeout(newTimeout);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    if (isSearching && filters.search.trim()) {
+      searchUsers({
+        keyword: filters.search,
+        page: page,
+        size: itemsPerPage
+      });
+    } else {
+      loadUsers(page);
+    }
   };
 
   const handleDelete = (user: User) => {
@@ -192,7 +205,7 @@ const UserList: React.FC = () => {
     try {
       await deleteUser(selectedUser.id);
       setShowDeleteModal(false);
-      await loadInitialUsers();
+      await loadUsers(currentPage);
     } catch (error: any) {
       console.error('Delete failed:', error);
     } finally {
@@ -211,7 +224,7 @@ const UserList: React.FC = () => {
     setActionLoading('resetPassword');
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`http://localhost:8080/api/v1/admin/users/${selectedUser.id}/reset-password`, {
+      const response = await fetch(`https://card-words.io.vn/api/v1/admin/users/${selectedUser.id}/reset-password`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -248,7 +261,7 @@ const UserList: React.FC = () => {
     try {
       await updateUserRoles(selectedUser.id, selectedRoles);
       setShowRoleModal(false);
-      await loadInitialUsers();
+      await loadUsers(currentPage);
     } catch (error) {
       console.error('Update roles failed:', error);
     } finally {
@@ -268,7 +281,7 @@ const UserList: React.FC = () => {
     try {
       await banUser(selectedUser.id, banned);
       setShowBanModal(false);
-      await loadInitialUsers();
+      await loadUsers(currentPage);
     } catch (error) {
       console.error('Ban user failed:', error);
     } finally {
@@ -288,7 +301,7 @@ const UserList: React.FC = () => {
     try {
       await activateUser(selectedUser.id, activated);
       setShowActivateModal(false);
-      await loadInitialUsers();
+      await loadUsers(currentPage);
     } catch (error) {
       console.error('Activate user failed:', error);
     } finally {
@@ -317,7 +330,7 @@ const UserList: React.FC = () => {
     });
     setCurrentPage(0);
     setIsSearching(false);
-    loadInitialUsers();
+    loadUsers(0);
   };
 
   const getStatusBadge = (user: User) => {
@@ -732,14 +745,14 @@ const UserList: React.FC = () => {
                 <p className="text-sm font-medium text-gray-700">
                   Hiển thị <span className="font-bold text-blue-600">{currentPage * itemsPerPage + 1}</span> đến{' '}
                   <span className="font-bold text-blue-600">
-                    {Math.min((currentPage + 1) * itemsPerPage, filteredUsers.length)}
+                    {Math.min((currentPage + 1) * itemsPerPage, pagination?.totalElements || filteredUsers.length)}
                   </span>{' '}
-                  trong tổng số <span className="font-bold text-blue-600">{filteredUsers.length}</span> kết quả
+                  trong tổng số <span className="font-bold text-blue-600">{pagination?.totalElements || filteredUsers.length}</span> kết quả
                 </p>
               </div>
               <div className="flex gap-2">
                 <button
-                  onClick={() => setCurrentPage((prev: number) => Math.max(prev - 1, 0))}
+                  onClick={() => handlePageChange(Math.max(currentPage - 1, 0))}
                   disabled={currentPage === 0}
                   className="px-4 py-2 border-2 border-gray-300 text-sm font-bold rounded-xl text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-105 shadow-md"
                 >
@@ -760,7 +773,7 @@ const UserList: React.FC = () => {
                     return (
                       <button
                         key={page}
-                        onClick={() => setCurrentPage(page)}
+                        onClick={() => handlePageChange(page)}
                         className={`px-4 py-2 border-2 text-sm font-bold rounded-xl transition-all transform hover:scale-105 shadow-md ${
                           currentPage === page
                             ? 'bg-gradient-to-r from-blue-600 to-purple-600 border-blue-600 text-white'
@@ -773,7 +786,7 @@ const UserList: React.FC = () => {
                   })}
                 </div>
                 <button
-                  onClick={() => setCurrentPage((prev: number) => Math.min(prev + 1, totalPages - 1))}
+                  onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages - 1))}
                   disabled={currentPage === totalPages - 1}
                   className="px-4 py-2 border-2 border-gray-300 text-sm font-bold rounded-xl text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-105 shadow-md"
                 >

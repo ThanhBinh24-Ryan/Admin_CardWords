@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWordTypeStore } from '../../store/wordTypeStore';
@@ -13,7 +12,8 @@ import {
   Loader2,
   AlertCircle,
   Eye,
-  RefreshCw  
+  RefreshCw,
+  AlertTriangle  
 } from 'lucide-react';
 
 const WordTypesPage: React.FC = () => {
@@ -28,6 +28,9 @@ const WordTypesPage: React.FC = () => {
   } = useWordTypeStore();
 
   const [searchTerm, setSearchTerm] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [typeToDelete, setTypeToDelete] = useState<{ id: number; name: string } | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   useEffect(() => {
     loadWordTypes();
@@ -64,14 +67,24 @@ const WordTypesPage: React.FC = () => {
   };
 
   const handleDeleteType = async (id: number, name: string) => {
-    if (window.confirm(`Bạn có chắc muốn xóa loại từ "${name}"?`)) {
-      try {
-        await deleteType(id);
-        alert('Xóa loại từ thành công!');
-        loadWordTypes();
-      } catch (error: any) {
-        alert('Xóa loại từ thất bại: ' + error.message);
-      }
+    setTypeToDelete({ id, name });
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!typeToDelete) return;
+    
+    try {
+      setDeleteLoading(true);
+      await deleteType(typeToDelete.id);
+      // alert('Xóa loại từ thành công!');
+      setShowDeleteModal(false);
+      setTypeToDelete(null);
+      loadWordTypes();
+    } catch (error: any) {
+      alert('Xóa loại từ thất bại: ' + error.message);
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -99,7 +112,6 @@ const WordTypesPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <div className="container mx-auto px-4 py-8">
-        {/* Header */}
         <div className="mb-8">
           <div className="flex flex-col items-center justify-center text-center mb-6">
             <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-3 rounded-xl shadow-lg mb-4">
@@ -131,7 +143,6 @@ const WordTypesPage: React.FC = () => {
             </button>
           </div>
         )}
-
 
         <div className="bg-white rounded-2xl shadow-xl p-6 mb-6 border border-gray-100">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -230,6 +241,82 @@ const WordTypesPage: React.FC = () => {
               <Plus className="w-5 h-5 mr-2" />
               Thêm Loại từ Đầu tiên
             </button>
+          </div>
+        )}
+
+        {showDeleteModal && typeToDelete && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl transform transition-all">
+              <div className="bg-gradient-to-r from-red-600 to-red-700 px-6 py-5 rounded-t-2xl">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <AlertTriangle className="w-6 h-6 text-white mr-3" />
+                    <h3 className="text-xl font-bold text-white">
+                      Xác nhận xóa
+                    </h3>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setShowDeleteModal(false);
+                      setTypeToDelete(null);
+                    }}
+                    className="text-white hover:text-gray-200 transition-colors"
+                    disabled={deleteLoading}
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-6">
+                <div className="text-center mb-6">
+                  <div className="mx-auto w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-4">
+                    <Trash2 className="w-8 h-8 text-red-600" />
+                  </div>
+                  <h4 className="text-lg font-bold text-gray-900 mb-2">
+                    Xóa loại từ "{typeToDelete.name}"
+                  </h4>
+                  <p className="text-gray-600 mb-4">
+                    Bạn có chắc chắn muốn xóa loại từ này? Hành động này không thể hoàn tác.
+                  </p>
+                  <div className="p-4 bg-red-50 rounded-lg border border-red-200">
+                    <p className="text-red-700 text-sm">
+                      <span className="font-bold">Cảnh báo:</span> Tất cả từ vựng thuộc loại từ này sẽ được gán loại mặc định hoặc có thể gây lỗi hệ thống.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <button
+                    onClick={() => {
+                      setShowDeleteModal(false);
+                      setTypeToDelete(null);
+                    }}
+                    disabled={deleteLoading}
+                    className="flex-1 px-4 py-3 text-gray-700 border-2 border-gray-300 rounded-xl hover:bg-gray-50 disabled:opacity-50 transition-all font-medium hover:shadow-md"
+                  >
+                    Hủy bỏ
+                  </button>
+                  <button
+                    onClick={handleConfirmDelete}
+                    disabled={deleteLoading}
+                    className="flex-1 px-4 py-3 text-white bg-gradient-to-r from-red-600 to-red-700 rounded-xl hover:from-red-700 hover:to-red-800 disabled:opacity-50 transition-all font-medium shadow-lg hover:shadow-xl flex items-center justify-center"
+                  >
+                    {deleteLoading ? (
+                      <>
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                        Đang xóa...
+                      </>
+                    ) : (
+                      <>
+                        <Trash2 className="w-5 h-5 mr-2" />
+                        Xóa vĩnh viễn
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>

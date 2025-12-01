@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useUserStore } from '../../store/userStore';
@@ -23,6 +22,8 @@ import {
 
 import ResetPasswordModal from './modals/ResetPasswordModal';
 import DeleteUserModal from './modals/DeleteUserModal';
+import BanUserModal from './modals/BanUserModal';
+import ActivateUserModal from './modals/ActivateUserModal';
 
 const UserDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -43,6 +44,8 @@ const UserDetail: React.FC = () => {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showBanModal, setShowBanModal] = useState(false);
+  const [showActivateModal, setShowActivateModal] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -84,7 +87,7 @@ const UserDetail: React.FC = () => {
     setActionLoading('resetPassword');
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`http://localhost:8080/api/v1/admin/users/${currentUser.id}/reset-password`, {
+      const response = await fetch(`https://card-words.io.vn/api/v1/admin/users/${currentUser.id}/reset-password`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -93,13 +96,12 @@ const UserDetail: React.FC = () => {
       });
       
       if (response.ok) {
-       
         setShowResetPasswordModal(false);
       } else {
         throw new Error('Failed to send reset password email');
       }
     } catch (error) {
-     
+      console.error('Reset password failed:', error);
     } finally {
       setActionLoading(null);
     }
@@ -107,41 +109,41 @@ const UserDetail: React.FC = () => {
 
   const handleActivateDeactivate = async () => {
     if (!currentUser) return;
+    setShowActivateModal(true);
+  };
+
+  const handleConfirmActivate = async (activated: boolean) => {
+    if (!currentUser) return;
     
-    const action = currentUser.activated ? 'deactivate' : 'activate';
-    const actionText = currentUser.activated ? 'vô hiệu hóa' : 'kích hoạt';
-    
-    if (window.confirm(`Bạn có chắc muốn ${actionText} tài khoản này?`)) {
-      setActionLoading('activate');
-      try {
-        await activateUser(currentUser.id, !currentUser.activated);
-       
-        await loadUserData(); 
-      } catch (error) {
-      
-      } finally {
-        setActionLoading(null);
-      }
+    setActionLoading('activate');
+    try {
+      await activateUser(currentUser.id, activated);
+      setShowActivateModal(false);
+      await loadUserData();
+    } catch (error) {
+      console.error('Activate user failed:', error);
+    } finally {
+      setActionLoading(null);
     }
   };
 
   const handleBanUnban = async () => {
     if (!currentUser) return;
+    setShowBanModal(true);
+  };
+
+  const handleConfirmBan = async (banned: boolean) => {
+    if (!currentUser) return;
     
-    const action = currentUser.banned ? 'unban' : 'ban';
-    const actionText = currentUser.banned ? 'bỏ cấm' : 'cấm';
-    
-    if (window.confirm(`Bạn có chắc muốn ${actionText} người dùng này?`)) {
-      setActionLoading('ban');
-      try {
-        await banUser(currentUser.id, !currentUser.banned);
-       
-        await loadUserData(); 
-      } catch (error) {
-   
-      } finally {
-        setActionLoading(null);
-      }
+    setActionLoading('ban');
+    try {
+      await banUser(currentUser.id, banned);
+      setShowBanModal(false);
+      await loadUserData();
+    } catch (error) {
+      console.error('Ban user failed:', error);
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -155,11 +157,10 @@ const UserDetail: React.FC = () => {
     setActionLoading('delete');
     try {
       await deleteUser(currentUser.id);
-    
       setShowDeleteModal(false);
       navigate('/users');
     } catch (error) {
-     
+      console.error('Delete user failed:', error);
     } finally {
       setActionLoading(null);
     }
@@ -301,7 +302,6 @@ const UserDetail: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="container mx-auto px-4 py-8 max-w-6xl">
-        {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-8">
           <div className="flex-1">
             <button
@@ -333,7 +333,13 @@ const UserDetail: React.FC = () => {
             </div>
           </div>
           <div className="flex flex-wrap gap-3 mt-6 lg:mt-0">
-         
+            <button
+              onClick={handleEdit}
+              className="inline-flex items-center px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm"
+            >
+              <Edit className="w-4 h-4 mr-2" />
+              Chỉnh sửa
+            </button>
             <button
               onClick={handleResetPassword}
               disabled={actionLoading === 'resetPassword'}
@@ -492,7 +498,7 @@ const UserDetail: React.FC = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="border border-gray-200 rounded-xl p-6 hover:border-blue-300 transition-colors">
+                  <div className="border border-gray-200 rounded-xl p-6 hover:border-orange-300 transition-colors">
                     <div className="flex items-start space-x-4">
                       <div className="p-3 bg-orange-100 rounded-lg">
                         <Key className="w-6 h-6 text-orange-600" />
@@ -513,7 +519,7 @@ const UserDetail: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="border border-gray-200 rounded-xl p-6 hover:border-blue-300 transition-colors">
+                  <div className="border border-gray-200 rounded-xl p-6 hover:border-green-300 transition-colors">
                     <div className="flex items-start space-x-4">
                       <div className="p-3 bg-green-100 rounded-lg">
                         <UserCheck className="w-6 h-6 text-green-600" />
@@ -542,7 +548,7 @@ const UserDetail: React.FC = () => {
                     </div>
                   </div>
 
-                     <div className="border border-gray-200 rounded-xl p-6 hover:border-blue-300 transition-colors">
+                  <div className="border border-gray-200 rounded-xl p-6 hover:border-red-300 transition-colors">
                     <div className="flex items-start space-x-4">
                       <div className="p-3 bg-red-100 rounded-lg">
                         <Ban className="w-6 h-6 text-red-600" />
@@ -571,7 +577,7 @@ const UserDetail: React.FC = () => {
                     </div>
                   </div>
 
-                    <div className="border border-gray-200 rounded-xl p-6 hover:border-red-300 transition-colors">
+                  <div className="border border-gray-200 rounded-xl p-6 hover:border-red-400 transition-colors">
                     <div className="flex items-start space-x-4">
                       <div className="p-3 bg-red-100 rounded-lg">
                         <Trash2 className="w-6 h-6 text-red-600" />
@@ -615,6 +621,26 @@ const UserDetail: React.FC = () => {
         onDeleteUser={handleConfirmDelete}
         loading={actionLoading === 'delete'}
       />
+
+      {showBanModal && currentUser && (
+        <BanUserModal
+          isOpen={showBanModal}
+          onClose={() => setShowBanModal(false)}
+          user={currentUser}
+          onBanUser={handleConfirmBan}
+          loading={actionLoading === 'ban'}
+        />
+      )}
+
+      {showActivateModal && currentUser && (
+        <ActivateUserModal
+          isOpen={showActivateModal}
+          onClose={() => setShowActivateModal(false)}
+          user={currentUser}
+          onActivateUser={handleConfirmActivate}
+          loading={actionLoading === 'activate'}
+        />
+      )}
     </div>
   );
 };

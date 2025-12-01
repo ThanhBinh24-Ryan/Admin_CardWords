@@ -8,7 +8,7 @@ import { CEFR_LEVELS } from '../../constants/vocabConstants';
 import { 
   Search, Plus, X, Eye, Edit, Trash2, Volume2, BookOpen,
   Filter, Loader2, ChevronLeft, ChevronRight, Sparkles, Tag, Languages,
-  FileUp, Download, FileText, RefreshCw
+  FileUp, Download, FileText, RefreshCw, AlertTriangle, CheckCircle
 } from 'lucide-react';
 
 const useDebounce = (value: string, delay: number) => {
@@ -41,6 +41,9 @@ const VocabList: React.FC = () => {
   const [pageLoaded, setPageLoaded] = useState(false);
   const [dataLoading, setDataLoading] = useState(true);
   const [searchInput, setSearchInput] = useState(searchParams.get('search') || '');
+  
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedVocab, setSelectedVocab] = useState<{ id: string; word: string } | null>(null);
   
   const itemsPerPage = 9;
   
@@ -225,13 +228,20 @@ const VocabList: React.FC = () => {
     navigate('/admin/vocabs/bulk-import');
   };
 
-  const handleDelete = async (id: string, word: string) => {
-    if (!window.confirm(`Bạn có chắc muốn xóa từ "${word}"?`)) return;
+  const handleDelete = (id: string, word: string) => {
+    setSelectedVocab({ id, word });
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedVocab) return;
+    
     try {
-      setDeleteLoading(id);
-      await deleteVocab(id);
+      setDeleteLoading(selectedVocab.id);
+      await deleteVocab(selectedVocab.id);
+      setShowDeleteModal(false);
+      setSelectedVocab(null);
       await fetchVocabs({ page: 0, size: 1000 });
-      alert(`Đã xóa từ "${word}" thành công!`);
     } catch (err: any) {
       console.error('Error deleting vocab:', err);
       alert(`Lỗi: ${err.message || 'Lỗi khi xóa từ vựng'}`);
@@ -313,18 +323,6 @@ const VocabList: React.FC = () => {
             </div>
             <p className="text-gray-600 text-lg">Quản lý cơ sở dữ liệu từ vựng một cách hiệu quả</p>
           </div>
-
- 
-          {/* <div className="flex justify-center mb-4">
-            <button
-              onClick={handleRefresh}
-              disabled={dataLoading}
-              className="px-4 py-2 text-sm text-indigo-600 border border-indigo-300 rounded-lg hover:bg-indigo-50 flex items-center transition-all shadow-sm hover:shadow-md"
-            >
-              <RefreshCw className={`w-4 h-4 mr-2 ${dataLoading ? 'animate-spin' : ''}`} />
-              Làm mới dữ liệu
-            </button>
-          </div> */}
         </div>
 
         {error && (
@@ -338,7 +336,6 @@ const VocabList: React.FC = () => {
             </button>
           </div>
         )}
-
 
         <div className={`bg-white rounded-2xl shadow-xl p-6 mb-8 border border-gray-100 transform transition-all duration-700 delay-200 ${pageLoaded ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
           <div className="flex items-center mb-5">
@@ -492,7 +489,6 @@ const VocabList: React.FC = () => {
           </div>
         </div>
 
-        {/* Vocabulary Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
           {currentVocabs.map((vocab, index) => (
             <div 
@@ -500,7 +496,6 @@ const VocabList: React.FC = () => {
               className="bg-white rounded-2xl shadow-lg hover:shadow-2xl overflow-hidden border border-gray-100 transform hover:-translate-y-2 transition-all duration-300 group"
               style={{ animation: `fadeInUp 0.6s ease-out ${index * 0.1}s both` }}
             >
-              {/* Image */}
               <div className="h-48 bg-gray-200 relative overflow-hidden">
                 {vocab.img ? (
                   <img
@@ -635,7 +630,6 @@ const VocabList: React.FC = () => {
           </div>
         )}
 
-
         {totalPages > 1 && (
           <div className="bg-white px-6 py-4 flex items-center justify-between border-t border-gray-200 rounded-2xl shadow-xl">
             <div className="flex-1 flex justify-between items-center">
@@ -697,6 +691,80 @@ const VocabList: React.FC = () => {
         )}
       </div>
 
+      {showDeleteModal && selectedVocab && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl transform transition-all duration-300 scale-100">
+            <div className="bg-gradient-to-r from-red-600 to-red-700 px-6 py-5 rounded-t-2xl">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <AlertTriangle className="w-6 h-6 text-white mr-3" />
+                  <h3 className="text-xl font-bold text-white">Xác nhận xóa</h3>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowDeleteModal(false);
+                    setSelectedVocab(null);
+                  }}
+                  className="text-white/90 hover:text-white transition-colors"
+                  disabled={deleteLoading === selectedVocab.id}
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6">
+              <div className="text-center mb-6">
+                <div className="mx-auto w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-4">
+                  <Trash2 className="w-8 h-8 text-red-600" />
+                </div>
+                <h4 className="text-lg font-bold text-gray-900 mb-2">
+                  Xóa từ "{selectedVocab.word}"
+                </h4>
+                <p className="text-gray-600">
+                  Bạn có chắc chắn muốn xóa từ vựng này? Hành động này không thể hoàn tác.
+                </p>
+                <div className="mt-4 p-4 bg-red-50 rounded-lg border border-red-200">
+                  <p className="text-red-700 text-sm">
+                    <span className="font-bold">Cảnh báo:</span> Tất cả dữ liệu liên quan bao gồm hình ảnh, âm thanh và ví dụ sẽ bị xóa vĩnh viễn.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  onClick={() => {
+                    setShowDeleteModal(false);
+                    setSelectedVocab(null);
+                  }}
+                  disabled={deleteLoading === selectedVocab.id}
+                  className="flex-1 px-4 py-3 text-gray-700 border-2 border-gray-300 rounded-xl hover:bg-gray-50 disabled:opacity-50 transition-all font-medium hover:shadow-md"
+                >
+                  Hủy bỏ
+                </button>
+                <button
+                  onClick={handleConfirmDelete}
+                  disabled={deleteLoading === selectedVocab.id}
+                  className="flex-1 px-4 py-3 text-white bg-gradient-to-r from-red-600 to-red-700 rounded-xl hover:from-red-700 hover:to-red-800 disabled:opacity-50 transition-all font-medium shadow-lg hover:shadow-xl flex items-center justify-center"
+                >
+                  {deleteLoading === selectedVocab.id ? (
+                    <>
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      Đang xóa...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="w-5 h-5 mr-2" />
+                      Xóa vĩnh viễn
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <style>{`
         @keyframes fadeInUp {
           from {
@@ -708,7 +776,13 @@ const VocabList: React.FC = () => {
             transform: translateY(0);
           }
         }
-
+        @keyframes fade-in {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        .animate-fade-in {
+          animation: fade-in 0.3s ease-out;
+        }
         .line-clamp-2 {
           display: -webkit-box;
           -webkit-line-clamp: 2;
