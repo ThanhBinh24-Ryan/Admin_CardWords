@@ -12,9 +12,7 @@ import {
   Image as ImageIcon, 
   Music, 
   Loader2, 
-  CheckCircle, 
   AlertCircle,
-  Trash2,
   ArrowLeft,
   BookOpen,
   Type,
@@ -72,7 +70,6 @@ const VocabForm: React.FC = () => {
 
   const cefrLevels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 
-
   useEffect(() => {
     const fetchAllData = async () => {
       try {
@@ -83,7 +80,6 @@ const VocabForm: React.FC = () => {
           fetchAllTypes()
         ]);
 
- 
         if (isEdit && id) {
           await fetchVocabById(id);
         }
@@ -117,99 +113,113 @@ const VocabForm: React.FC = () => {
 
       if (currentVocab.img) {
         setImagePreview(currentVocab.img);
+      } else {
+        setImagePreview('');
       }
+    } else {
+      setForm({
+        word: '',
+        transcription: '',
+        meaningVi: '',
+        interpret: '',
+        exampleSentence: '',
+        cefr: 'A1',
+        img: '',
+        audio: '',
+        types: [],
+        topic: '',
+        credit: ''
+      });
+      setImagePreview('');
     }
+    
+    setImageFile(null);
+    setAudioFile(null);
+    setError(null);
   }, [isEdit, currentVocab]);
 
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setSaving(true);
-  setError(null);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setError(null);
 
-  try {
-  
-    const requiredFields = {
-      word: form.word,
-      meaningVi: form.meaningVi,
-      interpret: form.interpret,
-      exampleSentence: form.exampleSentence,
-      cefr: form.cefr
-    };
+    try {
+      const requiredFields = {
+        word: form.word,
+        meaningVi: form.meaningVi,
+        interpret: form.interpret,
+        exampleSentence: form.exampleSentence,
+        cefr: form.cefr
+      };
 
-    const emptyFields = Object.entries(requiredFields)
-      .filter(([_, value]) => !value || value.trim() === '')
-      .map(([key]) => key);
+      const emptyFields = Object.entries(requiredFields)
+        .filter(([_, value]) => !value || value.trim() === '')
+        .map(([key]) => key);
 
-    if (emptyFields.length > 0) {
-      throw new Error(`Các trường bắt buộc chưa điền: ${emptyFields.join(', ')}`);
-    }
-
-    if (form.types.length === 0) {
-      throw new Error('Vui lòng chọn ít nhất một loại từ');
-    }
-
-    let imgUrl = form.img;
-    let audioUrl = form.audio;
-
-    if (imageFile) {
-      setUploading(true);
-      try {
-        imgUrl = await uploadImage(imageFile);
-        console.log(' Image uploaded:', imgUrl);
-      } catch (uploadError: any) {
-        throw new Error(`Lỗi upload ảnh: ${uploadError.message}`);
-      } finally {
-        setUploading(false);
+      if (emptyFields.length > 0) {
+        throw new Error(`Các trường bắt buộc chưa điền: ${emptyFields.join(', ')}`);
       }
-    }
 
-    if (audioFile) {
-      setUploading(true);
-      try {
-        audioUrl = await uploadAudio(audioFile);
-        console.log('Audio uploaded:', audioUrl);
-      } catch (uploadError: any) {
-        throw new Error(`Lỗi upload audio: ${uploadError.message}`);
-      } finally {
-        setUploading(false);
+      if (form.types.length === 0) {
+        throw new Error('Vui lòng chọn ít nhất một loại từ');
       }
+
+      let imgUrl = form.img;
+      let audioUrl = form.audio;
+
+      if (imageFile) {
+        setUploading(true);
+        try {
+          imgUrl = await uploadImage(imageFile);
+        } catch (uploadError: any) {
+          throw new Error(`Lỗi upload ảnh: ${uploadError.message}`);
+        } finally {
+          setUploading(false);
+        }
+      }
+
+      if (audioFile) {
+        setUploading(true);
+        try {
+          audioUrl = await uploadAudio(audioFile);
+        } catch (uploadError: any) {
+          throw new Error(`Lỗi upload audio: ${uploadError.message}`);
+        } finally {
+          setUploading(false);
+        }
+      }
+
+      const submitData: CreateVocabRequest | UpdateVocabRequest = {
+        word: form.word.trim(),
+        transcription: form.transcription.trim() || undefined,
+        meaningVi: form.meaningVi.trim(),
+        interpret: form.interpret.trim(),
+        exampleSentence: form.exampleSentence.trim(),
+        cefr: form.cefr,
+        img: imgUrl || undefined,
+        audio: audioUrl || undefined,
+        credit: form.credit.trim() || undefined,
+        types: form.types,
+        topic: form.topic || undefined
+      };
+
+      if (isEdit && id) {
+        await updateVocabById(id, submitData as UpdateVocabRequest);
+      } else {
+        await createVocab(submitData as CreateVocabRequest);
+      }
+
+      alert(isEdit ? 'Cập nhật từ vựng thành công!' : 'Thêm từ vựng mới thành công!');
+      navigate('/admin/vocabs');
+      
+    } catch (err: any) {
+      console.error('Lỗi khi lưu từ vựng:', err);
+      setError(err.message || 'Lỗi khi lưu từ vựng');
+    } finally {
+      setSaving(false);
+      setUploading(false);
     }
-
-    const submitData: CreateVocabRequest | UpdateVocabRequest = {
-      word: form.word.trim(),
-      transcription: form.transcription.trim() || undefined,
-      meaningVi: form.meaningVi.trim(),
-      interpret: form.interpret.trim(),
-      exampleSentence: form.exampleSentence.trim(),
-      cefr: form.cefr,
-      img: imgUrl || undefined,
-      audio: audioUrl || undefined,
-      credit: form.credit.trim() || undefined,
-      types: form.types,
-      topic: form.topic || undefined
-    };
-
-    console.log('Đang gửi dữ liệu:', submitData);
-
-    if (isEdit && id) {
-      console.log('Cập nhật từ vựng ID:', id);
-      await updateVocabById(id, submitData as UpdateVocabRequest);
-    } else {
-      console.log('Tạo từ vựng mới');
-      await createVocab(submitData as CreateVocabRequest);
-    }
-
-    alert(isEdit ? 'Cập nhật từ vựng thành công!' : 'Thêm từ vựng mới thành công!');
-    navigate('/admin/vocabs');
-    
-  } catch (err: any) {
-    console.error('Lỗi khi lưu từ vựng:', err);
-    setError(err.message || 'Lỗi khi lưu từ vựng');
-  } finally {
-    setSaving(false);
-    setUploading(false);
-  }
-};
+  };
 
   const handleCancel = () => {
     navigate('/admin/vocabs');
@@ -236,11 +246,9 @@ const handleSubmit = async (e: React.FormEvent) => {
     if (file) {
       setImageFile(file);
       
-   
       const imageUrl = URL.createObjectURL(file);
       setImagePreview(imageUrl);
       
-   
       handleChange('img', '');
     }
   };
@@ -249,12 +257,11 @@ const handleSubmit = async (e: React.FormEvent) => {
     const file = e.target.files?.[0];
     if (file) {
       setAudioFile(file);
-      handleChange('audio', ''); 
+      handleChange('audio', '');
     }
   };
 
   const handleNewImageUpload = () => {
-
     const fileInput = document.getElementById('image-upload') as HTMLInputElement;
     if (fileInput) {
       fileInput.click();
@@ -262,7 +269,6 @@ const handleSubmit = async (e: React.FormEvent) => {
   };
 
   const handleNewAudioUpload = () => {
- 
     const fileInput = document.getElementById('audio-upload') as HTMLInputElement;
     if (fileInput) {
       fileInput.click();
@@ -307,7 +313,6 @@ const handleSubmit = async (e: React.FormEvent) => {
           </p>
         </div>
 
-    
         {error && (
           <div className="bg-red-50 border-l-4 border-red-500 text-red-700 px-6 py-4 rounded-xl mb-6 flex items-start shadow-lg animate-shake">
             <AlertCircle className="w-5 h-5 mr-3 flex-shrink-0 mt-0.5" />
@@ -322,7 +327,6 @@ const handleSubmit = async (e: React.FormEvent) => {
           <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
             <div className="p-8">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-           
                 <div className="lg:col-span-2">
                   <h3 className="text-xl font-bold text-gray-900 mb-6 pb-3 border-b-2 border-blue-500 flex items-center">
                     <Hash className="w-6 h-6 mr-3 text-blue-500" />
@@ -423,7 +427,6 @@ const handleSubmit = async (e: React.FormEvent) => {
                   />
                 </div>
 
-               
                 <div className="lg:col-span-2">
                   <label className=" text-sm font-bold text-gray-700 mb-3 flex items-center">
                     <Type className="w-4 h-4 mr-2" />
@@ -457,7 +460,6 @@ const handleSubmit = async (e: React.FormEvent) => {
                   )}
                 </div>
 
-           
                 <div className="lg:col-span-2 mt-4">
                   <h3 className="text-xl font-bold text-gray-900 mb-6 pb-3 border-b-2 border-green-500 flex items-center">
                     <BookOpen className="w-6 h-6 mr-3 text-green-500" />
@@ -533,7 +535,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                           className="flex items-center justify-center mx-auto px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-md disabled:opacity-50"
                         >
                           <Upload className="w-4 h-4 mr-2" />
-                          {uploading ? 'Đang tải lên...' : 'Upload ảnh mới'}
+                          {uploading ? 'Đang tải lên...' : 'Thay ảnh mới'}
                         </button>
                       </div>
                     ) : (
@@ -580,7 +582,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                     {audioFile || form.audio ? (
                       <div className="space-y-4">
                         <div className="bg-white rounded-xl p-4 shadow-md inline-block">
-                          <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-2" />
+                          <Music className="w-12 h-12 text-green-500 mx-auto mb-2" />
                           <p className="text-sm font-medium text-gray-700">
                             {audioFile ? audioFile.name : 'Audio đã tải lên'}
                           </p>
@@ -598,7 +600,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                           className="flex items-center justify-center mx-auto px-4 py-2 bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-lg hover:from-green-600 hover:to-teal-600 transition-all transform hover:scale-105 shadow-md disabled:opacity-50"
                         >
                           <Upload className="w-4 h-4 mr-2" />
-                          {uploading ? 'Đang tải lên...' : 'Upload audio mới'}
+                          {uploading ? 'Đang tải lên...' : 'Thay audio mới'}
                         </button>
                       </div>
                     ) : (
