@@ -32,12 +32,12 @@ import ActionLogsPage from '../pages/ActionLogs/index';
 import BulkImportVocabs from '../pages/Vocab/BulkImportVocabs'
 import TopicBulkCreate from '../pages/Topic/TopicBulkCreate'
 import TopicBulkEdit from '../pages/Topic/TopicBulkEdit'
-import CreateVocab from '../pages/Vocab/CreateVocab'
+// import CreateVocab from '../pages/Vocab/CreateVocab'
 import VocabProgressOverview from '../pages/VocabProgress/VocabProgressOverview';
 import UserProgressDetail from '../pages/VocabProgress/UserProgressDetail';
 import VocabStatsDetail from '../pages/VocabProgress/VocabStatsDetail';
 import BatchUpdatePage from '../pages/WordType/BatchUpdatePage'
-
+import NoInternetPage from '../pages/NoInternetPage';
 
 const router = createBrowserRouter([
   {
@@ -99,7 +99,7 @@ const router = createBrowserRouter([
       { path: 'admin/vocab-progress', element: <VocabProgressOverview /> },
       { path: 'admin/vocab-progress/user/:userId', element: <UserProgressDetail /> },
       { path: 'admin/vocab-progress/vocab/:vocabId', element: <VocabStatsDetail /> },
-
+        { path: 'admin/offline', element: <NoInternetPage/> },
 
    
     ],

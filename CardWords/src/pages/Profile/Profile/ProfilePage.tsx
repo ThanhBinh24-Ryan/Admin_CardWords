@@ -80,7 +80,7 @@ const ProfilePage: React.FC = () => {
     
     try {
       await updateProfile(editData);
-      showSuccess('✅ Cập nhật thông tin thành công!');
+      showSuccess('Cập nhật thông tin thành công!');
       setIsEditing(false);
     } catch (error) {
       console.error('Failed to update profile:', error);
@@ -108,12 +108,12 @@ const ProfilePage: React.FC = () => {
 
     const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
     if (!validTypes.includes(file.type)) {
-      alert('❌ Chỉ chấp nhận file ảnh: JPG, JPEG, PNG, GIF, WEBP');
+      alert(' Chỉ chấp nhận file ảnh: JPG, JPEG, PNG, GIF, WEBP');
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      alert('❌ Kích thước file không được vượt quá 5MB');
+      alert(' Kích thước file không được vượt quá 5MB');
       return;
     }
 
@@ -121,7 +121,7 @@ const ProfilePage: React.FC = () => {
     
     try {
       await updateAvatar(file);
-      showSuccess('✅ Cập nhật ảnh đại diện thành công!');
+      showSuccess(' Cập nhật ảnh đại diện thành công!');
     } catch (error) {
       console.error('Failed to update avatar:', error);
     } finally {

@@ -19,8 +19,71 @@ import {
   FileText,
   Loader2,
   Eye,
-  Info
+  Info,
+  X
 } from 'lucide-react';
+
+// Toast Component
+interface ToastProps {
+  message: string;
+  type: 'success' | 'error' | 'warning' | 'info';
+  onClose: () => void;
+}
+
+const Toast: React.FC<ToastProps> = ({ message, type, onClose }) => {
+  const [isVisible, setIsVisible] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsVisible(false);
+      setTimeout(onClose, 300); // Wait for fade out animation
+    }, 4000); // Auto close after 4 seconds
+
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  const bgColor = {
+    success: 'bg-green-500',
+    error: 'bg-red-500',
+    warning: 'bg-yellow-500',
+    info: 'bg-blue-500'
+  }[type];
+
+  const icon = {
+    success: <CheckCircle2 className="w-5 h-5" />,
+    error: <XCircle className="w-5 h-5" />,
+    warning: <AlertCircle className="w-5 h-5" />,
+    info: <Info className="w-5 h-5" />
+  }[type];
+
+  return (
+    <div className={`fixed top-13 right-6 z-5000 transition-all duration-300 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full'}`}>
+      <div className={`${bgColor} text-white rounded-lg shadow-xl p-4 min-w-80 max-w-md flex items-start`}>
+        <div className="mr-3 mt-0.5">
+          {icon}
+        </div>
+        <div className="flex-1">
+          <p className="text-sm font-medium">{message}</p>
+        </div>
+        <button
+          onClick={() => {
+            setIsVisible(false);
+            setTimeout(onClose, 300);
+          }}
+          className="ml-3 text-white hover:text-gray-200 transition-colors"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+interface ToastMessage {
+  id: number;
+  message: string;
+  type: 'success' | 'error' | 'warning' | 'info';
+}
 
 interface TopicInput {
   name: string;
@@ -44,14 +107,24 @@ const TopicBulkCreate: React.FC = () => {
   }>({});
   const [previewImage, setPreviewImage] = useState<{ url: string; name: string } | null>(null);
   const [showDetailedResults, setShowDetailedResults] = useState(false);
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
   useEffect(() => {
     fetchTopics();
   }, [fetchTopics]);
 
+  const showToast = (message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') => {
+    const id = Date.now();
+    setToasts(prev => [...prev, { id, message, type }]);
+  };
+
+  const removeToast = (id: number) => {
+    setToasts(prev => prev.filter(toast => toast.id !== id));
+  };
+
   const addTopic = () => {
     if (topics.length >= 20) {
-      alert('Tối đa 20 chủ đề mỗi lần tạo');
+      showToast('Tối đa 20 chủ đề mỗi lần tạo', 'warning');
       return;
     }
     setTopics(prev => [...prev, { name: '', description: '', imageFile: null, imageUrl: '', uploading: false }]);
@@ -105,6 +178,7 @@ const TopicBulkCreate: React.FC = () => {
           imageFile: validationError
         }
       }));
+      showToast(validationError, 'error');
       return;
     }
 
@@ -120,7 +194,7 @@ const TopicBulkCreate: React.FC = () => {
         const imageUrl = response.data?.url;
         if (imageUrl && typeof imageUrl === 'string') {
           updateTopic(index, 'imageUrl', imageUrl);
-          console.log('Upload thành công:', imageUrl);
+          showToast('Upload ảnh thành công!', 'success');
         } else {
           throw new Error('Không thể lấy URL ảnh từ response');
         }
@@ -212,7 +286,7 @@ const TopicBulkCreate: React.FC = () => {
     setResults(null);
     setShowDetailedResults(false);
 
-     await fetchTopics();
+    await fetchTopics();
 
     if (!validateAllTopics()) {
       return;
@@ -227,7 +301,7 @@ const TopicBulkCreate: React.FC = () => {
         }))
       };
 
-      console.log('📤 Gửi dữ liệu tạo topic:', topicsData);
+      console.log(' Gửi dữ liệu tạo topic:', topicsData);
 
       const response = await bulkCreateTopics(topicsData);
       setResults(response.data);
@@ -241,17 +315,14 @@ const TopicBulkCreate: React.FC = () => {
         setTopics([{ name: '', description: '', imageFile: null, imageUrl: '', uploading: false }]);
         setValidationErrors({});
         
-        setTimeout(() => {
-          alert(`🎉 Đã tạo thành công ${response.data.successCount} chủ đề!`);
-        }, 500);
+        showToast(` Đã tạo thành công ${response.data.successCount} chủ đề!`, 'success');
       } else {
         setShowDetailedResults(true);
+        showToast(`Đã tạo ${response.data.successCount} chủ đề thành công, ${response.data.failureCount} chủ đề thất bại`, 'warning');
       }
     } catch (error: any) {
       console.error('Failed to bulk create topics:', error);
-      if (error.message) {
-        alert(`Lỗi khi tạo chủ đề: ${error.message}`);
-      }
+      showToast(`Lỗi khi tạo chủ đề: ${error.message || 'Vui lòng thử lại'}`, 'error');
     }
   };
 
@@ -274,6 +345,16 @@ const TopicBulkCreate: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Render Toasts */}
+      {toasts.map(toast => (
+        <Toast
+          key={toast.id}
+          message={toast.message}
+          type={toast.type}
+          onClose={() => removeToast(toast.id)}
+        />
+      ))}
+
       {/* Image Preview Modal */}
       {previewImage && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
@@ -377,7 +458,6 @@ const TopicBulkCreate: React.FC = () => {
                     {showDetailedResults ? 'Ẩn chi tiết' : 'Xem chi tiết lỗi'}
                   </button>
 
-              
                   {showDetailedResults && (
                     <div className="mt-3 space-y-2">
                       <h4 className="font-medium text-gray-900">Chi tiết kết quả:</h4>
@@ -504,7 +584,6 @@ const TopicBulkCreate: React.FC = () => {
                       )}
                     </div>
 
-                
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Mô tả
@@ -529,7 +608,6 @@ const TopicBulkCreate: React.FC = () => {
                       </p>
                     </div>
 
-              
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Hình ảnh
@@ -564,7 +642,7 @@ const TopicBulkCreate: React.FC = () => {
                         {topic.imageFile && !topic.uploading && !topic.imageUrl && (
                           <div className="flex items-center justify-between">
                             <p className="text-sm text-orange-600">
-                               Chưa upload ảnh: {topic.imageFile.name}
+                              Chưa upload ảnh: {topic.imageFile.name}
                             </p>
                           </div>
                         )}
@@ -586,7 +664,6 @@ const TopicBulkCreate: React.FC = () => {
                           </div>
                         )}
 
-                      
                         {(topic.imagePreview || topic.imageUrl) && (
                           <div className="mt-2">
                             <p className="text-sm text-gray-600 mb-1">Preview:</p>
@@ -612,7 +689,6 @@ const TopicBulkCreate: React.FC = () => {
               ))}
             </div>
 
-
             <div className="mt-6 pt-6 border-t border-gray-200">
               <button
                 type="submit"
@@ -632,10 +708,9 @@ const TopicBulkCreate: React.FC = () => {
                 )}
               </button>
               
-           
               {isUploading && (
                 <p className="mt-2 text-sm text-blue-600 text-center">
-                   Đang upload ảnh, vui lòng chờ...
+                  Đang upload ảnh, vui lòng chờ...
                 </p>
               )}
               
@@ -648,9 +723,7 @@ const TopicBulkCreate: React.FC = () => {
           </form>
         </div>
 
-      
         <div className="space-y-6">
-        
           <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
             <h3 className="font-semibold text-blue-900 mb-2 flex items-center">
               <FileText className="w-4 h-4 mr-2" />
@@ -659,11 +732,11 @@ const TopicBulkCreate: React.FC = () => {
             <ul className="text-blue-800 text-sm space-y-2">
               <li>Nhập thông tin cho từng chủ đề</li>
               <li><strong>Tên chủ đề phải là duy nhất</strong></li>
-              <li> Mô tả tối đa 500 ký tự</li>
-              <li> Chọn ảnh - ảnh sẽ tự động upload</li>
-              <li> Xem preview ảnh sau khi upload</li>
-              <li> Chờ upload hoàn tất trước khi tạo</li>
-              <li> Tối đa 20 chủ đề mỗi lần</li>
+              <li>Mô tả tối đa 500 ký tự</li>
+              <li>Chọn ảnh - ảnh sẽ tự động upload</li>
+              <li>Xem preview ảnh sau khi upload</li>
+              <li>Chờ upload hoàn tất trước khi tạo</li>
+              <li>Tối đa 20 chủ đề mỗi lần</li>
             </ul>
           </div>
 

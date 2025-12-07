@@ -64,7 +64,7 @@ const initialState: VocabState = {
     totalPages: 0,
     totalElements: 0,
     currentPage: 0,
-    pageSize: 20,
+    pageSize: 30,
   },
   bulkImportResult: null,
 };
@@ -315,7 +315,6 @@ export const useVocabStore = create<VocabState & VocabActions>((set, get) => ({
     }
   },
 
-  // Storage methods - ĐÃ SỬA: Trả về string URL
   uploadImage: async (file: File): Promise<string> => {
     set({ loading: true, error: null });
     try {

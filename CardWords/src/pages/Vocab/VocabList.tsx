@@ -66,7 +66,7 @@ const VocabList: React.FC = () => {
         setDataLoading(true);
         
         await Promise.all([
-          fetchVocabs({ page: 0, size: 1000 }),
+          fetchVocabs({ page: 0, size: 2000 }),
           topics.length === 0 ? fetchTopics() : Promise.resolve(),
           wordTypes.length === 0 ? fetchAllTypes() : Promise.resolve()
         ]);
@@ -149,7 +149,7 @@ const VocabList: React.FC = () => {
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        fetchVocabs({ page: 0, size: 1000 });
+        fetchVocabs({ page: 0, size: 2000 });
       }
     };
 
@@ -175,7 +175,7 @@ const VocabList: React.FC = () => {
   const handleRefresh = async () => {
     try {
       setDataLoading(true);
-      await fetchVocabs({ page: 0, size: 1000 });
+      await fetchVocabs({ page: 0, size: 2000 });
     } catch (err) {
       console.error('Refresh failed:', err);
     } finally {
@@ -241,7 +241,7 @@ const VocabList: React.FC = () => {
       await deleteVocab(selectedVocab.id);
       setShowDeleteModal(false);
       setSelectedVocab(null);
-      await fetchVocabs({ page: 0, size: 1000 });
+      await fetchVocabs({ page: 0, size: 2000 });
     } catch (err: any) {
       console.error('Error deleting vocab:', err);
       alert(`Lỗi: ${err.message || 'Lỗi khi xóa từ vựng'}`);

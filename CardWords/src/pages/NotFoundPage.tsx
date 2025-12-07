@@ -83,22 +83,6 @@ const NotFoundPage: React.FC = () => {
             </button>
           </div>
 
-          {/* Search Suggestion */}
-          <div className="bg-gray-50 rounded-xl p-6 mb-6">
-            <h3 className="text-lg font-semibold text-gray-700 mb-3">
-              Can't find what you're looking for?
-            </h3>
-            <div className="flex max-w-md mx-auto">
-              <input
-                type="text"
-                placeholder="Search our website..."
-                className="flex-1 px-4 py-3 border border-gray-300 rounded-l-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-              <button className="px-6 bg-blue-600 text-white rounded-r-xl hover:bg-blue-700 transition-colors font-semibold">
-                Search
-              </button>
-            </div>
-          </div>
         </div>
 
 

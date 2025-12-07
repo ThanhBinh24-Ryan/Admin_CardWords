@@ -13,8 +13,71 @@ import {
   Upload,
   X,
   AlertCircle,
-  Loader2
+  Loader2,
+  CheckCircle2
 } from 'lucide-react';
+
+// Toast Component
+interface ToastProps {
+  message: string;
+  type: 'success' | 'error' | 'warning' | 'info';
+  onClose: () => void;
+}
+
+const Toast: React.FC<ToastProps> = ({ message, type, onClose }) => {
+  const [isVisible, setIsVisible] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsVisible(false);
+      setTimeout(onClose, 300);
+    }, 4000);
+
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  const bgColor = {
+    success: 'bg-green-500',
+    error: 'bg-red-500',
+    warning: 'bg-yellow-500',
+    info: 'bg-blue-500'
+  }[type];
+
+  const icon = {
+    success: <CheckCircle2 className="w-5 h-5" />,
+    error: <X className="w-5 h-5" />,
+    warning: <AlertCircle className="w-5 h-5" />,
+    info: <AlertCircle className="w-5 h-5" />
+  }[type];
+
+  return (
+    <div className={`fixed top-20 right-6 z-[9999] transition-all duration-300 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full'}`}>
+      <div className={`${bgColor} text-white rounded-lg shadow-xl p-4 min-w-80 max-w-md flex items-start`}>
+        <div className="mr-3 mt-0.5">
+          {icon}
+        </div>
+        <div className="flex-1">
+          <p className="text-sm font-medium">{message}</p>
+        </div>
+        <button
+          onClick={() => {
+            setIsVisible(false);
+            setTimeout(onClose, 300);
+          }}
+          className="ml-3 text-white hover:text-gray-200 transition-colors"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+interface ToastMessage {
+  id: number;
+  message: string;
+  type: 'success' | 'error' | 'warning' | 'info';
+}
 
 const TopicEdit: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -40,6 +103,16 @@ const TopicEdit: React.FC = () => {
     description?: string;
     image?: string;
   }>({});
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+
+  const showToast = (message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') => {
+    const id = Date.now();
+    setToasts(prev => [...prev, { id, message, type }]);
+  };
+
+  const removeToast = (id: number) => {
+    setToasts(prev => prev.filter(toast => toast.id !== id));
+  };
 
   useEffect(() => {
     if (id) {
@@ -75,8 +148,9 @@ const TopicEdit: React.FC = () => {
   const loadTopic = async (topicId: number) => {
     try {
       await fetchTopicById(topicId);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load topic:', error);
+      showToast('Không thể tải thông tin chủ đề', 'error');
     }
   };
 
@@ -97,6 +171,7 @@ const TopicEdit: React.FC = () => {
       const imageError = validateImageFile(file);
       if (imageError) {
         setValidationErrors(prev => ({ ...prev, image: imageError }));
+        showToast(imageError, 'error');
         return;
       }
 
@@ -129,7 +204,13 @@ const TopicEdit: React.FC = () => {
     if (descriptionError) errors.description = descriptionError;
 
     setValidationErrors(errors);
-    return Object.keys(errors).length === 0;
+    
+    if (Object.keys(errors).length > 0) {
+      showToast('Vui lòng kiểm tra lại thông tin đã nhập', 'error');
+      return false;
+    }
+    
+    return true;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -147,9 +228,16 @@ const TopicEdit: React.FC = () => {
         URL.revokeObjectURL(tempPreviewUrl);
         setTempPreviewUrl('');
       }
-      navigate('/admin/topics');
-    } catch (error) {
+      
+      showToast('Cập nhật chủ đề thành công!', 'success');
+      
+      setTimeout(() => {
+        navigate('/admin/topics');
+      }, 1000);
+      
+    } catch (error: any) {
       console.error('Failed to update topic:', error);
+      showToast('Cập nhật chủ đề thất bại. Vui lòng thử lại!', 'error');
     }
   };
 
@@ -182,6 +270,16 @@ const TopicEdit: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Render Toasts */}
+      {toasts.map(toast => (
+        <Toast
+          key={toast.id}
+          message={toast.message}
+          type={toast.type}
+          onClose={() => removeToast(toast.id)}
+        />
+      ))}
+
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>

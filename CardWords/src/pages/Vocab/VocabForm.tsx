@@ -20,8 +20,72 @@ import {
   MessageSquare,
   Tag,
   Award,
-  FileText
+  FileText,
+  CheckCircle2,
+  Info
 } from 'lucide-react';
+
+// Toast Component
+interface ToastProps {
+  message: string;
+  type: 'success' | 'error' | 'warning' | 'info';
+  onClose: () => void;
+}
+
+const Toast: React.FC<ToastProps> = ({ message, type, onClose }) => {
+  const [isVisible, setIsVisible] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsVisible(false);
+      setTimeout(onClose, 300);
+    }, 4000);
+
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  const bgColor = {
+    success: 'bg-green-500',
+    error: 'bg-red-500',
+    warning: 'bg-yellow-500',
+    info: 'bg-blue-500'
+  }[type];
+
+  const icon = {
+    success: <CheckCircle2 className="w-5 h-5" />,
+    error: <X className="w-5 h-5" />,
+    warning: <AlertCircle className="w-5 h-5" />,
+    info: <Info className="w-5 h-5" />
+  }[type];
+
+  return (
+    <div className={`fixed top-20 right-6 z-[9999] transition-all duration-300 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full'}`}>
+      <div className={`${bgColor} text-white rounded-lg shadow-xl p-4 min-w-80 max-w-md flex items-start`}>
+        <div className="mr-3 mt-0.5">
+          {icon}
+        </div>
+        <div className="flex-1">
+          <p className="text-sm font-medium">{message}</p>
+        </div>
+        <button
+          onClick={() => {
+            setIsVisible(false);
+            setTimeout(onClose, 300);
+          }}
+          className="ml-3 text-white hover:text-gray-200 transition-colors"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+interface ToastMessage {
+  id: number;
+  message: string;
+  type: 'success' | 'error' | 'warning' | 'info';
+}
 
 interface VocabFormData {
   word: string;
@@ -67,8 +131,18 @@ const VocabForm: React.FC = () => {
   const [imagePreview, setImagePreview] = useState<string>('');
   const [uploading, setUploading] = useState(false);
   const [dataLoading, setDataLoading] = useState(true);
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
   const cefrLevels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+
+  const showToast = (message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') => {
+    const id = Date.now();
+    setToasts(prev => [...prev, { id, message, type }]);
+  };
+
+  const removeToast = (id: number) => {
+    setToasts(prev => prev.filter(toast => toast.id !== id));
+  };
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -86,7 +160,7 @@ const VocabForm: React.FC = () => {
         
       } catch (err) {
         console.error('Error fetching data:', err);
-        setError('Không thể tải dữ liệu cần thiết');
+        showToast('Không thể tải dữ liệu cần thiết', 'error');
       } finally {
         setDataLoading(false);
       }
@@ -170,7 +244,12 @@ const VocabForm: React.FC = () => {
       if (imageFile) {
         setUploading(true);
         try {
-          imgUrl = await uploadImage(imageFile);
+          const uploadedImgUrl = await uploadImage(imageFile);
+          if (uploadedImgUrl && typeof uploadedImgUrl === 'string') {
+            imgUrl = uploadedImgUrl;
+          } else {
+            throw new Error('Upload ảnh thất bại: không nhận được URL ảnh');
+          }
         } catch (uploadError: any) {
           throw new Error(`Lỗi upload ảnh: ${uploadError.message}`);
         } finally {
@@ -181,7 +260,12 @@ const VocabForm: React.FC = () => {
       if (audioFile) {
         setUploading(true);
         try {
-          audioUrl = await uploadAudio(audioFile);
+          const uploadedAudioUrl = await uploadAudio(audioFile);
+          if (uploadedAudioUrl && typeof uploadedAudioUrl === 'string') {
+            audioUrl = uploadedAudioUrl;
+          } else {
+            throw new Error('Upload audio thất bại: không nhận được URL audio');
+          }
         } catch (uploadError: any) {
           throw new Error(`Lỗi upload audio: ${uploadError.message}`);
         } finally {
@@ -205,16 +289,20 @@ const VocabForm: React.FC = () => {
 
       if (isEdit && id) {
         await updateVocabById(id, submitData as UpdateVocabRequest);
+        showToast('Cập nhật từ vựng thành công!', 'success');
       } else {
         await createVocab(submitData as CreateVocabRequest);
+        showToast('Thêm từ vựng mới thành công!', 'success');
       }
 
-      alert(isEdit ? 'Cập nhật từ vựng thành công!' : 'Thêm từ vựng mới thành công!');
-      navigate('/admin/vocabs');
+      setTimeout(() => {
+        navigate('/admin/vocabs');
+      }, 1000);
       
     } catch (err: any) {
       console.error('Lỗi khi lưu từ vựng:', err);
       setError(err.message || 'Lỗi khi lưu từ vựng');
+      showToast(err.message || 'Lỗi khi lưu từ vựng', 'error');
     } finally {
       setSaving(false);
       setUploading(false);
@@ -289,6 +377,16 @@ const VocabForm: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8">
+      {/* Render Toasts */}
+      {toasts.map(toast => (
+        <Toast
+          key={toast.id}
+          message={toast.message}
+          type={toast.type}
+          onClose={() => removeToast(toast.id)}
+        />
+      ))}
+
       <div className="container mx-auto px-4 max-w-5xl">
         <div className="mb-8">
           <button

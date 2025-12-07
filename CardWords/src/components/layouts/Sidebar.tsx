@@ -21,15 +21,15 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
   const menuItems = [
-    { path: '/dashboard', label: 'Bảng điều khiển', icon: LayoutDashboard, color: 'from-blue-500 to-blue-600' },
-    { path: '/users', label: 'Người dùng', icon: Users, color: 'from-purple-500 to-purple-600' },
-    { path: '/admin/vocabs', label: 'Từ vựng', icon: BookOpen, color: 'from-green-500 to-green-600' },
-    { path: '/notifications', label: 'Thông báo', icon: Bell, color: 'from-yellow-500 to-orange-600' },
-    { path: '/admin/games', label: 'Trò chơi', icon: Gamepad2, color: 'from-pink-500 to-rose-600' },
-    { path: '/action-logs', label: 'Nhật ký', icon: FileText, color: 'from-indigo-500 to-indigo-600' },
-    { path: '/admin/topics', label: 'Chủ đề', icon: FolderOpen, color: 'from-amber-500 to-amber-600' },
-    { path: '/admin/word-types', label: 'Loại từ', icon: Tag, color: 'from-teal-500 to-teal-600' },
-    { path: '/admin/vocab-progress', label: 'Tiến độ từ vựng', icon: BarChart3, color: 'from-cyan-500 to-cyan-600' },
+    { path: '/dashboard', label: 'Bảng điều khiển', icon: LayoutDashboard, color: 'from-blue-500 to-blue-600', colorFrom: '#3b82f6', colorTo: '#2563eb' },
+    { path: '/users', label: 'Người dùng', icon: Users, color: 'from-purple-500 to-purple-600', colorFrom: '#a855f7', colorTo: '#9333ea' },
+    { path: '/admin/vocabs', label: 'Từ vựng', icon: BookOpen, color: 'from-green-500 to-green-600', colorFrom: '#22c55e', colorTo: '#16a34a' },
+    { path: '/notifications', label: 'Thông báo', icon: Bell, color: 'from-yellow-500 to-orange-600', colorFrom: '#eab308', colorTo: '#ea580c' },
+    { path: '/admin/games', label: 'Trò chơi', icon: Gamepad2, color: 'from-pink-500 to-rose-600', colorFrom: '#ec4899', colorTo: '#dc2626' },
+    { path: '/action-logs', label: 'Nhật ký', icon: FileText, color: 'from-indigo-500 to-indigo-600', colorFrom: '#6366f1', colorTo: '#4f46e5' },
+    { path: '/admin/topics', label: 'Chủ đề', icon: FolderOpen, color: 'from-amber-500 to-amber-600', colorFrom: '#f59e0b', colorTo: '#d97706' },
+    { path: '/admin/word-types', label: 'Loại từ', icon: Tag, color: 'from-teal-500 to-teal-600', colorFrom: '#14b8a6', colorTo: '#0d9488' },
+    { path: '/admin/vocab-progress', label: 'Tiến độ từ vựng', icon: BarChart3, color: 'from-cyan-500 to-cyan-600', colorFrom: '#06b6d4', colorTo: '#0891b2' },
   ];
 
   return (
@@ -71,7 +71,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
                         `group flex items-center space-x-3 px-4 py-3.5 rounded-xl transition-all duration-200 relative overflow-hidden
                         ${isActive 
                           ? 'bg-gradient-to-r ' + item.color + ' text-white shadow-lg transform scale-105' 
-                          : 'text-gray-700 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 hover:shadow-md'
+                          : 'text-gray-700 hover:bg-gradient-to-r hover:from-gray-200 hover:to-gray-300 hover:shadow-md'
                         }`
                       }
                       onClick={() => {
@@ -80,12 +80,30 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
                     >
                       {({ isActive }) => (
                         <>
-                          <div className={`p-2 rounded-lg transition-all duration-200 ${
-                            isActive 
-                              ? 'bg-white/20' 
-                              : 'bg-gray-100 group-hover:bg-gradient-to-br group-hover:' + item.color.split(' ')[0] + ' group-hover:' + item.color.split(' ')[1] + ' group-hover:text-white'
-                          }`}>
-                            <Icon className="w-5 h-5" />
+                          <div 
+                            className={`p-2 rounded-lg transition-all duration-200 ${
+                              isActive 
+                                ? 'bg-white/20' 
+                                : 'bg-gray-100'
+                            }`}
+                            onMouseEnter={(e) => {
+                              if (!isActive) {
+                                const el = e.currentTarget as HTMLDivElement;
+                                el.style.background = `linear-gradient(135deg, ${item.colorFrom} 0%, ${item.colorTo} 100%)`;
+                                el.querySelector('svg')?.classList.remove('text-gray-600');
+                                el.querySelector('svg')?.classList.add('text-white');
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!isActive) {
+                                const el = e.currentTarget as HTMLDivElement;
+                                el.style.background = '';
+                                el.querySelector('svg')?.classList.remove('text-white');
+                                el.querySelector('svg')?.classList.add('text-gray-600');
+                              }
+                            }}
+                          >
+                            <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-gray-600'}`} />
                           </div>
                           <span className={`font-semibold flex-1 ${isActive ? 'text-white' : 'text-gray-700 group-hover:text-gray-900'}`}>
                             {item.label}

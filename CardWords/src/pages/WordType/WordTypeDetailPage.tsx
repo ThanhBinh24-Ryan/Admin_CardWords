@@ -178,17 +178,7 @@ const WordTypeDetailPage: React.FC = () => {
                       </div>
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-bold text-gray-700 mb-2">
-                        Mô tả
-                      </label>
-                      <div className="bg-gray-50 rounded-xl p-4 min-h-[100px]">
-                        <p className="text-gray-700 text-lg">
-                          {currentType.description || 'Chưa có mô tả'}
-                        </p>
-                      </div>
-                    </div>
-
+                
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t-2 border-gray-200">
                       <div>
                         <label className=" text-sm font-bold text-gray-700 mb-2 flex items-center">
@@ -215,29 +205,6 @@ const WordTypeDetailPage: React.FC = () => {
               </div>
 
               <div className="space-y-6">
-         
-                <div className="bg-white rounded-2xl shadow-xl p-6 border border-gray-100">
-                  <h3 className="text-lg font-bold text-gray-900 mb-4">
-                    Thông tin nhanh
-                  </h3>
-                  
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                      <span className="text-gray-600">Ngày tạo</span>
-                      <span className="font-medium text-gray-900">---</span>
-                    </div>
-                    
-                    <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                      <span className="text-gray-600">Số từ vựng</span>
-                      <span className="font-medium text-gray-900">0</span>
-                    </div>
-                    
-                    <div className="flex justify-between items-center py-2">
-                      <span className="text-gray-600">Đang sử dụng</span>
-                      <span className="font-medium text-green-600">Có</span>
-                    </div>
-                  </div>
-                </div>
 
                 <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl shadow-xl p-6 border-2 border-blue-200">
                   <h3 className="text-lg font-bold text-gray-900 mb-4">

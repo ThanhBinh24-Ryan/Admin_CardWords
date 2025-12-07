@@ -64,9 +64,9 @@ const SessionDetailsModal: React.FC<{
   onClose: () => void;
 }> = ({ session, details, loading, onClose }) => {
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
-      <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-scale-in">
-        <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-5 z-10">
+    <div className="fixed inset-0 mt-19 mb-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+      <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[75vh] overflow-y-auto shadow-2xl animate-scale-in">
+        <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-7 z-10">
           <div className="flex items-center justify-between">
             <div className="text-white">
               <h3 className="text-2xl font-bold flex items-center">
@@ -237,11 +237,11 @@ const GamesList: React.FC = () => {
       setDeleteLoading(true);
       await deleteGameSession(sessionToDelete.sessionId);
       if (selectedGame) loadGameSessions(selectedGame.id);
-      alert('Xóa phiên chơi thành công!');
+    
       setShowDeleteModal(false);
       setSessionToDelete(null);
     } catch (error: any) { 
-      alert('Xóa phiên chơi thất bại. Vui lòng thử lại.'); 
+     
     } finally {
       setDeleteLoading(false);
     }

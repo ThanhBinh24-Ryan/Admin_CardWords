@@ -33,6 +33,10 @@ const Header: React.FC<HeaderProps> = ({ setIsSidebarOpen }) => {
       if (window.confirm('Bạn có chắc chắn muốn đăng xuất?')) {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      const authKeys = ['token', 'user', 'accessToken', 'refreshToken', 'authToken', 'auth_user'];
+      authKeys.forEach(key => localStorage.removeItem(key));
         navigate('/login');
       }
     }

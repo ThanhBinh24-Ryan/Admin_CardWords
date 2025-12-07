@@ -1,4 +1,3 @@
-// BatchUpdatePage.tsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWordTypeStore } from '../../store/wordTypeStore';
@@ -13,6 +12,68 @@ import {
   X
 } from 'lucide-react';
 
+// Toast Component
+interface ToastProps {
+  message: string;
+  type: 'success' | 'error' | 'warning' | 'info';
+  onClose: () => void;
+}
+
+const Toast: React.FC<ToastProps> = ({ message, type, onClose }) => {
+  const [isVisible, setIsVisible] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsVisible(false);
+      setTimeout(onClose, 300);
+    }, 4000);
+
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  const bgColor = {
+    success: 'bg-green-500',
+    error: 'bg-red-500',
+    warning: 'bg-yellow-500',
+    info: 'bg-blue-500'
+  }[type];
+
+  const icon = {
+    success: <CheckCircle2 className="w-5 h-5" />,
+    error: <X className="w-5 h-5" />,
+    warning: <AlertCircle className="w-5 h-5" />,
+    info: <AlertCircle className="w-5 h-5" />
+  }[type];
+
+  return (
+    <div className={`fixed top-20 right-6 z-[9999] transition-all duration-300 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full'}`}>
+      <div className={`${bgColor} text-white rounded-lg shadow-xl p-4 min-w-80 max-w-md flex items-start`}>
+        <div className="mr-3 mt-0.5">
+          {icon}
+        </div>
+        <div className="flex-1">
+          <p className="text-sm font-medium">{message}</p>
+        </div>
+        <button
+          onClick={() => {
+            setIsVisible(false);
+            setTimeout(onClose, 300);
+          }}
+          className="ml-3 text-white hover:text-gray-200 transition-colors"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+interface ToastMessage {
+  id: number;
+  message: string;
+  type: 'success' | 'error' | 'warning' | 'info';
+}
+
 const BatchUpdatePage: React.FC = () => {
   const navigate = useNavigate();
   const { 
@@ -26,6 +87,16 @@ const BatchUpdatePage: React.FC = () => {
 
   const [editableTypes, setEditableTypes] = useState<Array<{ id: number; name: string; originalName: string }>>([]);
   const [hasChanges, setHasChanges] = useState(false);
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+
+  const showToast = (message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') => {
+    const id = Date.now();
+    setToasts(prev => [...prev, { id, message, type }]);
+  };
+
+  const removeToast = (id: number) => {
+    setToasts(prev => prev.filter(toast => toast.id !== id));
+  };
 
   useEffect(() => {
     loadWordTypes();
@@ -44,8 +115,9 @@ const BatchUpdatePage: React.FC = () => {
   const loadWordTypes = async () => {
     try {
       await fetchAllTypes();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load word types:', error);
+      showToast('Không thể tải danh sách loại từ', 'error');
     }
   };
 
@@ -68,6 +140,7 @@ const BatchUpdatePage: React.FC = () => {
     })));
     setHasChanges(false);
     clearError();
+    showToast('Đã đặt lại tất cả thay đổi', 'info');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -78,18 +151,18 @@ const BatchUpdatePage: React.FC = () => {
       const trimmedName = type.name.trim();
       
       if (!trimmedName) {
-        alert(`Tên loại từ ID ${type.id} không được để trống`);
+        showToast(`Tên loại từ ID ${type.id} không được để trống`, 'error');
         return;
       }
 
       if (trimmedName.length < 2) {
-        alert(`Tên loại từ ID ${type.id} phải có ít nhất 2 ký tự`);
+        showToast(`Tên loại từ ID ${type.id} phải có ít nhất 2 ký tự`, 'error');
         return;
       }
 
       const nameRegex = /^[a-zA-Z0-9\s\-_]+$/;
       if (!nameRegex.test(trimmedName)) {
-        alert(`Tên loại từ ID ${type.id} chỉ được chứa chữ cái, số, khoảng trắng, dấu gạch ngang và gạch dưới`);
+        showToast(`Tên loại từ ID ${type.id} chỉ được chứa chữ cái, số, khoảng trắng, dấu gạch ngang và gạch dưới`, 'error');
         return;
       }
     }
@@ -97,7 +170,7 @@ const BatchUpdatePage: React.FC = () => {
     const changedTypes = editableTypes.filter(type => type.name !== type.originalName);
     
     if (changedTypes.length === 0) {
-      alert('Không có thay đổi nào để cập nhật');
+      showToast('Không có thay đổi nào để cập nhật', 'warning');
       return;
     }
 
@@ -107,15 +180,30 @@ const BatchUpdatePage: React.FC = () => {
         name: type.name.trim()
       })));
       
-      alert('Cập nhật hàng loạt thành công!');
-      navigate('/admin/word-types');
+      showToast(`Cập nhật ${changedTypes.length} loại từ thành công!`, 'success');
+      
+      setTimeout(() => {
+        navigate('/admin/word-types');
+      }, 1000);
+      
     } catch (error: any) {
-      console.error(' Batch update failed:', error);
+      console.error('Batch update failed:', error);
+      showToast('Cập nhật thất bại. Vui lòng thử lại!', 'error');
     }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      {/* Render Toasts */}
+      {toasts.map(toast => (
+        <Toast
+          key={toast.id}
+          message={toast.message}
+          type={toast.type}
+          onClose={() => removeToast(toast.id)}
+        />
+      ))}
+
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">

@@ -79,8 +79,6 @@ const LeaderboardSection: React.FC<LeaderboardSectionProps> = ({ topPlayers, loa
               </div>
             </div>
             <div className="text-right">
-              <div className="text-sm font-medium text-gray-900">{player.accuracy}%</div>
-              <div className="text-xs text-gray-500">Độ chính xác</div>
             </div>
           </div>
         ))}

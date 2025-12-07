@@ -19,7 +19,8 @@ import {
   List,
   Calendar,
   SortAsc,
-  SortDesc
+  SortDesc,
+  AlertTriangle
 } from 'lucide-react';
 
 const TopicList: React.FC = () => {
@@ -35,6 +36,7 @@ const TopicList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [topicToDelete, setTopicToDelete] = useState<Topic | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(9);
@@ -139,6 +141,7 @@ const TopicList: React.FC = () => {
   const confirmDelete = async () => {
     if (topicToDelete) {
       try {
+        setDeleteLoading(true);
         await deleteTopic(topicToDelete.id);
         setShowDeleteModal(false);
         setTopicToDelete(null);
@@ -147,6 +150,8 @@ const TopicList: React.FC = () => {
         }
       } catch (error) {
         console.error('Failed to delete topic:', error);
+      } finally {
+        setDeleteLoading(false);
       }
     }
   };
@@ -473,28 +478,117 @@ const TopicList: React.FC = () => {
         </div>
       )}
 
+      {/* Modal Delete đã được chỉnh style */}
       {showDeleteModal && topicToDelete && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Xác nhận xóa
-            </h3>
-            <p className="text-gray-600 mb-4">
-              Bạn có chắc muốn xóa chủ đề "{topicToDelete.name}"? Hành động này không thể hoàn tác.
-            </p>
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setShowDeleteModal(false)}
-                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                Hủy
-              </button>
-              <button
-                onClick={confirmDelete}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-              >
-                Xóa
-              </button>
+        <div className="fixed inset-0 flex items-center justify-center p-4 z-50">
+          {/* Backdrop với hiệu ứng blur và gradient */}
+          <div 
+            className="absolute inset-0 bg-gradient-to-br from-red-50/30 to-purple-50/30 backdrop-blur-sm"
+            onClick={() => !deleteLoading && setShowDeleteModal(false)}
+          />
+          
+          {/* Modal container với animation */}
+          <div 
+            className="relative w-full max-w-md transform transition-all duration-300 scale-100 opacity-100"
+            style={{
+              animation: 'modalAppear 0.3s ease-out'
+            }}
+          >
+            {/* Modal content */}
+            <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200">
+              {/* Header với gradient */}
+              <div className="bg-gradient-to-r from-red-500 via-red-600 to-red-700 px-6 py-5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
+                      <AlertTriangle className="w-6 h-6 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold text-white">
+                      Xóa Chủ Đề
+                    </h3>
+                  </div>
+                  {!deleteLoading && (
+                    <button
+                      onClick={() => setShowDeleteModal(false)}
+                      className="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
+                    >
+                      <X className="w-5 h-5 text-white" />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Body */}
+              <div className="p-6">
+                {/* Warning icon */}
+                <div className="flex justify-center mb-4">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-red-100 rounded-full opacity-75"></div>
+                    <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-red-200 to-red-200 border-4  shadow-lg flex items-center justify-center">
+                      <Trash2 className="w-10 h-10 text-red-600" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="text-center mb-6">
+                  <h4 className="text-lg font-bold text-gray-900 mb-2">
+                    Xóa chủ đề "{topicToDelete.name}"?
+                  </h4>
+                  <p className="text-gray-600 mb-4">
+                    Bạn có chắc chắn muốn xóa chủ đề này vĩnh viễn?
+                  </p>
+                  
+                
+
+
+                  <div className="bg-red-50/50 border-2 border-red-100 rounded-xl p-4 text-left">
+                    <div className="flex">
+                  
+                      <div>
+                      
+                        <ul className="text-xs text-red-700 space-y-1">
+                            <p className="text-sm font-medium text-red-800 mb-1">Cảnh báo quan trọng</p>
+                          <li className="flex items-start">
+                           
+                            <span>Tất cả từ vựng thuộc chủ đề này sẽ bị ảnh hưởng</span>
+                          </li>
+                        
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action buttons */}
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowDeleteModal(false)}
+                    disabled={deleteLoading}
+                    className="flex-1 px-4 py-3.5 text-gray-700 bg-gradient-to-r from-gray-100 to-gray-50 rounded-xl hover:from-gray-200 hover:to-gray-100 disabled:opacity-50 transition-all duration-200 font-medium border border-gray-300 hover:shadow-md flex items-center justify-center space-x-2"
+                  >
+                    <X className="w-5 h-5" />
+                    <span>Hủy bỏ</span>
+                  </button>
+                  <button
+                    onClick={confirmDelete}
+                    disabled={deleteLoading}
+                    className="flex-1 px-4 py-3.5 text-white bg-gradient-to-r from-red-600 to-red-700 rounded-xl hover:from-red-700 hover:to-red-800 disabled:opacity-50 transition-all duration-200 font-medium shadow-lg hover:shadow-xl flex items-center justify-center space-x-2"
+                  >
+                    {deleteLoading ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        <span>Đang xóa...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Trash2 className="w-5 h-5" />
+                        <span>Xóa vĩnh viễn</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>

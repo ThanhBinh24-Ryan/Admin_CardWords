@@ -22,8 +22,71 @@ import {
   Info,
   Eye,
   Upload,
-  Image as ImageIcon
+  Image as ImageIcon,
+  X
 } from 'lucide-react';
+
+// Toast Component
+interface ToastProps {
+  message: string;
+  type: 'success' | 'error' | 'warning' | 'info';
+  onClose: () => void;
+}
+
+const Toast: React.FC<ToastProps> = ({ message, type, onClose }) => {
+  const [isVisible, setIsVisible] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsVisible(false);
+      setTimeout(onClose, 300);
+    }, 4000);
+
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  const bgColor = {
+    success: 'bg-green-500',
+    error: 'bg-red-500',
+    warning: 'bg-yellow-500',
+    info: 'bg-blue-500'
+  }[type];
+
+  const icon = {
+    success: <CheckCircle2 className="w-5 h-5" />,
+    error: <XCircle className="w-5 h-5" />,
+    warning: <AlertCircle className="w-5 h-5" />,
+    info: <Info className="w-5 h-5" />
+  }[type];
+
+  return (
+    <div className={`fixed top-20 right-6 z-[9999] transition-all duration-300 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full'}`}>
+      <div className={`${bgColor} text-white rounded-lg shadow-xl p-4 min-w-80 max-w-md flex items-start`}>
+        <div className="mr-3 mt-0.5">
+          {icon}
+        </div>
+        <div className="flex-1">
+          <p className="text-sm font-medium">{message}</p>
+        </div>
+        <button
+          onClick={() => {
+            setIsVisible(false);
+            setTimeout(onClose, 300);
+          }}
+          className="ml-3 text-white hover:text-gray-200 transition-colors"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+interface ToastMessage {
+  id: number;
+  message: string;
+  type: 'success' | 'error' | 'warning' | 'info';
+}
 
 interface TopicEdit extends Topic {
   edited: boolean;
@@ -55,6 +118,7 @@ const TopicBulkEdit: React.FC = () => {
   }>({});
   const [showDetailedResults, setShowDetailedResults] = useState(false);
   const [previewImage, setPreviewImage] = useState<{ url: string; name: string } | null>(null);
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
   useEffect(() => {
     loadTopics();
@@ -77,11 +141,21 @@ const TopicBulkEdit: React.FC = () => {
     }
   }, [topics]);
 
+  const showToast = (message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') => {
+    const id = Date.now();
+    setToasts(prev => [...prev, { id, message, type }]);
+  };
+
+  const removeToast = (id: number) => {
+    setToasts(prev => prev.filter(toast => toast.id !== id));
+  };
+
   const loadTopics = async () => {
     try {
       await fetchTopics();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load topics:', error);
+      showToast('Không thể tải danh sách chủ đề', 'error');
     }
   };
 
@@ -95,13 +169,12 @@ const TopicBulkEdit: React.FC = () => {
           imageFile: validationError
         }
       }));
+      showToast(validationError, 'error');
       return;
     }
 
- 
     const previewUrl = URL.createObjectURL(file);
 
-   
     setEditableTopics(prev =>
       prev.map(topic =>
         topic.id === topicId
@@ -133,7 +206,6 @@ const TopicBulkEdit: React.FC = () => {
                 : topic
             )
           );
-          console.log(' Upload thành công:', imageUrl);
         } else {
           throw new Error('Không thể lấy URL ảnh từ response');
         }
@@ -162,6 +234,7 @@ const TopicBulkEdit: React.FC = () => {
             : topic
         )
       );
+      showToast(`Upload ảnh thất bại: ${error.message}`, 'error');
     }
   };
 
@@ -259,7 +332,7 @@ const TopicBulkEdit: React.FC = () => {
           isValid = false;
         }
 
-          if (topic.imageFile && topic.uploading) {
+        if (topic.imageFile && topic.uploading) {
           topicErrors.imageFile = 'Vui lòng chờ upload ảnh hoàn tất';
           isValid = false;
         }
@@ -294,7 +367,7 @@ const TopicBulkEdit: React.FC = () => {
       }));
 
     if (topicsToUpdate.length === 0) {
-      alert('Không có thay đổi nào để cập nhật');
+      showToast('Không có thay đổi nào để cập nhật', 'warning');
       return;
     }
 
@@ -311,17 +384,14 @@ const TopicBulkEdit: React.FC = () => {
         
         await loadTopics();
         
-        setTimeout(() => {
-          alert(`🎉 Đã cập nhật thành công ${response.data.successCount} chủ đề!`);
-        }, 500);
+        showToast(`Đã cập nhật thành công ${response.data.successCount} chủ đề!`, 'success');
       } else {
         setShowDetailedResults(true);
+        showToast(`Đã cập nhật ${response.data.successCount} chủ đề thành công, ${response.data.failureCount} chủ đề thất bại`, 'warning');
       }
     } catch (error: any) {
       console.error('Failed to bulk update topics:', error);
-      if (error.message) {
-        alert(`Lỗi khi cập nhật chủ đề: ${error.message}`);
-      }
+      showToast(`Lỗi khi cập nhật chủ đề: ${error.message || 'Vui lòng thử lại'}`, 'error');
     }
   };
 
@@ -335,6 +405,16 @@ const TopicBulkEdit: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Render Toasts */}
+      {toasts.map(toast => (
+        <Toast
+          key={toast.id}
+          message={toast.message}
+          type={toast.type}
+          onClose={() => removeToast(toast.id)}
+        />
+      ))}
+
       {/* Image Preview Modal */}
       {previewImage && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
@@ -447,7 +527,6 @@ const TopicBulkEdit: React.FC = () => {
                     {showDetailedResults ? 'Ẩn chi tiết' : 'Xem chi tiết lỗi'}
                   </button>
 
-  
                   {showDetailedResults && (
                     <div className="mt-3 space-y-2">
                       <h4 className="font-medium text-gray-900">Chi tiết kết quả:</h4>
@@ -495,7 +574,6 @@ const TopicBulkEdit: React.FC = () => {
         </div>
       )}
 
-      {/* Warning về upload ảnh */}
       {isUploading && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <div className="flex items-start">
@@ -511,9 +589,7 @@ const TopicBulkEdit: React.FC = () => {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Main Content */}
         <div className="lg:col-span-3">
-          {/* Search and Stats */}
           <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
             <div className="flex flex-col sm:flex-row gap-4 items-center">
               <div className="flex-1">
@@ -547,7 +623,6 @@ const TopicBulkEdit: React.FC = () => {
             </div>
           </div>
 
-          {/* Topics List */}
           <form onSubmit={handleSubmit}>
             <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
               <div className="overflow-x-auto">
@@ -574,7 +649,6 @@ const TopicBulkEdit: React.FC = () => {
                   <tbody className="bg-white divide-y divide-gray-200">
                     {filteredTopics.map((topic) => (
                       <tr key={topic.id} className={topic.edited ? 'bg-blue-50' : ''}>
-                        {/* Image and ID */}
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <div className="relative">
@@ -598,7 +672,6 @@ const TopicBulkEdit: React.FC = () => {
                           </div>
                         </td>
 
-    
                         <td className="px-6 py-4">
                           <div>
                             <input
@@ -617,7 +690,6 @@ const TopicBulkEdit: React.FC = () => {
                           </div>
                         </td>
 
-              
                         <td className="px-6 py-4">
                           <div>
                             <textarea
@@ -639,7 +711,6 @@ const TopicBulkEdit: React.FC = () => {
                           </div>
                         </td>
 
-  
                         <td className="px-6 py-4">
                           <div className="space-y-2">
                             <div>
@@ -702,7 +773,6 @@ const TopicBulkEdit: React.FC = () => {
                           </div>
                         </td>
 
-                        {/* Actions */}
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex gap-2">
                             {topic.edited && (
@@ -723,7 +793,6 @@ const TopicBulkEdit: React.FC = () => {
                 </table>
               </div>
 
-              {/* Submit Section */}
               {editedCount > 0 && (
                 <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
                   <div className="flex justify-between items-center">
@@ -731,7 +800,7 @@ const TopicBulkEdit: React.FC = () => {
                       <strong>{editedCount}</strong> chủ đề đã được chỉnh sửa
                       {isUploading && (
                         <span className="text-orange-600 ml-2">
-                           Đang upload ảnh, vui lòng chờ...
+                          Đang upload ảnh, vui lòng chờ...
                         </span>
                       )}
                     </div>
@@ -768,7 +837,6 @@ const TopicBulkEdit: React.FC = () => {
             </div>
           </form>
 
-        
           {filteredTopics.length === 0 && !loading && (
             <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
               <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
@@ -782,24 +850,22 @@ const TopicBulkEdit: React.FC = () => {
           )}
         </div>
 
-  
         <div className="space-y-6">
-
           <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
             <h3 className="font-semibold text-blue-900 mb-2 flex items-center">
               <Edit className="w-4 h-4 mr-2" />
               Hướng dẫn
             </h3>
             <ul className="text-blue-800 text-sm space-y-2">
-              <li> Chỉnh sửa trực tiếp trong bảng</li>
-              <li> Các thay đổi sẽ được đánh dấu màu xanh</li>
+              <li>Chỉnh sửa trực tiếp trong bảng</li>
+              <li>Các thay đổi sẽ được đánh dấu màu xanh</li>
               <li>Upload ảnh mới thay thế ảnh cũ</li>
-              <li> Chờ upload hoàn tất trước khi cập nhật</li>
-              <li> Nhấn "Hủy" để hoàn tác thay đổi</li>
+              <li>Chờ upload hoàn tất trước khi cập nhật</li>
+              <li>Nhấn "Hủy" để hoàn tác thay đổi</li>
             </ul>
           </div>
 
-           <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
             <h3 className="font-semibold text-gray-900 mb-3">Thống kê nhanh</h3>
             <div className="space-y-3 text-sm">
               <div className="flex justify-between items-center">

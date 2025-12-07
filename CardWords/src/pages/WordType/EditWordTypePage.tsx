@@ -7,8 +7,71 @@ import {
   Tag,
   Loader2,
   AlertCircle,
-  CheckCircle2
+  CheckCircle2,
+  X
 } from 'lucide-react';
+
+// Toast Component
+interface ToastProps {
+  message: string;
+  type: 'success' | 'error' | 'warning' | 'info';
+  onClose: () => void;
+}
+
+const Toast: React.FC<ToastProps> = ({ message, type, onClose }) => {
+  const [isVisible, setIsVisible] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsVisible(false);
+      setTimeout(onClose, 300);
+    }, 4000);
+
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  const bgColor = {
+    success: 'bg-green-500',
+    error: 'bg-red-500',
+    warning: 'bg-yellow-500',
+    info: 'bg-blue-500'
+  }[type];
+
+  const icon = {
+    success: <CheckCircle2 className="w-5 h-5" />,
+    error: <X className="w-5 h-5" />,
+    warning: <AlertCircle className="w-5 h-5" />,
+    info: <AlertCircle className="w-5 h-5" />
+  }[type];
+
+  return (
+    <div className={`fixed top-20 right-6 z-[9999] transition-all duration-300 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full'}`}>
+      <div className={`${bgColor} text-white rounded-lg shadow-xl p-4 min-w-80 max-w-md flex items-start`}>
+        <div className="mr-3 mt-0.5">
+          {icon}
+        </div>
+        <div className="flex-1">
+          <p className="text-sm font-medium">{message}</p>
+        </div>
+        <button
+          onClick={() => {
+            setIsVisible(false);
+            setTimeout(onClose, 300);
+          }}
+          className="ml-3 text-white hover:text-gray-200 transition-colors"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+interface ToastMessage {
+  id: number;
+  message: string;
+  type: 'success' | 'error' | 'warning' | 'info';
+}
 
 const EditWordTypePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -27,6 +90,16 @@ const EditWordTypePage: React.FC = () => {
     name: '',
   });
   const [validationError, setValidationError] = useState<string>('');
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+
+  const showToast = (message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') => {
+    const id = Date.now();
+    setToasts(prev => [...prev, { id, message, type }]);
+  };
+
+  const removeToast = (id: number) => {
+    setToasts(prev => prev.filter(toast => toast.id !== id));
+  };
 
   useEffect(() => {
     if (id) {
@@ -50,8 +123,9 @@ const EditWordTypePage: React.FC = () => {
   const loadWordType = async (typeId: number) => {
     try {
       await fetchTypeById(typeId);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load word type:', error);
+      showToast('Không thể tải thông tin loại từ', 'error');
     }
   };
 
@@ -64,26 +138,39 @@ const EditWordTypePage: React.FC = () => {
     
     if (!trimmedName) {
       setValidationError('Vui lòng nhập tên loại từ');
+      showToast('Vui lòng nhập tên loại từ', 'error');
       return;
     }
 
     if (trimmedName.length < 2) {
       setValidationError('Tên loại từ phải có ít nhất 2 ký tự');
+      showToast('Tên loại từ phải có ít nhất 2 ký tự', 'error');
       return;
     }
 
     const nameRegex = /^[a-zA-Z0-9\s]+$/;
     if (!nameRegex.test(trimmedName)) {
       setValidationError('Tên loại từ chỉ được chứa chữ cái, số và khoảng trắng');
+      showToast('Tên loại từ chỉ được chứa chữ cái, số và khoảng trắng', 'error');
+      return;
+    }
+
+    if (trimmedName === currentType?.name) {
+      showToast('Không có thay đổi nào để cập nhật', 'warning');
       return;
     }
 
     try {
       await updateType(parseInt(id!), { name: trimmedName });
-      alert('Cập nhật loại từ thành công!');
-      navigate('/admin/word-types');
+      showToast('Cập nhật loại từ thành công!', 'success');
+      
+      setTimeout(() => {
+        navigate('/admin/word-types');
+      }, 1000);
+      
     } catch (error: any) {
-      console.error(' Update failed:', error);
+      console.error('Update failed:', error);
+      showToast('Cập nhật thất bại. Vui lòng thử lại!', 'error');
     }
   };
 
@@ -113,6 +200,16 @@ const EditWordTypePage: React.FC = () => {
   if (!currentType && !loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+        {/* Render Toasts */}
+        {toasts.map(toast => (
+          <Toast
+            key={toast.id}
+            message={toast.message}
+            type={toast.type}
+            onClose={() => removeToast(toast.id)}
+          />
+        ))}
+        
         <div className="text-center">
           <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
           <h3 className="text-xl font-bold text-gray-900 mb-2">Không tìm thấy loại từ</h3>
@@ -130,6 +227,16 @@ const EditWordTypePage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      {/* Render Toasts */}
+      {toasts.map(toast => (
+        <Toast
+          key={toast.id}
+          message={toast.message}
+          type={toast.type}
+          onClose={() => removeToast(toast.id)}
+        />
+      ))}
+
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import authStore from '../../../store/authStore';
 import { authService } from '../../../services/authService';
 import { 
   Shield, 
@@ -49,12 +50,82 @@ const LoginForm: React.FC = () => {
 
     try {
       const result = await authService.login(formData);
-      
-      setSuccess('Đăng nhập thành công!');
-      
-      localStorage.setItem('accessToken', result.data.accessToken);
-      localStorage.setItem('refreshToken', result.data.refreshToken);
-      
+
+      // setSuccess('Đăng nhập thành công!');
+
+      const accessToken = result.data.accessToken;
+      const refreshToken = result.data.refreshToken;
+
+      // store tokens first
+      localStorage.setItem('accessToken', accessToken);
+      localStorage.setItem('refreshToken', refreshToken);
+
+      // decode token payload to check role/authorities
+      const decodePayload = (token: string | null) => {
+        if (!token) return null;
+        try {
+          const parts = token.split('.');
+          if (parts.length < 2) return null;
+          const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+          return payload;
+        } catch (e) {
+          return null;
+        }
+      };
+
+      const payload = decodePayload(accessToken);
+
+      const hasAdminRole = (() => {
+        if (!payload) return false;
+        if (payload.role) {
+          if (Array.isArray(payload.role)) return payload.role.includes('ROLE_ADMIN') || payload.role.includes('admin');
+          return payload.role === 'ROLE_ADMIN' || payload.role === 'admin';
+        }
+        if (payload.roles) {
+          if (Array.isArray(payload.roles)) return payload.roles.includes('ROLE_ADMIN') || payload.roles.includes('admin');
+          return payload.roles === 'ROLE_ADMIN' || payload.roles === 'admin';
+        }
+        if (payload.authorities && Array.isArray(payload.authorities)) {
+          return payload.authorities.some((a: any) => {
+            if (typeof a === 'string') return a === 'ROLE_ADMIN' || a === 'admin';
+            if (a && typeof a === 'object') return a.authority === 'ROLE_ADMIN' || a.authority === 'admin';
+            return false;
+          });
+        }
+        if (payload.scope && typeof payload.scope === 'string') {
+          return payload.scope.split(' ').includes('ROLE_ADMIN') || payload.scope.split(' ').includes('admin');
+        }
+        if (payload.scopes && Array.isArray(payload.scopes)) {
+          return payload.scopes.includes('ROLE_ADMIN') || payload.scopes.includes('admin');
+        }
+        return false;
+      })();
+
+      if (!hasAdminRole) {
+        // remove tokens and show notification
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+
+        try {
+          if ((window as any).showNotification) {
+            (window as any).showNotification('Tài khoản của bạn không có quyền truy cập.');
+          } else {
+            window.alert('Tài khoản của bạn không có quyền truy cập.');
+          }
+        } catch (_) {}
+
+        // don't call authStore.login() and remain on login page
+        setLoading(false);
+        return;
+      }
+
+      // authorized: update auth store so ProtectedRoute and other listeners know we're authenticated
+      try {
+        authStore.getState().login();
+      } catch (_) {
+        // ignore if store not available for some reason
+      }
+
       if (rememberMe) {
         localStorage.setItem('rememberMe', 'true');
         localStorage.setItem('savedEmail', formData.email);

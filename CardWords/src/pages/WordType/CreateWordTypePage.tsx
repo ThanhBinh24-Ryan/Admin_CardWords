@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect  } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWordTypeStore } from '../../store/wordTypeStore';
 import { CreateWordTypeRequest } from '../../types/wordType';
@@ -8,8 +8,71 @@ import {
   Tag,
   Loader2,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  X
 } from 'lucide-react';
+
+// Toast Component
+interface ToastProps {
+  message: string;
+  type: 'success' | 'error' | 'warning' | 'info';
+  onClose: () => void;
+}
+
+const Toast: React.FC<ToastProps> = ({ message, type, onClose }) => {
+  const [isVisible, setIsVisible] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsVisible(false);
+      setTimeout(onClose, 300);
+    }, 4000);
+
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  const bgColor = {
+    success: 'bg-green-500',
+    error: 'bg-red-500',
+    warning: 'bg-yellow-500',
+    info: 'bg-blue-500'
+  }[type];
+
+  const icon = {
+    success: <CheckCircle2 className="w-5 h-5" />,
+    error: <X className="w-5 h-5" />,
+    warning: <AlertCircle className="w-5 h-5" />,
+    info: <AlertCircle className="w-5 h-5" />
+  }[type];
+
+  return (
+    <div className={`fixed top-20 right-6 z-[9999] transition-all duration-300 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full'}`}>
+      <div className={`${bgColor} text-white rounded-lg shadow-xl p-4 min-w-80 max-w-md flex items-start`}>
+        <div className="mr-3 mt-0.5">
+          {icon}
+        </div>
+        <div className="flex-1">
+          <p className="text-sm font-medium">{message}</p>
+        </div>
+        <button
+          onClick={() => {
+            setIsVisible(false);
+            setTimeout(onClose, 300);
+          }}
+          className="ml-3 text-white hover:text-gray-200 transition-colors"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+interface ToastMessage {
+  id: number;
+  message: string;
+  type: 'success' | 'error' | 'warning' | 'info';
+}
 
 const CreateWordTypePage: React.FC = () => {
   const navigate = useNavigate();
@@ -21,6 +84,16 @@ const CreateWordTypePage: React.FC = () => {
   });
 
   const [validationError, setValidationError] = useState<string>('');
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+
+  const showToast = (message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') => {
+    const id = Date.now();
+    setToasts(prev => [...prev, { id, message, type }]);
+  };
+
+  const removeToast = (id: number) => {
+    setToasts(prev => prev.filter(toast => toast.id !== id));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,17 +104,20 @@ const CreateWordTypePage: React.FC = () => {
     
     if (!trimmedName) {
       setValidationError('Vui lòng nhập tên loại từ');
+      showToast('Vui lòng nhập tên loại từ', 'error');
       return;
     }
 
     if (trimmedName.length < 2) {
       setValidationError('Tên loại từ phải có ít nhất 2 ký tự');
+      showToast('Tên loại từ phải có ít nhất 2 ký tự', 'error');
       return;
     }
 
     const nameRegex = /^[a-zA-Z0-9\s]+$/;
     if (!nameRegex.test(trimmedName)) {
       setValidationError('Tên loại từ chỉ được chứa chữ cái, số và khoảng trắng');
+      showToast('Tên loại từ chỉ được chứa chữ cái, số và khoảng trắng', 'error');
       return;
     }
 
@@ -50,17 +126,23 @@ const CreateWordTypePage: React.FC = () => {
       description: formData.description?.trim() || undefined 
     };
 
-    console.log('🎯 Final submit data:', submitData);
-
     try {
       const result = await createType(submitData);
-      console.log(' Create success:', result);
-      alert('Tạo loại từ thành công!');
-      navigate('/admin/word-types');
+      console.log('Create success:', result);
+      
+      showToast('Tạo loại từ thành công!', 'success');
+      
+      setTimeout(() => {
+        navigate('/admin/word-types');
+      }, 1000);
+      
     } catch (error: any) {
-      console.error(' Create failed:', error);
+      console.error('Create failed:', error);
       if (error.message.includes('Tên loại từ không được để trống')) {
         setValidationError('Tên loại từ không được để trống. Vui lòng kiểm tra lại.');
+        showToast('Tên loại từ không được để trống', 'error');
+      } else {
+        showToast('Tạo loại từ thất bại. Vui lòng thử lại!', 'error');
       }
     }
   };
@@ -71,26 +153,25 @@ const CreateWordTypePage: React.FC = () => {
       [field]: value
     }));
     
- 
     if (field === 'name' && (validationError || error)) {
       setValidationError('');
       clearError();
     }
   };
 
-  const trySampleData = (sampleName: string, sampleDesc: string = '') => {
-    setFormData({
-      name: sampleName,
-      description: sampleDesc
-    });
-    setValidationError('');
-    clearError();
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      <div className="container mx-auto px-4 py-8">
+      {/* Render Toasts */}
+      {toasts.map(toast => (
+        <Toast
+          key={toast.id}
+          message={toast.message}
+          type={toast.type}
+          onClose={() => removeToast(toast.id)}
+        />
+      ))}
 
+      <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center">
@@ -114,35 +195,6 @@ const CreateWordTypePage: React.FC = () => {
             </div>
           </div>
         </div>
-
-        {/* <div className="bg-yellow-50 border-l-4 border-yellow-500 text-yellow-700 px-6 py-4 rounded-xl mb-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-semibold">Debug: Thử với dữ liệu mẫu</p>
-              <p className="text-sm">Click để tự động điền form</p>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => trySampleData('noun', 'Danh từ')}
-                className="px-3 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-lg hover:bg-yellow-200 transition-all"
-              >
-                noun
-              </button>
-              <button
-                onClick={() => trySampleData('verb', 'Động từ')}
-                className="px-3 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-lg hover:bg-yellow-200 transition-all"
-              >
-                verb
-              </button>
-              <button
-                onClick={() => trySampleData('adjective', 'Tính từ')}
-                className="px-3 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-lg hover:bg-yellow-200 transition-all"
-              >
-                adjective
-              </button>
-            </div>
-          </div>
-        </div> */}
 
         {error && (
           <div className="bg-red-50 border-l-4 border-red-500 text-red-700 px-6 py-4 rounded-xl mb-6 flex items-start">
@@ -185,22 +237,7 @@ const CreateWordTypePage: React.FC = () => {
                 </p>
               </div>
 
-             
-              {/* <div>
-                <label className="block text-sm font-bold text-gray-700 mb-3">
-                  Mô tả (tùy chọn)
-                </label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => handleChange('description', e.target.value)}
-                  placeholder="Mô tả chi tiết về loại từ này... Ví dụ: Danh từ dùng để chỉ người, vật, sự việc..."
-                  rows={4}
-                  className="w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all resize-none"
-                  disabled={loading}
-                />
-              </div> */}
 
-          
               {(formData.name.trim() || formData.description?.trim()) && (
                 <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-2xl border-2 border-blue-200">
                   <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
@@ -212,7 +249,7 @@ const CreateWordTypePage: React.FC = () => {
                     <div className="mb-3">
                       <span className="text-sm font-medium text-gray-600">Tên loại từ:</span>
                       <div className="mt-1">
-                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-gradient-to-r from-blue-500 to-purple-500 text-white">
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-gradient-to-r from-blue-500 to-blue-500 text-white">
                           {formData.name.trim()}
                         </span>
                       </div>
@@ -228,7 +265,6 @@ const CreateWordTypePage: React.FC = () => {
                 </div>
               )}
 
-            
               <div className="flex gap-4 pt-6 border-t-2 border-gray-200">
                 <button
                   type="button"
